@@ -5,7 +5,7 @@ package geometry.primitives.Euclidean2
  * Created by johnbowers on 5/13/17.
  */
 
-class Point2d(val x: Double, val y: Double) {
+class Point2d(var x: Double, var y: Double) {
 
     operator fun plus(v: Vector2d) = Point2d(x + v.x, y + v.y)
     operator fun minus(p: Point2d) = Vector2d(x - p.x, y - p.y)
@@ -25,7 +25,7 @@ class Point2d(val x: Double, val y: Double) {
     fun distTo(p: Point2d) = Math.sqrt(distSqTo(p))
 }
 
-class Vector2d(val x: Double, val y: Double) {
+class Vector2d(var x: Double, var y: Double) {
 
     constructor (p: Point2d): this(p.x, p.y)
 
@@ -43,4 +43,4 @@ class Vector2d(val x: Double, val y: Double) {
 
 /*** Extensions for interacting with Vectors ***/
 
-fun Double.times(p : Vector2d) = Vector2d(p.x * this, p.y * this)
+operator fun Double.times(p : Vector2d) = Vector2d(p.x * this, p.y * this)
