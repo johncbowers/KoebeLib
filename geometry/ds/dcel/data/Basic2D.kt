@@ -5,7 +5,7 @@ package geometry.ds.dcel.data
  */
 
 class Vertex2Dd {
-    //Point2d p;
+    //PointE2 p;
 }
 
 class Edge2D {}

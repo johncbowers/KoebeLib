@@ -7,16 +7,16 @@ import geometry.primitives.Euclidean2.*;
  * Created by John Bowers on 5/15/17.
  */
 
-fun triangulateIncremental(S: ArrayList<Point2d>): DCEL<Point2d, Unit, Unit> {
-    S.sortWith(compareBy({it.x}, {it.y}))
+fun triangulateIncremental(s: ArrayList<PointE2>): DCEL<PointE2, Unit, Unit> {
+    s.sortWith(compareBy({it.x}, {it.y}))
 
-    val tri = getCCWTriangle(S[0], S[1], S[2])
+    val tri = getCCWTriangle(s[0], s[1], s[2])
 
-    for (k in 3..S.size-1) {
-        val pk = S[k]
+    for (k in 3..s.size-1) {
+        val pk = s[k]
         val he = tri.outerFace.aDart
-        val upperTangent: DCEL<Point2d, Unit, Unit>.Dart?
-        val lowerTangent: DCEL<Point2d, Unit, Unit>.Dart?
+        val upperTangent: DCEL<PointE2, Unit, Unit>.Dart?
+        val lowerTangent: DCEL<PointE2, Unit, Unit>.Dart?
 
         val tangents = tri.outerFace.darts().filter {
             val p = it?.origin?.data
@@ -30,7 +30,7 @@ fun triangulateIncremental(S: ArrayList<Point2d>): DCEL<Point2d, Unit, Unit> {
 
             // The following is safe because the filter that creates tangents guarantees that all the various properties
             // are not null, so there is no point in re-checking them.
-            val lht = isLeftHandTurn(pk, tangents[0]!!.origin!!.data as Point2d, tangents[0]!!.next!!.origin!!.data as Point2d)
+            val lht = isLeftHandTurn(pk, tangents[0]!!.origin!!.data as PointE2, tangents[0]!!.next!!.origin!!.data as PointE2)
 
             upperTangent = if (lht) tangents[0] else tangents[1]
             lowerTangent = if (lht) tangents[1] else tangents[0]
@@ -64,7 +64,7 @@ fun triangulateIncremental(S: ArrayList<Point2d>): DCEL<Point2d, Unit, Unit> {
 //                val splitToDart = splitFromDart.next?.next
 //                if (splitToDart != null && splitFromDart.prev?.twin != null) {
 //                    tri.splitFace(splitFromDart, splitToDart);
-//                    splitFromDart = splitFromDart?.prev?.twin as DCEL<Point2d, Unit, Unit>.Dart;
+//                    splitFromDart = splitFromDart?.prev?.twin as DCEL<PointE2, Unit, Unit>.Dart;
 //                } else {
 //                    break;
 //                }
@@ -78,10 +78,10 @@ fun triangulateIncremental(S: ArrayList<Point2d>): DCEL<Point2d, Unit, Unit> {
 /**
  * Creates a DCEL representing the triangle abc, sorted into counter-clockwise order
  */
-fun getCCWTriangle(a: Point2d, b: Point2d, c: Point2d): DCEL<Point2d, Unit, Unit> {
+fun getCCWTriangle(a: PointE2, b: PointE2, c: PointE2): DCEL<PointE2, Unit, Unit> {
 
     // DCEL container:
-    val tri = DCEL<Point2d, Unit, Unit>()
+    val tri = DCEL<PointE2, Unit, Unit>()
 
     // Check if a to b to c is counter-clockwise or clockwise:
     val ccw = isLeftHandTurn(a, b, c)

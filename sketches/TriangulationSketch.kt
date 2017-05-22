@@ -1,3 +1,5 @@
+package sketches
+
 /**
  * Created by johnbowers on 4/8/17.
  */
@@ -18,20 +20,20 @@ import java.util.ArrayList
 import java.util.HashMap
 
 import geometry.ds.dcel.DCEL
-import geometry.primitives.Euclidean2.Point2d
+import geometry.primitives.Euclidean2.PointE2
 
 import java.util.Random
 
 class TriangulationSketch : PApplet() {
 
     // A set of points S
-    internal val S = arrayListOf<Point2d>()
+    internal val S = arrayListOf<PointE2>()
 
     // The dcel for the delaunay triangulation of the point set S
-    internal var dcel = DCEL<Point2d, Unit, Unit>()
+    internal var dcel = DCEL<PointE2, Unit, Unit>()
 
     // if the user has clicked on a point, selectedPoint refers to it; otherwise it's null
-    internal var selectedPoint: Point2d? = null
+    internal var selectedPoint: PointE2? = null
 
     internal val rand = Random() // Useful for making sure nothing is collinear.
     internal val nPoints = 5 // Number of random points to generate
@@ -43,14 +45,14 @@ class TriangulationSketch : PApplet() {
         background(255)
 
         // Create some random points
-        for (i in 1..nPoints) S.add(Point2d(perturb(rand) + rand.nextDouble() * width - (0.5*width),
-                                       perturb(rand) + rand.nextDouble() * height - (0.5*height)))
+        for (i in 1..nPoints) S.add(PointE2(perturb(rand) + rand.nextDouble() * width - (0.5 * width),
+                perturb(rand) + rand.nextDouble() * height - (0.5 * height)))
     }
 
     internal fun perturb(r: Random) = (r.nextDouble() - 0.5) * 0.00001
 
     /**
-     * The main drawing code, called in an infinite loop to continuously redraw the screen.
+     * The sketches.main drawing code, called in an infinite loop to continuously redraw the screen.
      */
     override fun draw() {
         update()
@@ -82,9 +84,15 @@ class TriangulationSketch : PApplet() {
     }
 
     fun update() {
-        selectedPoint?.x = from_screen_x(mouseX.toDouble() + perturb(rand))
-        selectedPoint?.y = from_screen_y(mouseY.toDouble() + perturb(rand))
-
+//        selectedPoint?.x = from_screen_x(mouseX.toDouble() + perturb(rand))
+//        selectedPoint?.y = from_screen_y(mouseY.toDouble() + perturb(rand))
+        val newPoint = PointE2(
+                from_screen_x(mouseX.toDouble() + perturb(rand)),
+                from_screen_y(mouseY.toDouble() + perturb(rand))
+        )
+        S.add(S.indexOf(selectedPoint), newPoint)
+        S.remove(selectedPoint)
+        selectedPoint = newPoint
         dcel = triangulateIncremental(S)
     }
 
@@ -110,7 +118,7 @@ class TriangulationSketch : PApplet() {
     internal fun from_screen_y(y: Double) = (height / 2.0) - y
 
     /**
-     * Sets up the main graphics settings for the PApplet window
+     * Sets up the sketches.main graphics settings for the PApplet window
      */
     override fun settings() {
         size(800, 600)
@@ -122,8 +130,8 @@ class TriangulationSketch : PApplet() {
 
     override fun mousePressed() {
 
-        val mousePoint = Point2d(from_screen_x(mouseX.toDouble()), from_screen_y(mouseY.toDouble()))
-        val closestPoint = S.minBy<Point2d, Double> { p -> p.distSqTo(mousePoint) }
+        val mousePoint = PointE2(from_screen_x(mouseX.toDouble()), from_screen_y(mouseY.toDouble()))
+        val closestPoint = S.minBy<PointE2, Double> { p -> p.distSqTo(mousePoint) }
 
         selectedPoint = if (closestPoint != null && closestPoint.distSqTo(mousePoint) < 64.0) closestPoint else null
     }
@@ -137,7 +145,7 @@ class TriangulationSketch : PApplet() {
  * Start the sketch.
  */
 fun main(passedArgs : Array<String>) {
-    val appletArgs = arrayOf("TriangulationSketch")
+    val appletArgs = arrayOf("sketches.TriangulationSketch")
     if (passedArgs != null) {
         PApplet.main(PApplet.concat(appletArgs, passedArgs))
     } else {
