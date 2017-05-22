@@ -6,6 +6,10 @@ package geometry.primitives.Euclidean3
 
 class PointE3(val x: Double = 0.0, val y: Double = 0.0, val z:Double = 0.0) {
 
+    companion object {
+        val O = PointE3()
+    }
+
     operator fun plus(v: VectorE3) = PointE3(x + v.x, y + v.y, z + v.z)
     operator fun minus(p: PointE3) = VectorE3(x - p.x, y - p.y, z - p.z)
 
@@ -31,5 +35,3 @@ class PointE3(val x: Double = 0.0, val y: Double = 0.0, val z:Double = 0.0) {
         return (this.toVectorE3().normalize() * invLen).toPointE3()
     }
 }
-
-val O = PointE3()

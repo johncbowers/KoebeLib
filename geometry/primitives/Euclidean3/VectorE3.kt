@@ -4,6 +4,12 @@ import geometry.primitives.determinant
 
 class VectorE3(val x: Double, val y: Double, val z: Double) {
 
+    companion object {
+        val e1 = VectorE3(1.0, 0.0, 0.0)
+        val e2 = VectorE3(0.0, 1.0, 0.0)
+        val e3 = VectorE3(0.0, 0.0, 1.0)
+    }
+
     constructor (p: PointE3): this(p.x, p.y, p.z)
 
     operator fun plus(v: VectorE3) = VectorE3(x + v.x, y + v.y, z + v.z)

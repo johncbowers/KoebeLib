@@ -6,6 +6,7 @@ import geometry.primitives.Euclidean3.PointE3
 import geometry.primitives.Euclidean3.VectorE3
 import geometry.primitives.Euclidean3.DirectionE3
 import geometry.primitives.Euclidean3.least_dominant
+import geometry.primitives.ExtendedComplex.*
 
 /**
  * Created by johnbowers on 5/20/17.
@@ -30,6 +31,20 @@ class PointS2(val x: Double = 1.0, val y:Double = 0.0, val z:Double = 0.0) {
 
     // val vectorE3: VectorE3 get() = VectorE3(x, y, z)
     val directionE3: DirectionE3 get() = DirectionE3(VectorE3(x, y, z))
+
+    /**
+     * Returns the coordinates of this point using the normal homogeneous complex coordinates
+     * on the Riemann sphere.
+     */
+    fun toExtendedComplex(): ExtendedComplex {
+        val d = directionE3
+        if (d.v.z < 0) {
+            return ExtendedComplex(Complex(d.v.x, d.v.y), Complex(1 - d.v.z, 0.0))
+        } else {
+            return ExtendedComplex(Complex(1 + d.v.z, 0.0), Complex(d.v.x, -d.v.y))
+        }
+    }
+
 }
 
 

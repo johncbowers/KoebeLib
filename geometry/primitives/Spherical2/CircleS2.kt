@@ -16,9 +16,15 @@ class CircleS2(val N: VectorE3 = VectorE3(0.0, 0.0, 1.0), val d:Double = 0.0) {
     constructor (p1: PointS2, p2: PointS2) :
             this (VectorE3(p1.x, p1.y, p1.z).cross(VectorE3(p2.x, p2.y, p2.z)), 0.0)
 
+    // Basis vectors for the circle
     fun basis1() : VectorE3 = least_dominant(N).vec.cross(N)
     fun basis2() : VectorE3 = N.cross(basis1())
     fun basis3() = N
+
+    // Normalized basis vectors as DirectionE3
+    fun normedBasis1() = DirectionE3(basis1())
+    fun normedBasis2() = DirectionE3(basis2())
+    fun normedBasis3() = DirectionE3(basis3())
 
     fun contains(p: PointS2): Boolean = isZero(N.dot(p.directionE3.v))
 
