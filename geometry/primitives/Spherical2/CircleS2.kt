@@ -24,7 +24,12 @@ class CircleS2(val N: VectorE3 = VectorE3(0.0, 0.0, 1.0), val d:Double = 0.0) {
 
     val directionE3: DirectionE3 get() = DirectionE3(N)
 
-    //val dualPlane: PlaneE3 = PlaneE3()
+    val dualPlaneE3: PlaneE3 get() = PlaneE3(N, d)
+    val dualPointE3: PointE3
+        get() {
+            assert(d != 0.0)
+            return centerE3.unitSphereInversion()
+        }
     val centerE3: PointE3 get() = PlaneE3(N, d).pointClosestOrigin()
     val radiusE3: Double get() = Math.sqrt(1.0 - VectorE3(centerE3).normSq())
 }

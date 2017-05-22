@@ -18,11 +18,18 @@ class VectorE3(val x: Double, val y: Double, val z: Double) {
     fun normSq() = x*x + y*y + z*z
     fun norm() = Math.sqrt(normSq())
 
+    fun normalize(): VectorE3 {
+        val invNorm = 1.0 / norm()
+        return VectorE3(x * invNorm, y * invNorm, z * invNorm)
+    }
+
     fun cross(v: VectorE3) = VectorE3(
             determinant(y, v.y, z, v.z),
             -determinant(x, v.x, z, v.z),
             determinant(x, v.x, y, v.y)
     )
+
+    fun toPointE3() = PointE3(x, y, z)
 }
 
 /*** Extensions for interacting with Vectors ***/

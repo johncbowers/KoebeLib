@@ -23,6 +23,7 @@ class SphericalSketch : PApplet() {
     internal var showBoundingBox = true
     internal var showCircleCentersAndNormals = false
     internal var showSphere = true
+    internal var showDualPoint = true
     /**
      * Sets up the drawing canvas.
      */
@@ -82,8 +83,7 @@ class SphericalSketch : PApplet() {
         if (showCircleCentersAndNormals) {
             pushMatrix()
             pushStyle()
-                lights()
-
+            lights()
 
             pushMatrix()
             fill(255.0f, 0.0f, 0.0f)
@@ -96,6 +96,19 @@ class SphericalSketch : PApplet() {
             translate(circle.N.x.toFloat(), circle.N.y.toFloat(), circle.N.z.toFloat())
             sphere(0.035f)
             popMatrix()
+
+            popStyle()
+            popMatrix()
+        }
+
+        if (showDualPoint) {
+            pushMatrix()
+            pushStyle()
+            lights()
+
+            fill(0.0f, 255.0f, 255.0f)
+            translate(circle.dualPointE3.x.toFloat(), circle.dualPointE3.y.toFloat(), circle.dualPointE3.z.toFloat())
+            sphere(0.035f)
 
             popStyle()
             popMatrix()

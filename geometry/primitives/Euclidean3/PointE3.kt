@@ -25,6 +25,11 @@ class PointE3(val x: Double = 0.0, val y: Double = 0.0, val z:Double = 0.0) {
     fun distTo(p: PointE3) = Math.sqrt(distSqTo(p))
 
     fun toVectorE3() = VectorE3(this)
+
+    fun unitSphereInversion(): PointE3 {
+        val invLen = 1.0 / distTo(O)
+        return (this.toVectorE3().normalize() * invLen).toPointE3()
+    }
 }
 
 val O = PointE3()
