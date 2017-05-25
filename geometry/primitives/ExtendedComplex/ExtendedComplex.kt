@@ -8,6 +8,8 @@ import geometry.primitives.Spherical2.PointS2
 
 open class ExtendedComplex(val z: Complex, val w: Complex) {
 
+    constructor (z: ExtendedComplex) : this(Complex(z.z), Complex(z.w))
+
     init {
         assert(z != Complex.zero || w != Complex.zero);
     }

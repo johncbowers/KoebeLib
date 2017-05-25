@@ -2,7 +2,7 @@ package geometry.primitives.Euclidean2
 
 class VectorE2(val x: Double, val y: Double) {
 
-    constructor (p: PointE2): this(p.x, p.y)
+    constructor (v: VectorE2): this(v.x, v.y)
 
     operator fun plus(v: VectorE2) = VectorE2(x + v.x, y + v.y)
     operator fun minus(p: PointE2) = VectorE2(x - p.x, y - p.y)

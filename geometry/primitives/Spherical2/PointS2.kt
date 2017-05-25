@@ -14,8 +14,9 @@ import geometry.primitives.ExtendedComplex.*
  * Code is adapted from Ghali's Introduction to Geometric Computing, Springer, 2008
  */
 
-class PointS2(val x: Double = 1.0, val y:Double = 0.0, val z:Double = 0.0) {
+class PointS2(val x: Double, val y:Double, val z:Double) {
 
+    constructor () : this(1.0, 0.0, 0.0)
     constructor (v: VectorE3) : this(v.x, v.y, v.z)
 
     operator fun unaryMinus() = antipode()

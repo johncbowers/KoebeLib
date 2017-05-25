@@ -6,6 +6,8 @@ package geometry.primitives.ExtendedComplex
 
 class Complex(val re:Double, val im:Double) {
 
+    constructor (z: Complex) : this(z.re, z.im)
+
     companion object {
         val zero = Complex(0.0, 0.0)
         val one = Complex(1.0, 0.0)

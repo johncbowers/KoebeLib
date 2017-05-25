@@ -18,10 +18,10 @@ class SphericalSketch : PApplet() {
     internal var applyToCamera = true
 
     internal var points = mutableListOf<PointS2>()
-    internal var circles = mutableListOf<CircleS2>()
+    internal var circles = mutableListOf<DiskS2>()
 
     internal var showBoundingBox = true
-    internal var showCircleCentersAndNormals = false
+    internal var showCircleCentersAndNormals = true
     internal var showSphere = true
     internal var showDualPoint = true
     /**
@@ -33,67 +33,76 @@ class SphericalSketch : PApplet() {
     }
 
     fun drawPointS2(p: PointS2) {
+
         pushMatrix()
-            pushStyle()
-                val d = p.directionE3
-                translate(d.v.x.toFloat(), d.v.y.toFloat(), d.v.z.toFloat())
-                fill(100.0f, 125.0f, 255.0f)
-                sphere(0.035f)
-            popStyle()
+        pushStyle()
+
+        val d = p.directionE3
+        translate(d.v.x.toFloat(), d.v.y.toFloat(), d.v.z.toFloat())
+        fill(100.0f, 125.0f, 255.0f)
+        sphere(0.035f)
+
+        popStyle()
         popMatrix()
     }
 
-    fun drawCircleS2(circle: CircleS2) {
+    fun drawCircleS2(disk: DiskS2) {
+
         pushMatrix()
-            // Get the basis vectors for the circle
-            val b1 = DirectionE3(circle.basis1())
-            val b2 = DirectionE3(circle.basis2())
-            val b3 = DirectionE3(circle.basis3())
 
-            // Compute the distance from the origin to the circle's Euclidean center and its euclidean radius
-            val centerDist = circle.centerE3.distTo(O).toFloat()
-            val diameter = circle.radiusE3.toFloat() * 2.0f
+        // Get the basis vectors for the disk
+        val b1 = disk.normedBasis1()
+        val b2 = disk.normedBasis2()
+        val b3 = disk.normedBasis3()
 
-            // Rotate the e1, e2, e3 basis vectors to b1, b2, b3
-            applyMatrix(
-                b1.v.x.toFloat(), b2.v.x.toFloat(), b3.v.x.toFloat(), 0.0f,
-                b1.v.y.toFloat(), b2.v.y.toFloat(), b3.v.y.toFloat(), 0.0f,
-                b1.v.z.toFloat(), b2.v.z.toFloat(), b3.v.z.toFloat(), 0.0f,
-                0.0f,             0.0f,             0.0f,             1.0f
-            )
+        // Compute the distance from the origin to the disk's Euclidean center and its euclidean radius
+        val centerDist = disk.centerOP3.toPointE3().distTo(PointE3.O).toFloat()
+        val diameter = disk.radiusE3.toFloat() * 2.0f
 
-            // Translate the drawing frame up to the distance from the circle center
-            if (b3.dot(DirectionE3(circle.centerE3.toVectorE3())) > 0.0)
-                translate(0.0f, 0.0f, centerDist)
-            else
-                translate(0.0f, 0.0f, -centerDist)
+        // Rotate the e1, e2, e3 basis vectors to b1, b2, b3
+        applyMatrix(
+            b1.v.x.toFloat(), b2.v.x.toFloat(), b3.v.x.toFloat(), 0.0f,
+            b1.v.y.toFloat(), b2.v.y.toFloat(), b3.v.y.toFloat(), 0.0f,
+            b1.v.z.toFloat(), b2.v.z.toFloat(), b3.v.z.toFloat(), 0.0f,
+            0.0f,             0.0f,             0.0f,             1.0f
+        )
 
-            // Draw the circle
-            pushStyle()
-                noLights()
-                strokeWeight(0.01f)
-                stroke(0)
-                fill(0)
-                ellipse(0.0f, 0.0f, diameter, diameter)
-            popStyle()
+        // Translate the drawing frame up to the distance from the disk center
+        // Here we need to check the orientation
+        if (disk.centerOP3.hw < 0)
+            translate(0.0f, 0.0f, centerDist)
+        else
+            translate(0.0f, 0.0f, -centerDist)
+
+        // Draw the disk
+        pushStyle()
+        noLights()
+        strokeWeight(0.01f)
+        stroke(0)
+        fill(0)
+        ellipse(0.0f, 0.0f, diameter, diameter)
+        popStyle()
 
         popMatrix()
 
         // Draw Euclidean Center
         if (showCircleCentersAndNormals) {
+            val ctr = disk.centerOP3.toPointE3()
             pushMatrix()
             pushStyle()
+
             lights()
 
             pushMatrix()
             fill(255.0f, 0.0f, 0.0f)
-            translate(circle.centerE3.x.toFloat(), circle.centerE3.y.toFloat(), circle.centerE3.z.toFloat())
+            translate(ctr.x.toFloat(), ctr.y.toFloat(), ctr.z.toFloat())
             sphere(0.035f)
             popMatrix()
 
             pushMatrix()
             fill(0.0f, 255.0f, 0.0f)
-            translate(circle.N.x.toFloat(), circle.N.y.toFloat(), circle.N.z.toFloat())
+            val dir = DirectionE3(VectorE3(disk.a, disk.b, disk.c))
+            translate(dir.v.x.toFloat(), dir.v.y.toFloat(), dir.v.z.toFloat())
             sphere(0.035f)
             popMatrix()
 
@@ -102,12 +111,14 @@ class SphericalSketch : PApplet() {
         }
 
         if (showDualPoint) {
+            val dual = disk.dualPointOP3.toPointE3()
             pushMatrix()
             pushStyle()
+
             lights()
 
             fill(0.0f, 255.0f, 255.0f)
-            translate(circle.dualPointE3.x.toFloat(), circle.dualPointE3.y.toFloat(), circle.dualPointE3.z.toFloat())
+            translate(dual.x.toFloat(), dual.y.toFloat(), dual.z.toFloat())
             sphere(0.035f)
 
             popStyle()
@@ -141,20 +152,20 @@ class SphericalSketch : PApplet() {
 
         pushStyle()
 
-            noStroke()
-            lights()
+        noStroke()
+        lights()
 
-            if (showSphere) sphere(1.0f)
+        if (showSphere) sphere(1.0f)
 
-            // Draw the points
-            points.forEach { drawPointS2(it) }
-            circles.forEach { drawCircleS2(it) }
+        // Draw the points
+        points.forEach { drawPointS2(it) }
+        circles.forEach { drawCircleS2(it) }
 
-            if (showBoundingBox) {
-                noFill()
-                stroke(0)
-                box(2.0f)
-            }
+        if (showBoundingBox) {
+            noFill()
+            stroke(0)
+            box(2.0f)
+        }
 
         popStyle()
     }
@@ -171,10 +182,13 @@ class SphericalSketch : PApplet() {
         points.add(PointS2(-1.0,-1.0, 1.0))
         points.add(PointS2( 1.0,-1.0, 1.0))
         points.add(PointS2( 1.0, 1.0, 1.0))
+        points.add(PointS2( eps, 1.0, 0.0))
 
-        circles = mutableListOf<CircleS2>()
-        //circles.add(CircleS2(points[0], points[1], points[2]))
-        circles.add(CircleS2(points[0], points[2], points[1]))
+        circles = mutableListOf<DiskS2>()
+        //circles.add(DiskS2(points[0], points[1], points[2]))
+        circles.add(DiskS2(points[0], points[1], points[2]))
+        circles.add(DiskS2(points[3], points[2], points[1]))
+        circles.add(DiskS2(points[1], points[3]))
 
         eps += 0.001
     }

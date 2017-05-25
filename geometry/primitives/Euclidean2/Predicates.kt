@@ -19,7 +19,7 @@ fun areaOfParallelogram(a: PointE2, b: PointE2, c: PointE2) = (b.x - a.x) * (c.y
 fun areaOfTriangle(a: PointE2, b: PointE2, c: PointE2) = 0.5 * areaOfParallelogram(a, b, c)
 
 /**
- * Tests if point e is in the circle through a, b, c
+ * Tests if point e is in the disk through a, b, c
  * Adapted from: https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c
  */
 fun inCircle(a: PointE2, b: PointE2, c: PointE2, e: PointE2): Boolean {

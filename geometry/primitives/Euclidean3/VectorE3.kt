@@ -10,7 +10,7 @@ class VectorE3(val x: Double, val y: Double, val z: Double) {
         val e3 = VectorE3(0.0, 0.0, 1.0)
     }
 
-    constructor (p: PointE3): this(p.x, p.y, p.z)
+    constructor (v: VectorE3): this(v.x, v.y, v.z)
 
     operator fun plus(v: VectorE3) = VectorE3(x + v.x, y + v.y, z + v.z)
     operator fun minus(p: PointE3) = VectorE3(x - p.x, y - p.y, z - p.z)

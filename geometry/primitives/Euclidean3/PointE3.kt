@@ -4,11 +4,14 @@ package geometry.primitives.Euclidean3
  * Created by johnbowers on 5/20/17.
  */
 
-class PointE3(val x: Double = 0.0, val y: Double = 0.0, val z:Double = 0.0) {
+class PointE3(val x: Double, val y: Double, val z:Double) {
 
     companion object {
         val O = PointE3()
     }
+
+    constructor () : this(0.0, 0.0, 0.0)
+    constructor (p: PointE3) : this(p.x, p.y, p.z)
 
     operator fun plus(v: VectorE3) = PointE3(x + v.x, y + v.y, z + v.z)
     operator fun minus(p: PointE3) = VectorE3(x - p.x, y - p.y, z - p.z)
@@ -28,10 +31,6 @@ class PointE3(val x: Double = 0.0, val y: Double = 0.0, val z:Double = 0.0) {
      */
     fun distTo(p: PointE3) = Math.sqrt(distSqTo(p))
 
-    fun toVectorE3() = VectorE3(this)
+    fun toVectorE3() = this - O
 
-    fun unitSphereInversion(): PointE3 {
-        val invLen = 1.0 / distTo(O)
-        return (this.toVectorE3().normalize() * invLen).toPointE3()
-    }
 }
