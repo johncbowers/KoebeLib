@@ -51,9 +51,9 @@ class SphericalSketch : PApplet() {
         pushMatrix()
 
         // Get the basis vectors for the disk
-        val b1 = disk.normedBasis1()
-        val b2 = disk.normedBasis2()
-        val b3 = disk.normedBasis3()
+        val b1 = disk.normedBasis1
+        val b2 = disk.normedBasis2
+        val b3 = disk.normedBasis3
 
         // Compute the distance from the origin to the disk's Euclidean center and its euclidean radius
         val centerDist = disk.centerOP3.toPointE3().distTo(PointE3.O).toFloat()
