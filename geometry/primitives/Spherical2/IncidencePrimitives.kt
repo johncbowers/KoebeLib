@@ -18,6 +18,9 @@ fun join(d1: DiskS2, d2: DiskS2) = CoaxialFamily(
         determinant(d1.c, d1.d, d2.c, d2.d)
 )
 
+/**
+ * The meet of two disks. 
+ */
 fun meet(cp1: CPlaneS2, cp2: CPlaneS2) = CoaxialFamily(
         determinant(cp1.a, cp1.b, cp2.a, cp2.b),
         determinant(cp1.a, cp1.c, cp2.a, cp2.c),
