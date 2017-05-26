@@ -1,5 +1,6 @@
 package geometry.primitives.Spherical2
 
+import geometry.primitives.*
 import geometry.primitives.Euclidean3.DirectionE3
 import geometry.primitives.Euclidean3.PointE3
 import geometry.primitives.Euclidean3.VectorE3
@@ -7,9 +8,6 @@ import geometry.primitives.Euclidean3.PlaneE3
 import geometry.primitives.Euclidean3.least_dominant
 import geometry.primitives.OrientedProjective3.PointOP3
 import geometry.primitives.OrientedProjective3.PlaneOP3
-import geometry.primitives.determinant
-import geometry.primitives.inner_product
-import geometry.primitives.isZero
 
 
 /**
@@ -28,6 +26,7 @@ import geometry.primitives.isZero
  */
 class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
+    /* Constructors */
 
     constructor (disk: DiskS2) : this(disk.a, disk.b, disk.c, disk.d)
 
@@ -73,34 +72,52 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
                     d = 0.0
             )
 
+    /* Properties */
+
     // Basis vectors for the disk
-    val basis1 : VectorE3 get() = least_dominant(VectorE3(a, b, c)).vec.cross(VectorE3(a, b, c))
-    val basis2 : VectorE3 get() = VectorE3(a, b, c).cross(basis1)
-    val basis3 : VectorE3 get() = VectorE3(a, b, c)
+    val basis1 : VectorE3 by lazy { least_dominant(VectorE3(a, b, c)).vec.cross(VectorE3(a, b, c)) }
+    val basis2 : VectorE3 by lazy { VectorE3(a, b, c).cross(basis1) }
+    val basis3 : VectorE3 by lazy { VectorE3(a, b, c) }
 
     // Normalized basis vectors as DirectionE3
-    val normedBasis1 : DirectionE3 get() = DirectionE3(basis1)
-    val normedBasis2 : DirectionE3 get() = DirectionE3(basis2)
-    val normedBasis3 : DirectionE3 get() = DirectionE3(basis3)
+    val normedBasis1 : DirectionE3 by lazy { DirectionE3(basis1) }
+    val normedBasis2 : DirectionE3 by lazy { DirectionE3(basis2) }
+    val normedBasis3 : DirectionE3 by lazy { DirectionE3(basis3) }
 
-    fun contains(p: PointS2): Boolean = isZero(inner_product(p.x, p.y, p.z, 1.0, a, b, c, d))
-    //isZero(VectorE3(a, b, c).dot(p.directionE3.v))
+    // Unit vector pointing in direction of center of circle
+    val directionE3: DirectionE3 by lazy{ DirectionE3(VectorE3(a, b, c)) }
 
-    val directionE3: DirectionE3 get() = DirectionE3(VectorE3(a, b, c))
+    // Dual plane and point in oriented projective 3-space
+    val dualPlaneOP3: PlaneOP3 by lazy { PlaneOP3(a, b, c, d) }
+    val dualPointOP3: PointOP3 by lazy { PointOP3(-a, -b, -c, d) }// WAS: centerOP3.unitSphereInversion() }
 
-    val dualPlaneOP3: PlaneOP3 get() = PlaneOP3(a, b, c, d)
+    val dualCPlaneS2: CPlaneS2 by lazy { CPlaneS2(-a, -b, -c, d) }
 
-    val dualPointOP3: PointOP3
-        get() {
-            assert(d != 0.0)
-            return centerOP3.unitSphereInversion()
-        }
+    val centerE3: PointE3 by lazy { PointOP3(-a, -b, -c, (a*a + b*b + c*c) / d).toPointE3() }// PlaneE3(VectorE3(a, b, c), d).pointOP3ClosestOrigin() }
 
-    val centerOP3: PointOP3
-        get() {
-            //PlaneE3(N, d).pointClosestOrigin()
-            return PlaneE3(VectorE3(a, b, c), d).pointOP3ClosestOrigin()
-        }
+    // Euclidean radius of circle
+    val radiusE3: Double by lazy { Math.sqrt(1.0 - (centerE3 - PointE3.O).normSq()) }
 
-    val radiusE3: Double get() = Math.sqrt(1.0 - (centerOP3.toPointE3() - PointE3.O).normSq())
+    /* Tests */
+
+    // TODO Rethink this (is there a way to get rid of the norm?)
+    fun contains(p: PointS2): Boolean = isZero(inner_product(p.x, p.y, p.z, VectorE3(p.x, p.y, p.z).norm(), a, b, c, d))
+
+    override fun equals(that: Any?) = this === that ||
+            (that is DiskS2 && are_dependent(a, that.a, b, that.b, c, that.c, d, that.d))
+
+    /* Computations */
+
+    // With our disks represented as the hyperplane ax + by + cz + dw = 0, it can be shown that the
+    // the inversive distance between two disks (a1, b1, c1, d1) and (a2, b2, c2, d2) is simply the
+    // cosine of the angle between the two disks under the (3, 1) Minkowski metric.
+    // TODO We need to re-derive this to check that it all sorts out.
+    fun inversiveDistTo(disk: DiskS2) : Double {
+        val ip12 = inner_product31(a, b, c, d, disk.a, disk.b, disk.c, disk.d)
+        val ip11 = inner_product31(a, b, c, d, a, b, c, d)
+        val ip22 = inner_product31(disk.a, disk.b, disk.c, disk.d, disk.a, disk.b, disk.c, disk.d)
+        return -ip12 / (Math.sqrt(ip11) * Math.sqrt(ip22))
+    }
+
+
 }

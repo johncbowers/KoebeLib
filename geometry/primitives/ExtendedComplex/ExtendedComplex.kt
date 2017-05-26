@@ -26,8 +26,8 @@ open class ExtendedComplex(val z: Complex, val w: Complex) {
      * Reimann sphere
      */
     fun toPointS2(): PointS2 {
-        val zwc = z * w.conjugate()
-        val zcw = z.conjugate() * w
+        val zwc = z * w.conjugate
+        val zcw = z.conjugate * w
         val absSqz = z.absSq()
         val absSqw = w.absSq()
         val hypotSq = absSqz + absSqw
