@@ -48,19 +48,19 @@ fun meet(cf: CoaxialFamilyS2, cp: CPlaneS2) = DiskS2 (
 )
 
 fun join(disk1: DiskS2, disk2: DiskS2, disk3: DiskS2) = CPlaneS2(
-        a = - determinant(
+        a = + determinant(
                 disk1.b, disk1.c, disk1.d,
                 disk2.b, disk2.c, disk2.d,
                 disk3.b, disk3.c, disk3.d),
-        b = + determinant(
+        b = - determinant(
                 disk1.a, disk1.c, disk1.d,
                 disk2.a, disk2.c, disk2.d,
                 disk3.a, disk3.c, disk3.d),
-        c = - determinant(
+        c = + determinant(
                 disk1.a, disk1.b, disk1.d,
                 disk2.a, disk2.b, disk2.d,
                 disk3.a, disk3.b, disk3.d),
-        d = + determinant(
+        d = - determinant(
                 disk1.a, disk1.b, disk1.c,
                 disk2.a, disk2.b, disk2.c,
                 disk3.a, disk3.b, disk3.c)

@@ -14,25 +14,69 @@ import geometry.primitives.isZero
 
 import geometry.primitives.Spherical2.join
 
+import gui.JythonFrame
+
+import javax.swing.*
+
 class SphericalSketch : PApplet() {
 
     internal var arcball: Arcball? = null
     internal var applyToCamera = true
 
-    internal var points = mutableListOf<PointS2>()
-    internal var circles = mutableListOf<DiskS2>()
+    var points = mutableListOf<PointS2>()
+    var disks = mutableListOf<DiskS2>()
+    var orthos = mutableListOf<CPlaneS2>()
 
     internal var showBoundingBox = true
     internal var showCircleCentersAndNormals = true
     internal var showSphere = true
     internal var showDualPoint = true
     internal var showEuclideanDisks = false
+
+    internal val jyFrame = JythonFrame(this)
     /**
      * Sets up the drawing canvas.
      */
     override fun setup() {
         background(255)
         arcball = Arcball(this)
+
+        jyFrame.setSize(800, 600)
+        jyFrame.show()
+
+        points = mutableListOf<PointS2>(
+                PointS2( 0.0, 0.3, 1.0),
+                PointS2(-0.1,-0.2, 1.0),
+                PointS2( 0.1,-0.2, 1.0),
+
+                PointS2( 0.0, 1.0 + 2.0 * eps,  0.3),
+                PointS2( 0.1 + eps, 1.0, -0.2),
+                PointS2(-0.1, 1.0, -0.2),
+
+                PointS2(1.0, 0.0, 0.3),
+                PointS2(1.0,-0.1,-0.2 + eps),
+                PointS2(1.0, 0.1,-0.2),
+
+                PointS2(-0.3 + 0.5 * eps, -1.0, -1.0),
+                PointS2(-1.0, -0.3, -1.0),
+                PointS2(-1.0, -1.0, -0.3)
+        )
+
+        disks = mutableListOf<DiskS2>(
+                DiskS2(points[0], points[1], points[2]),
+                DiskS2(points[3], points[4], points[5]),
+                DiskS2(points[6], points[7], points[8]),
+                DiskS2(points[9], points[10], points[11])
+        )
+
+        orthos = mutableListOf<CPlaneS2>(
+                join(disks[0], disks[1], disks[2]),
+                join(disks[0], disks[1], disks[3]),
+                join(disks[0], disks[2], disks[3]),
+                join(disks[1], disks[2], disks[3])
+        )
+
+        jyFrame.setup()
     }
 
     fun drawPointS2(p: PointS2) {
@@ -168,11 +212,8 @@ class SphericalSketch : PApplet() {
 
         // Draw the points
         points.forEach { drawPointS2(it) }
-        circles.forEach { stroke(0); drawCircleS2(it) }
-
-        stroke(255.0f, 0.0f, 0.0f)
-        drawCircleS2(join(circles[0], circles[1], circles[2]).dualDiskS2)
-
+        disks.forEach { stroke(0); drawCircleS2(it) }
+        orthos.forEach{ stroke(255.0f, 0.0f, 0.0f); drawCircleS2(it.dualDiskS2) }
 
         if (showBoundingBox) {
             noFill()
@@ -183,38 +224,11 @@ class SphericalSketch : PApplet() {
         popStyle()
     }
 
-    internal var eps = 0.0
+    var eps = 0.0
+
     fun update() {
 
-        points = mutableListOf<PointS2>()
-//        points.add(PointS2(0.0, 1.0, 0.0))
-//        //points.add(PointS2(0.0, 0.0, 1.0))
-//        points.add(PointS2(eps, 0.0,-1.0))
-//        points.add(PointS2(1.0, eps, eps))
 
-        points.add(PointS2( 0.0, 0.3, 1.0))
-        points.add(PointS2(-0.1,-0.2, 1.0))
-        points.add(PointS2( 0.1,-0.2, 1.0))
-
-        points.add(PointS2( 0.0, 1.0,  0.3))
-        points.add(PointS2( 0.1, 1.0, -0.2))
-        points.add(PointS2(-0.1, 1.0, -0.2))
-
-        points.add(PointS2(1.0, 0.0, 0.3))
-        points.add(PointS2(1.0,-0.1,-0.2))
-        points.add(PointS2(1.0, 0.1,-0.2))
-        //points.add(PointS2( eps, 1.0, 0.0))
-
-        circles = mutableListOf<DiskS2>()
-        circles.add(DiskS2(points[0], points[1], points[2]))
-        circles.add(DiskS2(points[3], points[4], points[5]))
-        circles.add(DiskS2(points[6], points[7], points[8]))
-        //circles.add(DiskS2(points[0], points[1], points[2]))
-//        circles.add(DiskS2(points[0], points[1], points[2]))
-//        circles.add(DiskS2(points[3], points[1], points[2]))
-//        circles.add(DiskS2(points[1], points[3]))
-
-        eps += 0.001
     }
 
     /**
