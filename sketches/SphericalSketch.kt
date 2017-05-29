@@ -14,6 +14,8 @@ import geometry.primitives.isZero
 
 import geometry.primitives.Spherical2.join
 
+import geometry.construction.Construction
+
 import gui.JythonFrame
 
 import javax.swing.*
@@ -23,9 +25,12 @@ class SphericalSketch : PApplet() {
     internal var arcball: Arcball? = null
     internal var applyToCamera = true
 
-    var points = mutableListOf<PointS2>()
-    var disks = mutableListOf<DiskS2>()
-    var orthos = mutableListOf<CPlaneS2>()
+    var construction = Construction()
+    //var points = mutableListOf<PointS2>()
+    //var disks = mutableListOf<DiskS2>()
+    //var orthos = mutableListOf<CPlaneS2>()
+
+    val constructionLock = Any()
 
     internal var showBoundingBox = true
     internal var showCircleCentersAndNormals = true
@@ -44,37 +49,44 @@ class SphericalSketch : PApplet() {
         jyFrame.setSize(800, 600)
         jyFrame.show()
 
-        points = mutableListOf<PointS2>(
-                PointS2( 0.0, 0.3, 1.0),
-                PointS2(-0.1,-0.2, 1.0),
-                PointS2( 0.1,-0.2, 1.0),
+//        val p1 = construction.makePointS2( 1.0, 0.3, 1.0)
+//        val p2 = construction.makePointS2(-0.1,-0.2, 1.0)
+//        val p3 = construction.makePointS2( 0.1,-0.2, 1.0)
+//
+//        val disk1 = construction.makeDiskS2(p1, p2, p3)
 
-                PointS2( 0.0, 1.0 + 2.0 * eps,  0.3),
-                PointS2( 0.1 + eps, 1.0, -0.2),
-                PointS2(-0.1, 1.0, -0.2),
-
-                PointS2(1.0, 0.0, 0.3),
-                PointS2(1.0,-0.1,-0.2 + eps),
-                PointS2(1.0, 0.1,-0.2),
-
-                PointS2(-0.3 + 0.5 * eps, -1.0, -1.0),
-                PointS2(-1.0, -0.3, -1.0),
-                PointS2(-1.0, -1.0, -0.3)
-        )
-
-        disks = mutableListOf<DiskS2>(
-                DiskS2(points[0], points[1], points[2]),
-                DiskS2(points[3], points[4], points[5]),
-                DiskS2(points[6], points[7], points[8]),
-                DiskS2(points[9], points[10], points[11])
-        )
-
-        orthos = mutableListOf<CPlaneS2>(
-                join(disks[0], disks[1], disks[2]),
-                join(disks[0], disks[1], disks[3]),
-                join(disks[0], disks[2], disks[3]),
-                join(disks[1], disks[2], disks[3])
-        )
+//###
+//        points = mutableListOf<PointS2>(
+//                PointS2( 0.0, 0.3, 1.0),
+//                PointS2(-0.1,-0.2, 1.0),
+//                PointS2( 0.1,-0.2, 1.0),
+//
+//                PointS2( 0.0, 1.0 + 2.0 * eps,  0.3),
+//                PointS2( 0.1 + eps, 1.0, -0.2),
+//                PointS2(-0.1, 1.0, -0.2),
+//
+//                PointS2(1.0, 0.0, 0.3),
+//                PointS2(1.0,-0.1,-0.2 + eps),
+//                PointS2(1.0, 0.1,-0.2),
+//
+//                PointS2(-0.3 + 0.5 * eps, -1.0, -1.0),
+//                PointS2(-1.0, -0.3, -1.0),
+//                PointS2(-1.0, -1.0, -0.3)
+//        )
+//
+//        disks = mutableListOf<DiskS2>(
+//                DiskS2(points[0], points[1], points[2]),
+//                DiskS2(points[3], points[4], points[5]),
+//                DiskS2(points[6], points[7], points[8]),
+//                DiskS2(points[9], points[10], points[11])
+//        )
+//
+//        orthos = mutableListOf<CPlaneS2>(
+//                join(disks[0], disks[1], disks[2]),
+//                join(disks[0], disks[1], disks[3]),
+//                join(disks[0], disks[2], disks[3]),
+//                join(disks[1], disks[2], disks[3])
+//        )
 
         jyFrame.setup()
     }
@@ -211,9 +223,22 @@ class SphericalSketch : PApplet() {
         if (showSphere) sphere(1.0f)
 
         // Draw the points
-        points.forEach { drawPointS2(it) }
-        disks.forEach { stroke(0); drawCircleS2(it) }
-        orthos.forEach{ stroke(255.0f, 0.0f, 0.0f); drawCircleS2(it.dualDiskS2) }
+        synchronized(constructionLock, {
+            construction.getGeometricObjects().forEach {
+                when (it) {
+                    is PointS2 -> drawPointS2(it)
+                    is DiskS2 -> {
+                        stroke(0)
+                        drawCircleS2(it)
+                    }
+                    is CPlaneS2 -> {
+                        stroke(255.0f, 0.0f, 0.0f)
+                        drawCircleS2(it.dualDiskS2)
+                    }
+                    else -> {}
+                }
+            }
+        })
 
         if (showBoundingBox) {
             noFill()
