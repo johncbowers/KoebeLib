@@ -98,7 +98,7 @@ class VoronoiSketch : PApplet() {
         val b3 = disk.normedBasis3
 
         // Compute the distance from the origin to the disk's Euclidean center and its euclidean radius
-        val centerDist = disk.centerOP3.toPointE3().distTo(PointE3.O).toFloat()
+        val centerDist = disk.centerE3.distTo(PointE3.O).toFloat()
         val diameter = disk.radiusE3.toFloat() * 2.0f
 
         // Rotate the e1, e2, e3 basis vectors to b1, b2, b3
@@ -111,7 +111,7 @@ class VoronoiSketch : PApplet() {
 
         // Translate the drawing frame up to the distance from the disk center
         // Here we need to check the orientation
-        if (disk.centerOP3.hw < 0)
+        if (disk.d < 0)
             translate(0.0f, 0.0f, centerDist)
         else
             translate(0.0f, 0.0f, -centerDist)
@@ -129,7 +129,7 @@ class VoronoiSketch : PApplet() {
 
         // Draw Euclidean Center
         if (showCircleCentersAndNormals) {
-            val ctr = disk.centerOP3.toPointE3()
+            val ctr = disk.centerE3
             pushMatrix()
             pushStyle()
 
