@@ -12,6 +12,8 @@ class DirectionE3 (v: VectorE3) {
 
     val v: VectorE3
 
+    val endPoint: PointE3 by lazy { PointE3(v.x, v.y, v.z) }
+
     init {
         val invd = 1 / v.norm()
         this.v = VectorE3(v.x * invd, v.y * invd, v.z * invd)
