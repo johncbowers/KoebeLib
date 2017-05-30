@@ -18,16 +18,16 @@ class Complex(val re:Double, val im:Double) {
     operator fun minus(z: Complex) = Complex(re - z.re, im - z.im)
     operator fun times(z: Complex) = Complex(re * z.re - im * z.im, re * z.im + im * z.re)
     operator fun unaryMinus() = Complex(-re, -im)
-    operator fun div(z: Complex) = this * z.reciprocal()
+    operator fun div(z: Complex) = this * z.reciprocal
     operator override fun equals(z: Any?) = z is Complex && (re == z.re && im == z.im)
 
     fun abs() = Math.hypot(re, im)
     fun absSq() = re*re + im*im
 
-    fun reciprocal(): Complex {
+    val reciprocal: Complex by lazy {
         val scale = 1.0 / (re*re + im*im)
-        return Complex(re * scale, -im * scale)
+        Complex(re * scale, -im * scale)
     }
 
-    fun conjugate() = Complex(re, -im)
+    val conjugate by lazy { Complex(re, -im) }
 }
