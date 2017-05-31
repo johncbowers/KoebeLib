@@ -36,6 +36,9 @@ class Construction {
     fun makeDiskS2(p1: INode<PointS2>, p2: INode<PointS2>, p3: INode<PointS2>) =
             ConstructionNode<DiskS2>(this, listOf(p1, p2, p3), ThreePointsToDiskS2())
 
+    fun makeCoaxialFamilyS2(disk1: INode<DiskS2>, disk2: INode<DiskS2>) =
+            ConstructionNode<CoaxialFamilyS2>(this, listOf(disk1, disk2), TwoPointsToCoaxialFamilyS2())
+
     fun makeCPlaneS2(disk1: INode<DiskS2>, disk2: INode<DiskS2>, disk3: INode<DiskS2>) =
             ConstructionNode<CPlaneS2>(this, listOf(disk1, disk2, disk3), ThreeDisksToCPlaneS2())
 }
@@ -51,9 +54,13 @@ interface INode<OutputType> {
     fun getOutput() : OutputType
 
     fun visit(objList: MutableList<Any>) {
-        visited = true
-        objList.add(getOutput() as Any)
-        outgoing.forEach { if (!it.visited && it.readyToOutputQ()) it.visit(objList) }
+        try {
+            objList.add(getOutput() as Any)
+            visited = true
+            outgoing.forEach { if (!it.visited && it.readyToOutputQ()) it.visit(objList) }
+        } catch (e: InvalidConstructionParametersException) {
+            e.printStackTrace()
+        }
     }
 
     fun readyToOutputQ(): Boolean

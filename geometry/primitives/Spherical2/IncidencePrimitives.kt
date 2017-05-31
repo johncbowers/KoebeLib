@@ -9,43 +9,49 @@ import geometry.primitives.*;
 /**
  * Join of two disks. This intersects their dual planes to obtain the Plücker coordinates of the dual line.
  */
-fun join(d1: DiskS2, d2: DiskS2) = CoaxialFamilyS2(
-        determinant(d1.a, d1.b, d2.a, d2.b),
-        determinant(d1.a, d1.c, d2.a, d2.c),
-        determinant(d1.a, d1.d, d2.a, d2.d),
-        determinant(d1.b, d1.c, d2.b, d2.c),
-        determinant(d1.b, d1.d, d2.b, d2.d),
-        determinant(d1.c, d1.d, d2.c, d2.d)
-)
+//fun join(d1: DiskS2, d2: DiskS2) = CoaxialFamilyS2(
+//        determinant(d1.a, d1.b, d2.a, d2.b), // p01
+//        determinant(d1.a, d1.c, d2.a, d2.c), // p02
+//        determinant(d1.a, d1.d, d2.a, d2.d), // p03
+//        determinant(d1.b, d1.c, d2.b, d2.c), // p12
+//        determinant(d1.b, d1.d, d2.b, d2.d), // p13
+//        determinant(d1.c, d1.d, d2.c, d2.d)  // p23
+//)
+
+// Direction of line:
+//  -p03: d1 a2 - a1 d2
+//  -p13: d1 b2 - b1 d2
+//  -p23: d1 c2 - c2 d2
+//
 
 /**
  * The meet of two disks. This joints their dual points to obtain the Plücker coordinates of the dual line.
  */
-fun meet(cp1: CPlaneS2, cp2: CPlaneS2) = CoaxialFamilyS2(
-        determinant(cp1.a, cp1.b, cp2.a, cp2.b),
-        determinant(cp1.a, cp1.c, cp2.a, cp2.c),
-        determinant(cp1.b, cp1.c, cp2.b, cp2.c),
-        determinant(cp1.a, cp1.d, cp2.a, cp2.d),
-        determinant(cp1.b, cp1.d, cp2.b, cp2.d),
-        determinant(cp1.c, cp1.d, cp2.c, cp2.d)
-)
+//fun meet(cp1: CPlaneS2, cp2: CPlaneS2) = CoaxialFamilyS2(
+//        determinant(cp1.a, cp1.b, cp2.a, cp2.b),
+//        determinant(cp1.a, cp1.c, cp2.a, cp2.c),
+//        determinant(cp1.b, cp1.c, cp2.b, cp2.c),
+//        determinant(cp1.a, cp1.d, cp2.a, cp2.d),
+//        determinant(cp1.b, cp1.d, cp2.b, cp2.d),
+//        determinant(cp1.c, cp1.d, cp2.c, cp2.d)
+//)
 
 /**
  * The join of a coaxial family with a disk d. (In the dual is the meet of a line with a plane
  */
-fun join(cf: CoaxialFamilyS2, disk: DiskS2) = CPlaneS2(
-        cf.a * disk.c - cf.b * disk.b + cf.d * disk.a,
-        cf.a * disk.d - cf.c * disk.b + cf.e * disk.a,
-        cf.b * disk.d - cf.c * disk.c + cf.f * disk.a,
-        cf.d * disk.d - cf.e * disk.c + cf.f * disk.b
-)
-
-fun meet(cf: CoaxialFamilyS2, cp: CPlaneS2) = DiskS2 (
-        cf.a * cp.c - cf.b * cp.b + cf.c * cp.a,
-        cf.a * cp.d - cf.d * cp.b + cf.e * cp.a,
-        cf.b * cp.d - cf.d * cp.c + cf.f * cp.a,
-        cf.c * cp.d - cf.e * cp.c + cf.f * cp.b
-)
+//fun join(cf: CoaxialFamilyS2, disk: DiskS2) = CPlaneS2(
+//        cf.a * disk.c - cf.b * disk.b + cf.d * disk.a,
+//        cf.a * disk.d - cf.c * disk.b + cf.e * disk.a,
+//        cf.b * disk.d - cf.c * disk.c + cf.f * disk.a,
+//        cf.d * disk.d - cf.e * disk.c + cf.f * disk.b
+//)
+//
+//fun meet(cf: CoaxialFamilyS2, cp: CPlaneS2) = DiskS2 (
+//        cf.a * cp.c - cf.b * cp.b + cf.c * cp.a,
+//        cf.a * cp.d - cf.d * cp.b + cf.e * cp.a,
+//        cf.b * cp.d - cf.d * cp.c + cf.f * cp.a,
+//        cf.c * cp.d - cf.e * cp.c + cf.f * cp.b
+//)
 
 fun join(disk1: DiskS2, disk2: DiskS2, disk3: DiskS2) = CPlaneS2(
         a = + determinant(

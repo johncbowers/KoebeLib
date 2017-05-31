@@ -76,7 +76,7 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     // Basis vectors for the disk
     val basis1 : VectorE3 by lazy { least_dominant(VectorE3(a, b, c)).vec.cross(VectorE3(a, b, c)) }
-    val basis2 : VectorE3 by lazy { VectorE3(a, b, c).cross(basis1) }
+    val basis2 : VectorE3 by lazy { basis1.cross(VectorE3(a, b, c)) }
     val basis3 : VectorE3 by lazy { VectorE3(a, b, c) }
 
     // Normalized basis vectors as DirectionE3

@@ -76,11 +76,10 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
         pi.setOut(PyOutputStream(this))
         pi.setErr(PyOutputStream(this))
 
-        clearButton.addActionListener { evt -> console.text = "" }
+        clearButton.addActionListener { _ -> console.text = "" }
 
         execButton.addActionListener {
-            evt ->
-            synchronized(sketch.constructionLock, { pi.exec(editor.text) })
+            _ -> synchronized(sketch.constructionLock, { pi.exec(editor.text) })
         }
 
         openButton.addActionListener {
@@ -151,6 +150,7 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
     fun setup() {
         // Set up the jython interpreter:
         pi.set("cons", sketch.construction)
+        pi.set("objs", sketch.objects)
     }
 }
 

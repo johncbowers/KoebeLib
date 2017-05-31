@@ -17,6 +17,7 @@ import geometry.primitives.Spherical2.join
 import geometry.construction.Construction
 
 import gui.JythonFrame
+import processing.core.PConstants
 
 import javax.swing.*
 
@@ -26,9 +27,7 @@ class SphericalSketch : PApplet() {
     internal var applyToCamera = true
 
     var construction = Construction()
-    //var points = mutableListOf<PointS2>()
-    //var disks = mutableListOf<DiskS2>()
-    //var orthos = mutableListOf<CPlaneS2>()
+    val objects = mutableListOf<Any>()
 
     val constructionLock = Any()
 
@@ -39,55 +38,26 @@ class SphericalSketch : PApplet() {
     internal var showEuclideanDisks = false
 
     internal val jyFrame = JythonFrame(this)
+
+    /**
+     * Sets up the sketches.main graphics settings for the PApplet window
+     */
+    override fun settings() {
+        size(600, 600, P3D)
+        smooth(4)
+    }
+
     /**
      * Sets up the drawing canvas.
      */
     override fun setup() {
+
         background(255)
+
         arcball = Arcball(this)
 
         jyFrame.setSize(800, 600)
-        jyFrame.show()
-
-//        val p1 = construction.makePointS2( 1.0, 0.3, 1.0)
-//        val p2 = construction.makePointS2(-0.1,-0.2, 1.0)
-//        val p3 = construction.makePointS2( 0.1,-0.2, 1.0)
-//
-//        val disk1 = construction.makeDiskS2(p1, p2, p3)
-
-//###
-//        points = mutableListOf<PointS2>(
-//                PointS2( 0.0, 0.3, 1.0),
-//                PointS2(-0.1,-0.2, 1.0),
-//                PointS2( 0.1,-0.2, 1.0),
-//
-//                PointS2( 0.0, 1.0 + 2.0 * eps,  0.3),
-//                PointS2( 0.1 + eps, 1.0, -0.2),
-//                PointS2(-0.1, 1.0, -0.2),
-//
-//                PointS2(1.0, 0.0, 0.3),
-//                PointS2(1.0,-0.1,-0.2 + eps),
-//                PointS2(1.0, 0.1,-0.2),
-//
-//                PointS2(-0.3 + 0.5 * eps, -1.0, -1.0),
-//                PointS2(-1.0, -0.3, -1.0),
-//                PointS2(-1.0, -1.0, -0.3)
-//        )
-//
-//        disks = mutableListOf<DiskS2>(
-//                DiskS2(points[0], points[1], points[2]),
-//                DiskS2(points[3], points[4], points[5]),
-//                DiskS2(points[6], points[7], points[8]),
-//                DiskS2(points[9], points[10], points[11])
-//        )
-//
-//        orthos = mutableListOf<CPlaneS2>(
-//                join(disks[0], disks[1], disks[2]),
-//                join(disks[0], disks[1], disks[3]),
-//                join(disks[0], disks[2], disks[3]),
-//                join(disks[1], disks[2], disks[3])
-//        )
-
+        jyFrame.setVisible(true)
         jyFrame.setup()
     }
 
@@ -142,7 +112,9 @@ class SphericalSketch : PApplet() {
             fill(0)
         else
             noFill()
-        ellipse(0.0f, 0.0f, diameter, diameter)
+
+        arc(0.0f, 0.0f, diameter, diameter, 0.0f, HALF_PI + QUARTER_PI)
+
         popStyle()
 
         popMatrix()
@@ -192,7 +164,21 @@ class SphericalSketch : PApplet() {
 
     }
 
+    fun drawCoaxialFamilyS2(cf: CoaxialFamilyS2) {
 
+    }
+
+    fun drawHyperbolicCoaxialFamilyS2(cf: CoaxialFamilyS2) {
+
+    }
+
+    fun drawParabolicCoaxialFamilyS2(cf: CoaxialFamilyS2) {
+
+    }
+
+    fun drawEllipticCoaxialFamilyS2(cf: CoaxialFamilyS2) {
+
+    }
     /**
      * The sketches.main drawing code, called in an infinite loop to continuously redraw the screen.
      */
@@ -224,21 +210,30 @@ class SphericalSketch : PApplet() {
 
         // Draw the points
         synchronized(constructionLock, {
-            construction.getGeometricObjects().forEach {
-                when (it) {
-                    is PointS2 -> drawPointS2(it)
-                    is DiskS2 -> {
-                        stroke(0)
-                        drawCircleS2(it)
+            listOf<MutableList<Any>>(
+                    construction.getGeometricObjects(),
+                    objects
+            ).forEach {
+                list ->
+                list.forEach {
+                    when (it) {
+                        is PointS2 -> drawPointS2(it)
+                        is DiskS2 -> {
+                            stroke(0)
+                            drawCircleS2(it)
+                        }
+                        is CPlaneS2 -> {
+                            stroke(255.0f, 0.0f, 0.0f)
+                            drawCircleS2(it.dualDiskS2)
+                        }
+                        else -> {
+                        }
                     }
-                    is CPlaneS2 -> {
-                        stroke(255.0f, 0.0f, 0.0f)
-                        drawCircleS2(it.dualDiskS2)
-                    }
-                    else -> {}
                 }
             }
         })
+
+
 
         if (showBoundingBox) {
             noFill()
@@ -249,19 +244,8 @@ class SphericalSketch : PApplet() {
         popStyle()
     }
 
-    var eps = 0.0
-
     fun update() {
 
-
-    }
-
-    /**
-     * Sets up the sketches.main graphics settings for the PApplet window
-     */
-    override fun settings() {
-        size(1024, 768, P3D)
-        smooth(4)
     }
 
     /*** Mouse Handling Code ***/
