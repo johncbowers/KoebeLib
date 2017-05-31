@@ -90,10 +90,10 @@ class SphericalSketch : PApplet() {
 
         // Rotate the e1, e2, e3 basis vectors to b1, b2, b3
         applyMatrix(
-            b1.v.x.toFloat(), b2.v.x.toFloat(), b3.v.x.toFloat(), 0.0f,
-            b1.v.y.toFloat(), b2.v.y.toFloat(), b3.v.y.toFloat(), 0.0f,
-            b1.v.z.toFloat(), b2.v.z.toFloat(), b3.v.z.toFloat(), 0.0f,
-            0.0f,             0.0f,             0.0f,             1.0f
+                b1.v.x.toFloat(), b2.v.x.toFloat(), b3.v.x.toFloat(), 0.0f,
+                b1.v.y.toFloat(), b2.v.y.toFloat(), b3.v.y.toFloat(), 0.0f,
+                b1.v.z.toFloat(), b2.v.z.toFloat(), b3.v.z.toFloat(), 0.0f,
+                0.0f,             0.0f,             0.0f,             1.0f
         )
 
         // Translate the drawing frame up to the distance from the disk center
@@ -113,7 +113,7 @@ class SphericalSketch : PApplet() {
         else
             noFill()
 
-        arc(0.0f, 0.0f, diameter, diameter, 0.0f, HALF_PI + QUARTER_PI)
+        ellipse(0.0f, 0.0f, diameter, diameter)
 
         popStyle()
 
@@ -147,6 +147,102 @@ class SphericalSketch : PApplet() {
 
         if (showDualPoint) {
             val dual = disk.dualPointOP3.toPointE3()
+
+            pushMatrix()
+            pushStyle()
+
+            noStroke()
+            lights()
+
+            fill(0.0f, 255.0f, 255.0f)
+            translate(dual.x.toFloat(), dual.y.toFloat(), dual.z.toFloat())
+            sphere(0.035f)
+
+            popStyle()
+            popMatrix()
+        }
+
+    }
+
+
+    fun drawCircleArcS2(arc: CircleArcS2) {
+
+        pushMatrix()
+
+        // Get the basis vectors for the disk
+        val b1 = arc.normedBasis1
+        val b2 = arc.normedBasis2
+        val b3 = arc.normedBasis3
+
+        // Compute the distance from the origin to the disk's Euclidean center and its euclidean radius
+        val centerDist = arc.centerE3.distTo(PointE3.O).toFloat()
+        val diameter = arc.radiusE3.toFloat() * 2.0f
+
+        // Rotate the e1, e2, e3 basis vectors to b1, b2, b3
+        applyMatrix(
+                b1.v.x.toFloat(), b2.v.x.toFloat(), b3.v.x.toFloat(), 0.0f,
+                b1.v.y.toFloat(), b2.v.y.toFloat(), b3.v.y.toFloat(), 0.0f,
+                b1.v.z.toFloat(), b2.v.z.toFloat(), b3.v.z.toFloat(), 0.0f,
+                0.0f,             0.0f,             0.0f,             1.0f
+        )
+
+        // Translate the drawing frame up to the distance from the disk center
+        // Here we need to check the orientation
+        if (arc.disk.d < 0)
+            translate(0.0f, 0.0f, centerDist)
+        else
+            translate(0.0f, 0.0f, -centerDist)
+
+        // Draw the disk
+        pushStyle()
+        noLights()
+        strokeWeight(0.01f)
+        //stroke(0.0f, 0.0f, 0.0f)
+        if (showEuclideanDisks)
+            fill(0)
+        else
+            noFill()
+
+        val srcVec = DirectionE3(arc.source.directionE3.endPoint - arc.disk.centerE3).v
+        val srcAngle = if (b2.v.dot(srcVec) >= 0) acos(b1.v.dot(srcVec).toFloat()) else TWO_PI - acos(b1.v.dot(srcVec).toFloat())
+
+        val targetVec = DirectionE3(arc.target.directionE3.endPoint - arc.disk.centerE3).v
+        val targetAngle = if (b2.v.dot(targetVec) >= 0) acos(b1.v.dot(targetVec).toFloat()) else TWO_PI - acos(b1.v.dot(targetVec).toFloat())
+
+        arc(0.0f, 0.0f, diameter, diameter, srcAngle, targetAngle)
+
+        popStyle()
+
+        popMatrix()
+
+        // Draw Euclidean Center
+        if (showCircleCentersAndNormals) {
+            val ctr = arc.centerE3
+            pushMatrix()
+            pushStyle()
+
+            noStroke()
+            lights()
+
+            pushMatrix()
+            fill(255.0f, 0.0f, 0.0f)
+            translate(ctr.x.toFloat(), ctr.y.toFloat(), ctr.z.toFloat())
+            sphere(0.035f)
+            popMatrix()
+
+            pushMatrix()
+            fill(0.0f, 255.0f, 0.0f)
+            val dir = arc.disk.directionE3//DirectionE3(VectorE3(disk.a, disk.b, disk.c))
+            translate(dir.v.x.toFloat(), dir.v.y.toFloat(), dir.v.z.toFloat())
+            sphere(0.035f)
+            popMatrix()
+
+            popStyle()
+            popMatrix()
+        }
+
+        if (showDualPoint) {
+            val dual = arc.disk.dualPointOP3.toPointE3()
 
             pushMatrix()
             pushStyle()
@@ -221,6 +317,10 @@ class SphericalSketch : PApplet() {
                         is DiskS2 -> {
                             stroke(0)
                             drawCircleS2(it)
+                        }
+                        is CircleArcS2 -> {
+                            stroke(0)
+                            drawCircleArcS2(it)
                         }
                         is CPlaneS2 -> {
                             stroke(255.0f, 0.0f, 0.0f)
