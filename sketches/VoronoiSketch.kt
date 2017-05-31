@@ -23,6 +23,7 @@ class VoronoiSketch : PApplet() {
     internal var circles = mutableListOf<DiskS2>()
     internal var ConvexHull = mutableListOf<Triangle>()
     internal var conicalCaps = mutableListOf<PointE3>()
+    internal var arcs = mutableListOf<CircleArcS2>()
 
     internal var showBoundingBox = true
     internal var showCircleCentersAndNormals = true
@@ -54,12 +55,18 @@ class VoronoiSketch : PApplet() {
 
 
         circles = mutableListOf<DiskS2>()
-        circles.add(DiskS2(points[0], points[1], points[2]))
-        circles.add(DiskS2(points[5], points[6], points[7]))
-        circles.add(DiskS2(points[3], points[4], points[11]))
-        circles.add(DiskS2(points[8], points[9], points[10]))
+        circles.add(DiskS2(points[0], points[1], points[2]))      // circles[0]
+        circles.add(DiskS2(points[5], points[6], points[7]))      // circles[1]
+        circles.add(DiskS2(points[3], points[4], points[11]))     // circles[2]
+        circles.add(DiskS2(points[8], points[9], points[10]))     // circles[3]
 
-        eps += 0.001
+
+        arcs = mutableListOf<CircleArcS2>()
+        arcs.add(CircleArcS2(points[0], points[2], circles[0]))
+        arcs.add(CircleArcS2(points[5], points[7], circles[1]))
+        arcs.add(CircleArcS2(points[3], points[11], circles[2]))
+        arcs.add(CircleArcS2(points[8], points[10], circles[3]))
+
 
 
         // compute the complex hull of conical cap points
@@ -193,6 +200,94 @@ class VoronoiSketch : PApplet() {
 
     }
 
+    fun drawCircularArc(arc: CircleArcS2) {
+
+        pushMatrix()
+
+        // Get the basis vectors for the disk
+        val b1 = arc.normedBasis1
+        val b2 = arc.normedBasis2
+        val b3 = arc.normedBasis3
+
+        // Compute the distance from the origin to the disk's Euclidean center and its euclidean radius
+        val centerDist = arc.centerE3.distTo(PointE3.O).toFloat()
+        val diameter = arc.radiusE3.toFloat() * 2.0f
+
+
+        //
+
+        val vSource = DirectionE3(arc.source.directionE3.endPoint - arc.disk.centerE3).v
+        val vTarget = DirectionE3(arc.target.directionE3.endPoint - arc.disk.centerE3).v
+
+
+
+        var sourceAngle = 0.0f;
+        var targetAngle = 0.0f;
+
+
+        if ( b2.v.dot( vSource ) > 0 )
+        {
+            sourceAngle = -acos( (b1.v.dot(vSource)).toFloat() ) + TWO_PI
+        }
+        else if ( b2.v.dot( vSource ) < 0 )
+        {
+            sourceAngle = acos( (b1.v.dot(vSource)).toFloat() ) + TWO_PI
+        }
+        else
+        {
+            sourceAngle = PI;
+        }
+
+
+        if ( b2.v.dot( vTarget ) > 0 )
+        {
+            targetAngle = -acos( (b1.v.dot(vTarget)).toFloat() ) + TWO_PI
+        }
+        else if ( b2.v.dot( vTarget ) < 0 )
+        {
+            targetAngle = acos( (b1.v.dot(vTarget)).toFloat() ) + TWO_PI
+        }
+        else
+        {
+            targetAngle = PI;
+        }
+
+
+        // Get correct angles of points
+        //val sourceAngle = (atan2(arc.source.y.toFloat() - arc.centerE3.y.toFloat() , arc.source.x.toFloat() - arc.centerE3.x.toFloat() )  )
+        //val targetAngle = (atan2(arc.target.y.toFloat() - arc.centerE3.y.toFloat() , arc.target.x.toFloat() - arc.centerE3.y.toFloat() )  )
+
+        // Rotate the e1, e2, e3 basis vectors to b1, b2, b3
+        applyMatrix(
+                b1.v.x.toFloat(), b2.v.x.toFloat(), b3.v.x.toFloat(), 0.0f,
+                b1.v.y.toFloat(), b2.v.y.toFloat(), b3.v.y.toFloat(), 0.0f,
+                b1.v.z.toFloat(), b2.v.z.toFloat(), b3.v.z.toFloat(), 0.0f,
+                0.0f,             0.0f,             0.0f,             1.0f
+        )
+
+        // Translate the drawing frame up to the distance from the disk center
+        // Here we need to check the orientation
+        if (arc.disk.d < 0)
+            translate(0.0f, 0.0f, centerDist)
+        else
+            translate(0.0f, 0.0f, -centerDist)
+
+
+        // Draw the arc
+        pushStyle()
+        noLights()
+        strokeWeight(0.01f)
+        stroke(100.0f, 100.0f, 100.0f)
+        fill(0)
+
+        arc(0.0f, 0.0f, diameter, diameter, sourceAngle, targetAngle);
+        popStyle()
+
+        popMatrix()
+
+
+    }
+
     /**
      * The sketches.main drawing code, called in an infinite loop to continuously redraw the screen.
      */
@@ -224,17 +319,15 @@ class VoronoiSketch : PApplet() {
 
         // Draw the points
         points.forEach { drawPointS2(it) }
-        circles.forEach { drawCircleS2(it) }
+        //circles.forEach { drawCircleS2(it) }
+        arcs.forEach { drawCircularArc(it) }
 
         // Draw the convex hull
-       // ConvexHull.forEach { drawConvexHull(it) }
-        drawConvexHull()
+       // drawConvexHull()
 
-       // if (showBoundingBox) {
-      //     noFill()
-       //     stroke(0)
-       //     box(2.0f)
-      //  }
+        // should change function to drawTriangle function, where within iterate over each triangle in convexhull
+        // drawTriangle(ConvexHull)
+        // -- within fn --> ConvexHull.forEach { drawTriangle(it) }
 
         popStyle()
     }

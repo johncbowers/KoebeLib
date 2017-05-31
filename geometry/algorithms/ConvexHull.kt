@@ -17,21 +17,23 @@ import java.util.ArrayList
 fun NaiveConvexHull(s: MutableList<PointE3>): MutableList<Triangle> {
 
     var ConvexHull: MutableList<Triangle> = mutableListOf()
-    var allSameSide = true;
+    var allNegative = true;
 
 
-    for ( i in 0..s.size - 3) {
-        for ( j in (i + 1).. s.size - 2) {
-            for ( k in (j + 1).. s.size - 1) {
+    for ( i in 0..s.size - 1) {
+        for ( j in 0.. s.size - 1) {
+            for ( k in 0.. s.size - 1) {
 
-                    // cant have any two points equal if i != j, i!=k ..
+                // as long as no two indices the same
+                if ( i != j && j != k && i !=k )  {
 
-                 allSameSide = allSameSide( s[i], s[j], s[k], s);
+                    allNegative = allNegative( s[i], s[j], s[k], s);
 
-                // if allSameSide is true, this triangle is on the convex hull
-                // add to array list of triangles
-                if (allSameSide) {
-                    ConvexHull.add( Triangle(s[i], s[j], s[k] ) )
+                    // if allSameSide is true, this triangle is on the convex hull
+                    // add to array list of triangles
+                    if (allNegative) {
+                        ConvexHull.add(Triangle(s[i], s[j], s[k]))
+                    }
                 }
             }
          }
@@ -60,7 +62,7 @@ fun determinant3(a: Double, b: Double, c: Double, d: Double, e: Double, f: Doubl
 // signed area of polygon between points A,B,C and current point
 
 // test whether determinant (signed area of a polgyon with 4 vertices) is positive
-fun detIsPositive(p1: PointE3, p2: PointE3, p3: PointE3, queryPoint: PointE3): Boolean {
+fun detIsNegative(p1: PointE3, p2: PointE3, p3: PointE3, queryPoint: PointE3): Boolean {
     var entry1 = p2.x - p1.x
     var entry2 = p2.y - p1.y
     var entry3 = p2.z - p1.z
@@ -76,38 +78,32 @@ fun detIsPositive(p1: PointE3, p2: PointE3, p3: PointE3, queryPoint: PointE3): B
 
     var det = determinant3(entry1, entry2, entry3, entry4, entry5, entry6, entry7, entry8, entry9)
 
-    return det > 0
+    return det < 0
 }
 
 
-fun allSameSide(p1: PointE3, p2: PointE3, p3: PointE3, queryPoints: MutableList<PointE3>): Boolean {
+fun allNegative(p1: PointE3, p2: PointE3, p3: PointE3, queryPoints: MutableList<PointE3>): Boolean {
     if (queryPoints.size <= 3) return true
 
-    var isPositive: Boolean
-    var allSameSide = true
-    var posArea = ArrayList<Boolean>()
+    var isNegative: Boolean
+    var allNegative = true
+    var negArea = ArrayList<Boolean>()
 
     for (queryPoint in queryPoints) {
         // check that query point is not equal to any of other points
         if (p1 !== queryPoint && p2 !== queryPoint && p3 !== queryPoint) {
 
-            isPositive = detIsPositive(p1, p2, p3, queryPoint)
+            isNegative = detIsNegative(p1, p2, p3, queryPoint)
 
-            // append to list of signed areas
-            posArea.add(isPositive)
+            //
+            if (!isNegative)
+            {
+                allNegative = false;
+            }
         }
     }
 
-    // loop through array to see if all positive or negative
-    // by comparing with first value in array
-    val firstAreaPos = posArea[0]
-
-    for (isPos in posArea) {
-        if (isPos != firstAreaPos) {
-            allSameSide = false
-        }
-    }
-    return allSameSide
+    return allNegative
 
 }
 
