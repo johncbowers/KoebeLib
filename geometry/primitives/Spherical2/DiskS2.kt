@@ -41,23 +41,23 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
             this(
                     a = + determinant(
                             p1.directionE3.v.y, p1.directionE3.v.z, 1.0,
-                            p2.directionE3.v.y, p2.directionE3.v.z, 1.0,
-                            p3.directionE3.v.y, p3.directionE3.v.z, 1.0
+                            p3.directionE3.v.y, p3.directionE3.v.z, 1.0,
+                            p2.directionE3.v.y, p2.directionE3.v.z, 1.0
                     ),
                     b = - determinant(
                             p1.directionE3.v.x, p1.directionE3.v.z, 1.0,
-                            p2.directionE3.v.x, p2.directionE3.v.z, 1.0,
-                            p3.directionE3.v.x, p3.directionE3.v.z, 1.0
+                            p3.directionE3.v.x, p3.directionE3.v.z, 1.0,
+                            p2.directionE3.v.x, p2.directionE3.v.z, 1.0
                     ),
                     c = + determinant(
                             p1.directionE3.v.x, p1.directionE3.v.y, 1.0,
-                            p2.directionE3.v.x, p2.directionE3.v.y, 1.0,
-                            p3.directionE3.v.x, p3.directionE3.v.y, 1.0
+                            p3.directionE3.v.x, p3.directionE3.v.y, 1.0,
+                            p2.directionE3.v.x, p2.directionE3.v.y, 1.0
                     ),
                     d = - determinant(
                             p1.directionE3.v.x, p1.directionE3.v.y, p1.directionE3.v.z,
-                            p2.directionE3.v.x, p2.directionE3.v.y, p2.directionE3.v.z,
-                            p3.directionE3.v.x, p3.directionE3.v.y, p3.directionE3.v.z
+                            p3.directionE3.v.x, p3.directionE3.v.y, p3.directionE3.v.z,
+                            p2.directionE3.v.x, p2.directionE3.v.y, p2.directionE3.v.z
                     )
             )
 
