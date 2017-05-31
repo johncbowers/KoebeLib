@@ -207,7 +207,9 @@ class SphericalSketch : PApplet() {
         val srcAngle = if (b2.v.dot(srcVec) >= 0) acos(b1.v.dot(srcVec).toFloat()) else TWO_PI - acos(b1.v.dot(srcVec).toFloat())
 
         val targetVec = DirectionE3(arc.target.directionE3.endPoint - arc.disk.centerE3).v
-        val targetAngle = if (b2.v.dot(targetVec) >= 0) acos(b1.v.dot(targetVec).toFloat()) else TWO_PI - acos(b1.v.dot(targetVec).toFloat())
+        var targetAngle = if (b2.v.dot(targetVec) >= 0) acos(b1.v.dot(targetVec).toFloat()) else TWO_PI - acos(b1.v.dot(targetVec).toFloat())
+
+        if (srcAngle > targetAngle) targetAngle += TWO_PI
 
         arc(0.0f, 0.0f, diameter, diameter, srcAngle, targetAngle)
 
