@@ -9,6 +9,7 @@ import org.python.core.*
 import org.python.util.PythonInterpreter
 
 import java.io.*
+import geometry.algorithms.*
 
 /**
  * Created by johnbowers on 5/27/17.
@@ -32,6 +33,7 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
     val console : JTextArea
 
     val pi : PythonInterpreter
+    val _ich = IncrementalConvexHullAlgorithms()
 
     init {
         // Build the GUI:

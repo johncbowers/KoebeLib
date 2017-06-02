@@ -66,25 +66,6 @@ open class SphericalSketch : PApplet() {
         jyFrame.setVisible(true)
         jyFrame.setup()
 
-        val p1 = PointOP3( 0.00, 0.00,  0.0, 1.0)
-        val p2 = PointOP3( 1.00, 1.00,  0.0, 1.0)
-        val p3 = PointOP3( 1.00, 0.00,  0.0, 1.0)
-        val p4 = PointOP3( 0.25, 0.25,  1.0, 1.0)
-        val p5 = PointOP3( 1.20,-0.20, -0.5, 1.0)
-
-        val ch = incrConvexHull<PointOP3>(
-                listOf<PointOP3>(p1, p2, p3, p4),
-                {t1: PointOP3, t2: PointOP3, t3: PointOP3, t4: PointOP3->orientationPointOP3(t1, t2, t3, t4)}
-        )
-        addPoint(ch, p5, {t1: PointOP3, t2: PointOP3, t3: PointOP3, t4: PointOP3->orientationPointOP3(t1, t2, t3, t4)})
-
-        objects.add(p1)
-        objects.add(p2)
-        objects.add(p3)
-        objects.add(p4)
-        objects.add(p5)
-
-        objects.add(ch)
     }
 
     fun drawPointE3(p: PointE3) {
