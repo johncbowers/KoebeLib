@@ -23,7 +23,13 @@ class CoaxialFamilyS2(
     enum class Type {PARABOLIC, ELLIPTIC, HYPERBOLIC}
 
     /* Properties */
-    val type by lazy { Type.HYPERBOLIC } // TODO
+    val type by lazy {
+        when (LineOP3(source.dualPointOP3, target.dualPointOP3).getIntersectionWithUnit2Sphere().size) {
+            2 -> Type.HYPERBOLIC
+            1 -> Type.PARABOLIC
+            else -> Type.ELLIPTIC
+        }
+    }
 
     val isHyperbolic by lazy { type == Type.HYPERBOLIC }
     val isParabolic by lazy { type == Type.PARABOLIC }
@@ -50,9 +56,11 @@ class CoaxialFamilyS2(
     }
 
     val generatorPoints: List<PointS2> by lazy {
-        val retList = mutableListOf<PointS2>()
+
         // TODO fix this in a bit
-        retList
+        LineOP3(source.dualPointOP3, target.dualPointOP3)
+                .getIntersectionWithUnit2Sphere().map { p->PointS2(p.toVectorE3()) }
+
     }
 
 }
