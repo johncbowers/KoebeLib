@@ -2,6 +2,7 @@ package geometry.primitives.Spherical2
 
 import geometry.primitives.determinant
 import geometry.primitives.OrientedProjective3.LineOP3
+import geometry.primitives.Euclidean3.VectorE3
 
 /**
  * Created by johnbowers on 5/22/17.
@@ -46,6 +47,12 @@ class CoaxialFamilyS2(
     val dualCoaxialFamilyS2 by lazy {
         // TODO
         // Get the polyhedral cap, convert to homogeneous coordinates, connect with a line
+    }
+
+    val generatorPoints: List<PointS2> by lazy {
+        val retList = mutableListOf<PointS2>()
+        // TODO fix this in a bit
+        retList
     }
 
 }

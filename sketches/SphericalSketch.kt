@@ -6,22 +6,24 @@ package sketches
 
 
 import com.processinghacks.arcball.Arcball
+import geometry.algorithms.IncrementalConvexHullAlgorithms
 import processing.core.PApplet
 
 import geometry.primitives.Euclidean3.*
 import geometry.primitives.Spherical2.*
-import geometry.primitives.isZero
-
-import geometry.primitives.Spherical2.join
-
+import geometry.primitives.OrientedProjective3.*
 import geometry.construction.Construction
+import geometry.algorithms.incrConvexHull
+import geometry.algorithms.orientationPointOP3
+import geometry.algorithms.addPoint
+import geometry.ds.dcel.*
 
 import gui.JythonFrame
 import processing.core.PConstants
 
 import javax.swing.*
 
-class SphericalSketch : PApplet() {
+open class SphericalSketch : PApplet() {
 
     internal var arcball: Arcball? = null
     internal var applyToCamera = true
@@ -31,11 +33,15 @@ class SphericalSketch : PApplet() {
 
     val constructionLock = Any()
 
-    internal var showBoundingBox = true
-    internal var showCircleCentersAndNormals = true
-    internal var showSphere = true
-    internal var showDualPoint = true
-    internal var showEuclideanDisks = false
+    val viewSettings = SphericalSketchViewSettings()
+
+    class SphericalSketchViewSettings() {
+        var showBoundingBox = true
+        var showCircleCentersAndNormals = true
+        var showSphere = true
+        var showDualPoint = true
+        var showEuclideanDisks = false
+    }
 
     internal val jyFrame = JythonFrame(this)
 
@@ -59,15 +65,34 @@ class SphericalSketch : PApplet() {
         jyFrame.setSize(800, 600)
         jyFrame.setVisible(true)
         jyFrame.setup()
+
+        val p1 = PointOP3( 0.00, 0.00,  0.0, 1.0)
+        val p2 = PointOP3( 1.00, 1.00,  0.0, 1.0)
+        val p3 = PointOP3( 1.00, 0.00,  0.0, 1.0)
+        val p4 = PointOP3( 0.25, 0.25,  1.0, 1.0)
+        val p5 = PointOP3( 1.20,-0.20, -0.5, 1.0)
+
+        val ch = incrConvexHull<PointOP3>(
+                listOf<PointOP3>(p1, p2, p3, p4),
+                {t1: PointOP3, t2: PointOP3, t3: PointOP3, t4: PointOP3->orientationPointOP3(t1, t2, t3, t4)}
+        )
+        addPoint(ch, p5, {t1: PointOP3, t2: PointOP3, t3: PointOP3, t4: PointOP3->orientationPointOP3(t1, t2, t3, t4)})
+
+        objects.add(p1)
+        objects.add(p2)
+        objects.add(p3)
+        objects.add(p4)
+        objects.add(p5)
+
+        objects.add(ch)
     }
 
-    fun drawPointS2(p: PointS2) {
+    fun drawPointE3(p: PointE3) {
 
         pushMatrix()
         pushStyle()
 
-        val d = p.directionE3
-        translate(d.v.x.toFloat(), d.v.y.toFloat(), d.v.z.toFloat())
+        translate(p.x.toFloat(), p.y.toFloat(), p.z.toFloat())
         fill(100.0f, 125.0f, 255.0f)
         sphere(0.035f)
 
@@ -108,7 +133,7 @@ class SphericalSketch : PApplet() {
         noLights()
         strokeWeight(0.01f)
         //stroke(0.0f, 0.0f, 0.0f)
-        if (showEuclideanDisks)
+        if (viewSettings.showEuclideanDisks)
             fill(0)
         else
             noFill()
@@ -120,7 +145,7 @@ class SphericalSketch : PApplet() {
         popMatrix()
 
         // Draw Euclidean Center
-        if (showCircleCentersAndNormals) {
+        if (viewSettings.showCircleCentersAndNormals) {
             val ctr = disk.centerE3
             pushMatrix()
             pushStyle()
@@ -145,7 +170,7 @@ class SphericalSketch : PApplet() {
             popMatrix()
         }
 
-        if (showDualPoint) {
+        if (viewSettings.showDualPoint) {
             val dual = disk.dualPointOP3.toPointE3()
 
             pushMatrix()
@@ -198,7 +223,7 @@ class SphericalSketch : PApplet() {
         noLights()
         strokeWeight(0.01f)
         //stroke(0.0f, 0.0f, 0.0f)
-        if (showEuclideanDisks)
+        if (viewSettings.showEuclideanDisks)
             fill(0)
         else
             noFill()
@@ -218,7 +243,7 @@ class SphericalSketch : PApplet() {
         popMatrix()
 
         // Draw Euclidean Center
-        if (showCircleCentersAndNormals) {
+        if (viewSettings.showCircleCentersAndNormals) {
             val ctr = arc.centerE3
             pushMatrix()
             pushStyle()
@@ -243,7 +268,7 @@ class SphericalSketch : PApplet() {
             popMatrix()
         }
 
-        if (showDualPoint) {
+        if (viewSettings.showDualPoint) {
             val dual = arc.disk.dualPointOP3.toPointE3()
 
             pushMatrix()
@@ -260,6 +285,36 @@ class SphericalSketch : PApplet() {
             popMatrix()
         }
 
+    }
+
+    fun drawDCEL(ch: DCEL<*,*,*>) {
+
+//        println("DRAWING DCEL")
+        ch.faces.forEach {
+            face ->
+//            println("\tFACE")
+            beginShape()
+            face.darts().forEach {
+                dart ->
+                val p = dart.origin?.data
+                when (p) {
+                    is PointOP3 -> {
+                        val ptE3 = p?.toPointE3()
+                        if (ptE3 !== null) {
+                            vertex(ptE3.x.toFloat(), ptE3.y.toFloat(), ptE3.z.toFloat())
+//                            println("\t\t${ptE3.x} ${ptE3.y} ${ptE3.z}")
+                        }
+                    }
+                    is PointE3 -> {
+                        vertex(p.x.toFloat(), p.y.toFloat(), p.z.toFloat())
+                    }
+                    else -> {}
+                }
+            }
+            endShape()
+//            println("\tENDFACE")
+        }
+//        println("DONE")
     }
 
     fun drawCoaxialFamilyS2(cf: CoaxialFamilyS2) {
@@ -296,7 +351,7 @@ class SphericalSketch : PApplet() {
         endCamera()
 
         translate(width / 2.0f, height / 2.0f, 0.0f)
-        scale(250.0f)
+        scale(200.0f)
         strokeWeight(0.005f)
 
         pushStyle()
@@ -304,7 +359,7 @@ class SphericalSketch : PApplet() {
         noStroke()
         lights()
 
-        if (showSphere) sphere(1.0f)
+        if (viewSettings.showSphere) sphere(1.0f)
 
         // Draw the points
         synchronized(constructionLock, {
@@ -315,7 +370,9 @@ class SphericalSketch : PApplet() {
                 list ->
                 list.forEach {
                     when (it) {
-                        is PointS2 -> drawPointS2(it)
+                        is PointS2 -> drawPointE3(it.directionE3.endPoint)
+                        is PointE3 -> drawPointE3(it)
+                        is PointOP3 -> if (!it.isIdeal()) drawPointE3(it.toPointE3())
                         is DiskS2 -> {
                             stroke(0)
                             drawCircleS2(it)
@@ -328,6 +385,11 @@ class SphericalSketch : PApplet() {
                             stroke(255.0f, 0.0f, 0.0f)
                             drawCircleS2(it.dualDiskS2)
                         }
+                        is DCEL<*,*,*> -> {
+                            stroke(0)
+                            fill(255.0f, 255.0f, 255.0f)
+                            drawDCEL(it)
+                        }
                         else -> {
                         }
                     }
@@ -337,7 +399,7 @@ class SphericalSketch : PApplet() {
 
 
 
-        if (showBoundingBox) {
+        if (viewSettings.showBoundingBox) {
             noFill()
             stroke(0)
             box(2.0f)

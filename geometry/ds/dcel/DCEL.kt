@@ -8,101 +8,86 @@ import geometry.ds.dcel.DCEL.Face
 /**
  * Created by John C. Bowers on 5/13/17.
  */
-public class DCEL<VertexData, EdgeData, FaceData> {
+class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
 
-    val verts = ArrayList<Vertex>()
-    val darts = ArrayList<Dart>()
-    val edges = ArrayList<Edge>()
-    val faces = ArrayList<Face>()
+    val verts = mutableListOf<Vertex>()
+    val darts = mutableListOf<Dart>()
+    val edges = mutableListOf<Edge>()
+    val faces = mutableListOf<Face>()
 
-    internal val _vertData = mutableMapOf<Vertex, VertexData?>()
-    internal val _edgeData = mutableMapOf<Edge, EdgeData?>()
-    internal val _faceData = mutableMapOf<Face, FaceData?>()
-
-    val outerFace: Face
+    val outerFace: Face?
 
     init {
-        outerFace = Face()
+        outerFace = if (outerFaceData != null) Face(data = outerFaceData) else null
     }
 
-    fun splitFace(e1: Dart, e2: Dart, newEdgeData: EdgeData? = null, newFaceData: FaceData? = null) {
-        if (e1.face != e2.face || e1.next == e2 || e1.prev == e2 || e1 == e2) return
-
-
-        // 1. Create a new face for the second half of the split.
-        val newFace = Face(data = newFaceData)
-
-        // 2. Create new darts for the splitting edge:
-        val e = Edge(data = newEdgeData)
-        val s1 = Dart(edge = e, origin = e2.origin, face = e1.face)
-        val s2 = Dart(edge = e, origin = e1.origin, face = newFace, twin = s1)
-
-        // 3. Insert your new darts into the cyclic lists:
-        e2.prev?.makeNext(s1)
-        e1.prev?.makeNext(s2)
-        s1.makeNext(e1)
-        s2.makeNext(e2)
-
-        // 4. Make sure that all the darts point to the right face
-        e2.cycle().forEach { it.face = newFace }
-
-        // 5. Make sure that each face correctly refers to an incident half-edge
-        newFace.aDart = e2
-        e1.face?.aDart = e1
-    }
-
-    inner class Vertex(var aDart: Dart? = null, data : VertexData? = null) {
+    inner class Vertex(var aDart: Dart? = null, var data : VertexData) {
 
         init {
             verts.add(this)
-            _vertData.put(this, data)
         }
 
         /**
          * Returns a counter-clockwise list of the outgoing darts from an arbitrary starting point.
          */
-        fun edges(): ArrayList<Edge?> {
-            var edges = ArrayList<Edge?>()
-            var curDart = aDart
-            if (curDart == null || curDart.prev == null) return edges
-            do {
-                edges.add(curDart?.edge)
-                curDart = curDart!!.prev!!.twin
-            } while (curDart !== aDart && curDart != null && curDart.prev != null)
-            return edges
+        fun edges(): List<Edge> {
+            return outDarts().map {
+                val edge = it.edge
+                if (edge != null) edge else throw MalformedDCELException("Dart has null edge.")
+            }
         }
 
         /**
          * Returns a counter-clockwise list of the outgoing darts from an arbitrary starting point.
          */
-        fun outDarts(): ArrayList<Dart?> {
-            var darts = ArrayList<Dart?>()
-            var curDart = aDart
-            if (curDart == null || curDart.prev == null) return darts
-            do {
-                darts.add(curDart)
-                curDart = curDart!!.prev!!.twin
-            } while (curDart !== aDart && curDart != null && curDart.prev != null)
-            return darts
+        fun outDarts(): List<Dart> {
+            val darts = mutableListOf<Dart>()
+
+            tailrec fun collectOutDarts(curr: Dart, orig: Dart) {
+                darts.add(curr)
+                val next = curr.prev?.twin
+                if (next == null) {
+                    throw MalformedDCELException("A dart has a null twin pointer.")
+                } else if (next != orig) {
+                    collectOutDarts(next, orig)
+                }
+            }
+
+            val startDart = this.aDart
+
+            if (startDart != null) {
+                collectOutDarts(startDart, startDart)
+                return darts
+            }  else {
+                throw MalformedDCELException("Vertex has a null outgoing dart (.aDart).")
+            }
         }
 
         /**
          * Returns a counter-clockwise list of the incoming darts from an arbitrary starting point.
          */
-        fun inDarts(): ArrayList<Dart?> {
-            var darts = ArrayList<Dart?>()
-            var curDart = aDart
-            if (curDart == null || curDart.prev == null || curDart.twin == null) return darts
-            do {
-                darts.add(curDart!!.twin)
-                curDart = curDart!!.prev!!.twin
-            } while (curDart !== aDart && curDart != null && curDart.prev != null && curDart.twin != null)
-            return darts
-        }
+        fun inDarts(): List<Dart> {
+            val darts = mutableListOf<Dart>()
 
-        var data: VertexData?
-            get() = _vertData.get(this)
-            set(value) { _vertData.put(this, value) }
+            tailrec fun collectInDarts(curr: Dart, orig: Dart) {
+                darts.add(curr)
+                val next = curr.twin?.prev
+                if (next == null) {
+                    throw MalformedDCELException("A dart has a null prev pointer.")
+                } else if (next != orig) {
+                    collectInDarts(next, orig)
+                }
+            }
+
+            val startDart = this.aDart?.twin
+
+            if (startDart != null) {
+                collectInDarts(startDart, startDart)
+                return darts
+            }  else {
+                throw MalformedDCELException("Vertex has a null outgoing dart or its outgoing dart has a null twin.")
+            }
+        }
     }
 
     inner class Dart(
@@ -117,6 +102,7 @@ public class DCEL<VertexData, EdgeData, FaceData> {
     {
         init {
             darts.add(this)
+
             edge?.aDart = this
             origin?.aDart = this
             face?.aDart = this
@@ -126,8 +112,7 @@ public class DCEL<VertexData, EdgeData, FaceData> {
             twin?.twin = this
         }
 
-        val dest: Vertex?
-            get() = twin?.origin
+        val dest: Vertex? get() = twin?.origin
 
         /**
          * Convenience method to make this the prev of newNext (sets two pointers)
@@ -156,70 +141,57 @@ public class DCEL<VertexData, EdgeData, FaceData> {
         /**
          * Get the cycle of edges starting from this (follows next pointers)
          */
-        fun cycle(): ArrayList<Dart> {
-            var darts = ArrayList<Dart>()
-            var curDart: Dart? = this
-            if (curDart != null) {
-                do {
-                    darts.add(curDart as Dart)
-                    curDart = curDart.next
-                } while (curDart != this && curDart != null)
+        fun cycle(): List<Dart> {
+            val cycle = mutableListOf<Dart>()
+
+            tailrec fun collectCycle(curr: Dart, orig: Dart) {
+                cycle.add(curr)
+                val next = curr.next
+                if (next == null) {
+                    throw MalformedDCELException("A dart has a null next pointer.")
+                } else if (next != orig) {
+                    collectCycle(next, orig)
+                }
             }
-            return darts
+
+            collectCycle(this, this)
+            return cycle
         }
 
         /**
          * Get the cycle of edges starting from this (follows prev pointers)
          */
-        fun reverse_cycle(): ArrayList<Dart> {
-            var darts = ArrayList<Dart>()
-            var curDart: Dart? = this
-            if (curDart != null) {
-                do {
-                    darts.add(curDart as Dart)
-                    curDart = curDart.prev
-                } while (curDart != this && curDart != null)
-            }
-            return darts
+        fun reverse_cycle(): List<Dart> {
+            return cycle().reversed()
         }
     }
 
-    inner class Edge(var aDart: Dart? = null, data: EdgeData? = null) {
+    inner class Edge(var aDart: Dart? = null, var data: EdgeData) {
 
         init {
             edges.add(this)
-            _edgeData.put(this, data)
         }
 
-        var data: EdgeData?
-            get() = _edgeData.get(this)
-            set(value) { _edgeData.put(this, value) }
     }
 
-    inner class Face(var aDart: Dart? = null, data: FaceData? = null) {
+    inner class Face(var aDart: Dart? = null, var data: FaceData) {
+
         init {
             faces.add(this)
-            _faceData.put(this, data)
         }
 
         /**
          * @return The cycle of dart incident this face.
          */
-        fun darts(): ArrayList<Dart> {
-            var darts = ArrayList<Dart>()
-            var curDart = aDart
-            if (curDart != null) {
-                do {
-                    darts.add(curDart as Dart)
-                    curDart = curDart.next
-                } while (curDart != aDart && curDart != null)
-            }
-            return darts
-        }
+        fun darts(): List<Dart> {
+            val retDart = aDart
 
-        var data: FaceData?
-            get() = _faceData.get(this)
-            set(value) { _faceData.put(this, value) }
+            if (retDart != null)
+                return retDart.cycle()
+            else
+                throw MalformedDCELException("Face.aDart is null")
+        }
     }
 }
 
+class MalformedDCELException(msg: String) : Exception(msg)

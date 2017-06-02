@@ -149,6 +149,7 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
 
     fun setup() {
         // Set up the jython interpreter:
+        pi.set("view", sketch.viewSettings)
         pi.set("cons", sketch.construction)
         pi.set("objs", sketch.objects)
     }
