@@ -108,33 +108,84 @@ internal fun <PointT> addPoint(
         orientation: (PointT, PointT, PointT, PointT) -> Double
 ) {
 
-    val isFaceVisible = mutableMapOf<CHFace<PointT>, Boolean>()
-    val isDartVisible = mutableMapOf<CHDart<PointT>, Boolean>()
+    // First let's filter the faces to obtain a set of all faces that are visible from the
+    // insertion point p
+    val visibleFaces = ch.faces.filter { isVisible(it, p, orientation) }.toMutableSet()
 
-    ch.faces.forEach { face -> isFaceVisible.put(face, isVisible(face, p, orientation)) }
-    ch.darts.forEach { dart -> isDartVisible.put(dart, isFaceVisible[dart.face] as Boolean)}
+    // Next, check if there are any visible faces, because if there are not, then this
+    // point is already inside the convex hull, so there is nothing left to do--just return
+    if (visibleFaces.size == 0) {
+        return
+    }
 
-    val shadowBoundary = mutableListOf<CHDart<PointT>>()
+    // Otherwise, we need to get the set of shadowFaces as well as the darts that are visible and in shadow.
+    val shadowFaces = ch.faces.filter { !isVisible(it, p, orientation) }.toMutableSet()
+    val visibleDarts = ch.darts.filter { visibleFaces.contains(it.face) }.toMutableSet()
+    val shadowDarts = ch.darts.filter { shadowFaces.contains(it.face) }.toMutableSet()
 
-    // Delete all visibile vertices, edges, darts, and faces, and add any
-    // shadow darts to the shadow boundary list:
-    ch.faces.removeIf { face -> isFaceVisible[face] as Boolean }
+    // Any visible objects are not part of the new convex hull, so they need to be removed:
+    ch.faces.removeIf { visibleFaces.contains(it) }
     ch.verts.removeIf {
         vertex ->
-        // Get all the faces next to the vertex and check if all faces are visible
-        // If so, this vertex must be removed
+        // If this vertex is not incident to a shadowed face then all its incident faces are visible, so it
+        // must be removed:
         vertex  .outDarts()
                 .map { dart -> dart.face }
-                .filter { face -> !(isFaceVisible[face] as Boolean) }
+                .filter { face -> shadowFaces.contains(face) }
                 .size == 0
     }
-    ch.darts.removeIf { dart -> isDartVisible[dart] as Boolean }
-    ch.edges.removeIf { edge -> (isDartVisible[edge.aDart] as Boolean) && (isDartVisible[edge.aDart?.twin] as Boolean)}
+    ch.darts.removeIf { dart -> visibleDarts.contains(dart) }
+    ch.edges.removeIf { edge -> visibleDarts.contains(edge.aDart) && visibleDarts.contains(edge.aDart?.twin)}
 
-    val shadowEdges = ch.edges.filter {
-        edge ->
-        isDartVisible[edge?.aDart] as Boolean || isDartVisible[edge?.aDart?.twin] as Boolean
+    // Next, let's collect the darts that are on the boundary, meaning each shadow dart whose twin is a visible dart.
+    val shadowBoundaryDarts = shadowDarts.filter { dart -> visibleDarts.contains(dart.twin) }
+
+    val v = ch.Vertex(data = p)
+
+    // For each shadow boundary dart, we now create a triangle connected to it via its twin with the new vertex v.
+    // Note, however, that this loop is not able to create the necessary edges for the new darts to/from v, nor
+    // create the twins. That has to be completed in a final step.
+    shadowBoundaryDarts.forEach {
+        dart ->
+        // Create triangle abc where ab is the twin of dart and c is vertex v
+        val a = dart.dest
+        val b = dart.origin
+        val c = v
+
+        val abc = ch.Face(data = Unit)
+
+        val eab = dart.edge
+
+        val dab = ch.Dart(edge = eab, origin = a, face = abc, twin = dart)
+        val dbc = ch.Dart(origin = b, face = abc, prev = dab)
+        val dca = ch.Dart(origin = c, face = abc, prev = dbc, next = dab)
     }
+
+    tailrec fun nextShadowDart(dart: CHDart<PointT>?): CHDart<PointT>? {
+        if (dart == null) return null
+        else if (shadowBoundaryDarts.contains(dart.prev)) return dart.prev
+        else return nextShadowDart(dart.prev?.twin)
+    }
+
+    val start = shadowBoundaryDarts[0]
+    var curr = start
+    do {
+        val next = nextShadowDart(curr)
+
+        if (next == null) {
+            throw MalformedDCELException("DCEL has not been constructed properly.")
+        }
+
+        val edge = ch.Edge(data = Unit)
+
+        curr.twin?.next?.edge = edge
+        next.twin?.prev?.edge = edge
+        edge.aDart = curr.twin?.next
+
+        curr.twin?.next?.makeTwin(next.twin?.prev)
+
+        curr = next
+    } while (curr != start)
 
     // TODO Finish from here.
 }

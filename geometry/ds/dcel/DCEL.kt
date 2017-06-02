@@ -91,7 +91,7 @@ class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
     }
 
     inner class Dart(
-                     var edge: Edge,
+                     var edge: Edge? = null,
                      var origin: Vertex? = null,
                      var face: Face? = null,
 
@@ -125,9 +125,10 @@ class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
         /**
          * Convenience method to make this a twin of newTwin (sets two pointers)
          */
-        fun makeTwin(newTwin: Dart) {
+        fun makeTwin(newTwin: Dart?) {
             twin = newTwin
-            newTwin.twin = this
+            if (newTwin != null)
+                newTwin.twin = this
         }
 
         /**
