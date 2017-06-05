@@ -34,10 +34,6 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
      * Circle through points p1, p2, p3
      */
     constructor (p1: PointS2, p2: PointS2, p3: PointS2) :
-            // OLD R3 View:
-            // this((p2.directionE3-p1.directionE3).cross(p3.directionE3-p1.directionE3).v,
-            //        (-p1.directionE3).dot((p2.directionE3-p1.directionE3).cross(p3.directionE3-p1.directionE3)))
-            // Same thing, but treating p1, p2, p3 as homogeneous equations (i.e. lines through the origin in R4):
             this(
                     a = + determinant(
                             p1.directionE3.v.y, p1.directionE3.v.z, 1.0,
@@ -119,5 +115,22 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
         return -ip12 / (Math.sqrt(ip11) * Math.sqrt(ip22))
     }
 
+    /**
+     * @return The CPlaneS2 containing the points of equal inversive distance between this and disk.
+     */
+    fun bisectorWith(disk: DiskS2): CPlaneS2 {
+        // First we normalize our vectors with respect to the Minkowski 3,1 inner product:
+        val minNorm1 = inner_product31(a, b, c, d, a, b, c, d)
+        val minNorm2 = inner_product31(disk.a, disk.b, disk.c, disk.d, disk.a, disk.b, disk.c, disk.d)
 
+        // Now find the coefficients (a, b, c, d) of the plane of equal Minkowski 3,1 inner product from
+        // the normalized vectors of this and disk:
+        val a = disk.a / minNorm2 - this.a / minNorm1
+        val b = disk.b / minNorm2 - this.b / minNorm1
+        val c = disk.c / minNorm2 - this.c / minNorm1
+        val d = this.d / minNorm1 - disk.d / minNorm2
+
+        // Return the resulting bisector plane
+        return CPlaneS2(a, b, c, d)
+    }
 }

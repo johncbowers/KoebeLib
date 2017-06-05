@@ -26,6 +26,15 @@ class LineOP3(
             determinant(p1.hy, p1.hw, p2.hy, p2.hw), // p13
             determinant(p1.hz, p1.hw, p2.hz, p2.hw)  // p23
     )
+
+    constructor(p1: PlaneOP3, p2: PlaneOP3): this(
+            +determinant(p1.Z, p1.W, p2.Z, p2.W), // p01
+            -determinant(p1.Y, p1.W, p2.Y, p2.W), // p02
+            +determinant(p1.Y, p1.Z, p2.Y, p2.Z), // p03
+            +determinant(p1.X, p1.W, p2.X, p2.W), // p12
+            -determinant(p1.X, p1.Z, p2.X, p2.Z), // p13
+            +determinant(p1.X, p1.Y, p2.X, p2.Y) // p23
+    )
     
     val p01 = a
     val p02 = b
@@ -33,12 +42,14 @@ class LineOP3(
     val p12 = d
     val p13 = e 
     val p23 = f
+
+    val dualLineOP3: LineOP3 by lazy { LineOP3(p23, -p13, p12, p03, -p02, p01) }
     
     fun getIntersectionWithUnit2Sphere(): List<PointE3> {
 
         // TODO Decide if this should be done with homogeneous coordinates
-        val v = VectorE3( p03, p13, p23)
-        val m = VectorE3( p12, -p02,  p01)
+        val v = VectorE3( -p03, -p13, -p23)
+        val m = VectorE3( -p12, p02,  -p01)
         
         // TODO (Sarah) Compute the intersections of this line with the 2-sphere: 
 
@@ -78,7 +89,6 @@ class LineOP3(
         // determine whether line intersects sphere at 0, 1, or 2 points
         val rad = Math.sqrt( 4*Math.pow(p.dot(v), 2.0) - 4.0*(p.dot(p)- 1)*(v.dot(v)) )
 
-
         // if intersects at one point (line is tangent to the unit sphere)
         if (isZero(rad)) {
 
@@ -105,11 +115,22 @@ class LineOP3(
         else {
             return listOf<PointE3>()
         }
-
-
-
-
-
     }
     
 }
+//
+//fun join(p1: PointOP3, p2: PointOP3) = LineOP3(
+//        determinant(p1.hx, p1.hy, p2.hx, p2.hy),
+//        determinant(p1.hx, p1.hz, p2.hx, p2.hz),
+//        determinant(p1.hy, p1.hz, p2.hy, p2.hz),
+//        determinant(p1.hx, p1.hw, p2.hx, p2.hw),
+//        determinant(p1.hy, p1.hw, p2.hy, p2.hw),
+//        determinant(p1.hz, p1.hw, p2.hz, p2.hw))
+//
+//fun meet(p1: PlaneOP3, p2: PlaneOP3) = LineOP3(
+//        determinant(p1.X, p1.Y, p2.X, p2.Y), // p01
+//        determinant(p1.X, p1.Z, p2.X, p2.Z), // p02
+//        determinant(p1.X, p1.W, p2.X, p2.W), // p03
+//        determinant(p1.Y, p1.Z, p2.Y, p2.Z), // p12
+//        determinant(p1.Y, p1.W, p2.Y, p2.W), // p13
+//        determinant(p1.Z, p1.W, p2.Z, p2.W))  // p23

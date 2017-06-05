@@ -2,6 +2,7 @@ package geometry.primitives.Spherical2
 
 import geometry.primitives.determinant
 import geometry.primitives.OrientedProjective3.LineOP3
+import geometry.primitives.OrientedProjective3.PointOP3
 import geometry.primitives.Euclidean3.VectorE3
 
 /**
@@ -56,11 +57,10 @@ class CoaxialFamilyS2(
     }
 
     val generatorPoints: List<PointS2> by lazy {
-
-        // TODO fix this in a bit
-        LineOP3(source.dualPointOP3, target.dualPointOP3)
-                .getIntersectionWithUnit2Sphere().map { p->PointS2(p.toVectorE3()) }
-
+        val line =
+                if (isElliptic) LineOP3(source.dualPlaneOP3, target.dualPlaneOP3)
+                else LineOP3(source.dualPointOP3, target.dualPointOP3)
+        line.getIntersectionWithUnit2Sphere().map { p -> PointS2(p.toVectorE3()) }
     }
-
 }
+

@@ -72,9 +72,6 @@ fun join(disk1: DiskS2, disk2: DiskS2, disk3: DiskS2) = CPlaneS2(
                 disk3.a, disk3.b, disk3.c)
 )
 
-// TODO Ask Sprague if neural net can have signal input and combinatorial output
-
-
 fun meet(plane1: CPlaneS2, plane2: CPlaneS2, plane3: CPlaneS2) = DiskS2(
         a = + determinant(plane1.b, plane1.c, plane1.d,
                 plane2.b, plane2.c, plane2.d,

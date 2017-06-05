@@ -20,8 +20,28 @@ import geometry.ds.dcel.*
 
 import gui.JythonFrame
 import processing.core.PConstants
+import processing.opengl.PGraphicsOpenGL
 
 import javax.swing.*
+
+class Color(val x: Float, val y: Float, val z: Float, val a: Float = 255.0f) {
+    companion object {
+        val noColor = Color(-1.0f, -1.0f, -1.0f, -1.0f)
+    }
+    override fun equals(c: Any?) = (c is Color && c.x == x && c.y == y && c.z == z && c.a == a)
+}
+class Style(
+        val stroke: Color?,
+        val fill: Color?
+) {
+    fun set(p: PApplet) {
+        if (stroke != null && stroke != Color.noColor) p.stroke(stroke.x, stroke.y, stroke.z, stroke.a)
+        else if (stroke == Color.noColor) p.noStroke()
+
+        if (fill != null && fill != Color.noColor) p.stroke(fill.x, fill.y, fill.z, fill.a)
+        else if (fill == Color.noColor) p.noFill()
+    }
+}
 
 open class SphericalSketch : PApplet() {
 
@@ -30,6 +50,7 @@ open class SphericalSketch : PApplet() {
 
     var construction = Construction()
     val objects = mutableListOf<Any>()
+    val objectStyles = mutableMapOf<Any, Style>()
 
     val constructionLock = Any()
 
@@ -71,13 +92,8 @@ open class SphericalSketch : PApplet() {
     fun drawPointE3(p: PointE3) {
 
         pushMatrix()
-        pushStyle()
-
         translate(p.x.toFloat(), p.y.toFloat(), p.z.toFloat())
-        fill(100.0f, 125.0f, 255.0f)
         sphere(0.035f)
-
-        popStyle()
         popMatrix()
     }
 
@@ -350,29 +366,62 @@ open class SphericalSketch : PApplet() {
             ).forEach {
                 list ->
                 list.forEach {
+                    val style = objectStyles[it]
                     when (it) {
-                        is PointS2 -> drawPointE3(it.directionE3.endPoint)
-                        is PointE3 -> drawPointE3(it)
-                        is PointOP3 -> if (!it.isIdeal()) drawPointE3(it.toPointE3())
+                        is PointS2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                noStroke()
+                                fill(100.0f, 125.0f, 255.0f)
+                            }
+                            drawPointE3(it.directionE3.endPoint)
+                        }
+                        is PointE3 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                noStroke()
+                                fill(100.0f, 125.0f, 255.0f)
+                            }
+                            drawPointE3(it)
+                        }
+                        is PointOP3 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                noStroke()
+                                fill(100.0f, 125.0f, 255.0f)
+                            }
+                            if (!it.isIdeal()) drawPointE3(it.toPointE3())
+                        }
                         is DiskS2 -> {
-                            stroke(0)
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0)
+                            }
                             drawCircleS2(it)
                         }
                         is CircleArcS2 -> {
-                            stroke(0)
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0)
+                            }
                             drawCircleArcS2(it)
                         }
                         is CPlaneS2 -> {
-                            stroke(255.0f, 0.0f, 0.0f)
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(255.0f, 0.0f, 0.0f)
+                            }
                             drawCircleS2(it.dualDiskS2)
                         }
                         is DCEL<*,*,*> -> {
-                            stroke(0)
-                            fill(255.0f, 255.0f, 255.0f)
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0)
+                                fill(255.0f, 255.0f, 255.0f)
+                            }
                             drawDCEL(it)
                         }
-                        else -> {
-                        }
+                        else -> {}
                     }
                 }
             }
