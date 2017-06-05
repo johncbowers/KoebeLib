@@ -25,4 +25,7 @@ class DirectionE3 (vec: VectorE3) {
 
     fun cross(d: DirectionE3) = DirectionE3(this.v.cross(d.v))
 
+    override fun equals(d: Any?) = this === d ||
+            d is DirectionE3 && this.v == d.v
+
 }

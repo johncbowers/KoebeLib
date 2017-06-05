@@ -3,6 +3,7 @@ package geometry.algorithms
 import geometry.ds.dcel.*
 import geometry.primitives.Euclidean3.*
 import geometry.primitives.OrientedProjective3.*
+import geometry.primitives.Spherical2.*
 import geometry.primitives.determinant
 
 /**
@@ -28,6 +29,7 @@ class IncrementalConvexHullAlgorithms() {
     /* Functions for computing the convex hull in different geometries */
     fun computeOP3(points: List<PointOP3>): ConvexHull<PointOP3> = incrConvexHull(points, ::orientationPointOP3)
     fun computeE3(points: List<PointE3>): ConvexHull<PointE3> = incrConvexHull(points, ::orientationPointE3)
+    fun computeDiskS2(disks: List<DiskS2>): ConvexHull<DiskS2> = incrConvexHull(disks, ::orientationDiskS2)
 
     /* Calling the addPoint function directly */
     fun addPointOP3(ch: ConvexHull<PointOP3>, p: PointOP3) {
@@ -295,3 +297,5 @@ fun orientationPointOP3(p1: PointOP3, p2: PointOP3, p3: PointOP3, p4: PointOP3) 
             p4.hx, p4.hy, p4.hz, p4.hw
     )
 
+fun orientationDiskS2(d1: DiskS2, d2: DiskS2, d3: DiskS2, d4: DiskS2) =
+        orientationPointOP3(d1.dualPointOP3, d2.dualPointOP3, d3.dualPointOP3, d4.dualPointOP3)

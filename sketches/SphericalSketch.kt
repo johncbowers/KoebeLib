@@ -38,7 +38,7 @@ class Style(
         if (stroke != null && stroke != Color.noColor) p.stroke(stroke.x, stroke.y, stroke.z, stroke.a)
         else if (stroke == Color.noColor) p.noStroke()
 
-        if (fill != null && fill != Color.noColor) p.stroke(fill.x, fill.y, fill.z, fill.a)
+        if (fill != null && fill != Color.noColor) p.fill(fill.x, fill.y, fill.z, fill.a)
         else if (fill == Color.noColor) p.noFill()
     }
 }
@@ -304,6 +304,12 @@ open class SphericalSketch : PApplet() {
                     }
                     is PointE3 -> {
                         vertex(p.x.toFloat(), p.y.toFloat(), p.z.toFloat())
+                    }
+                    is DiskS2 -> {
+                        val ptE3 = p?.dualPointOP3?.toPointE3()
+                        if (ptE3 !== null) {
+                            vertex(ptE3.x.toFloat(), ptE3.y.toFloat(), ptE3.z.toFloat())
+                        }
                     }
                     else -> {}
                 }

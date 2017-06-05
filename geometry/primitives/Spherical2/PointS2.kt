@@ -40,8 +40,7 @@ class PointS2(
             this === p ||
             p != null &&
             p is PointS2 &&
-            are_dependent(x, y, z, p.x, p.y, p.z) &&
-            inner_product(x, y, z, p.x, p.y, p.z) > 0
+            this.directionE3 == p.directionE3
 
     /* Conversions */
 

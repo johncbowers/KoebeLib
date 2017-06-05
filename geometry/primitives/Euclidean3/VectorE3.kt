@@ -1,6 +1,9 @@
 package geometry.primitives.Euclidean3
 
+import geometry.primitives.Spherical2.PointS2
+import geometry.primitives.are_dependent
 import geometry.primitives.determinant
+import geometry.primitives.inner_product
 
 class VectorE3(val x: Double, val y: Double, val z: Double) {
 
@@ -36,6 +39,12 @@ class VectorE3(val x: Double, val y: Double, val z: Double) {
     )
 
     fun toPointE3() = PointE3(x, y, z)
+
+    operator override fun equals(p:Any?) =
+            this === p || p != null &&
+                    p is VectorE3 &&
+                    are_dependent(x, y, z, p.x, p.y, p.z) &&
+                    inner_product(x, y, z, p.x, p.y, p.z) > 0
 }
 
 /*** Extensions for interacting with Vectors ***/
