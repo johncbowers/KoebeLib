@@ -1,6 +1,7 @@
 package geometry.primitives.Spherical2
 
 import geometry.primitives.OrientedProjective3.PointOP3
+import geometry.primitives.determinant
 
 /**
  * Created by johnbowers on 5/25/17.
@@ -9,6 +10,29 @@ import geometry.primitives.OrientedProjective3.PointOP3
  * Riemann sphere S2.
  */
 class CPlaneS2(val a: Double, val b: Double, val c: Double, val d: Double) {
+
+    constructor(disk1: DiskS2, disk2: DiskS2, disk3: DiskS2) : this(
+            a = + determinant(
+                    disk1.b, disk1.c, disk1.d,
+                    disk2.b, disk2.c, disk2.d,
+                    disk3.b, disk3.c, disk3.d
+            ),
+            b = - determinant(
+                    disk1.a, disk1.c, disk1.d,
+                    disk2.a, disk2.c, disk2.d,
+                    disk3.a, disk3.c, disk3.d
+            ),
+            c = + determinant(
+                    disk1.a, disk1.b, disk1.d,
+                    disk2.a, disk2.b, disk2.d,
+                    disk3.a, disk3.b, disk3.d
+            ),
+            d = - determinant(
+                    disk1.a, disk1.b, disk1.c,
+                    disk2.a, disk2.b, disk2.c,
+                    disk3.a, disk3.b, disk3.c
+            )
+    )
 
     val dualDiskS2: DiskS2 by lazy { DiskS2(-a, -b, -c, d) }
 
