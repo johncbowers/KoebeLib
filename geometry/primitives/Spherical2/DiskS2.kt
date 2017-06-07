@@ -120,8 +120,8 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
      */
     fun bisectorWith(disk: DiskS2): CPlaneS2 {
         // First we normalize our vectors with respect to the Minkowski 3,1 inner product:
-        val minNorm1 = inner_product31(a, b, c, d, a, b, c, d)
-        val minNorm2 = inner_product31(disk.a, disk.b, disk.c, disk.d, disk.a, disk.b, disk.c, disk.d)
+        val minNorm1 = Math.sqrt(inner_product31(a, b, c, d, a, b, c, d))
+        val minNorm2 = Math.sqrt(inner_product31(disk.a, disk.b, disk.c, disk.d, disk.a, disk.b, disk.c, disk.d))
 
         // Now find the coefficients (a, b, c, d) of the plane of equal Minkowski 3,1 inner product from
         // the normalized vectors of this and disk:
