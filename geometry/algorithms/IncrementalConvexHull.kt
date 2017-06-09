@@ -5,6 +5,8 @@ import geometry.primitives.Euclidean3.*
 import geometry.primitives.OrientedProjective3.*
 import geometry.primitives.Spherical2.*
 import geometry.primitives.determinant
+import java.util.Random
+import java.lang.Math
 
 /**
  * Created by johnbowers on 6/1/17.
@@ -39,6 +41,26 @@ class IncrementalConvexHullAlgorithms() {
     fun addPointE3(ch: ConvexHull<PointE3>, p: PointE3) {
         addPoint(ch, p, ::orientationPointE3)
     }
+
+    // Compute a convex hull generated from random points
+    fun randomConvexHullE3( numPoints: Int ): ConvexHull<PointE3> {
+        if (numPoints < 4) {
+            throw MalformedDCELException("DCEL has not been constructed properly.")
+        }
+
+        var points = mutableListOf<PointE3>()
+        for (pt in 1..numPoints) {
+            val theta = Random().nextDouble() * 2 * Math.PI
+            val phi = Random().nextDouble() * Math.PI
+            var x = 1.1 * Math.cos(theta) * Math.sin(phi)
+            var y = 1.1 * Math.sin(theta) * Math.sin(phi)
+            var z = 1.1 * Math.cos(phi)
+            points.add(PointE3(x, y, z))
+        }
+        return computeE3(points)
+
+    }
+
 }
 
 /* Public functions */
