@@ -28,12 +28,12 @@ class LineOP3(
     )
 
     constructor(p1: PlaneOP3, p2: PlaneOP3): this(
-            +determinant(p1.Z, p1.W, p2.Z, p2.W), // p01
-            -determinant(p1.Y, p1.W, p2.Y, p2.W), // p02
-            +determinant(p1.Y, p1.Z, p2.Y, p2.Z), // p03
-            +determinant(p1.X, p1.W, p2.X, p2.W), // p12
-            -determinant(p1.X, p1.Z, p2.X, p2.Z), // p13
-            +determinant(p1.X, p1.Y, p2.X, p2.Y) // p23
+            +determinant(p1.Z, p1.W, p2.Z, p2.W), // p01 Mz
+            -determinant(p1.Y, p1.W, p2.Y, p2.W), // p02 My
+            +determinant(p1.Y, p1.Z, p2.Y, p2.Z), // p03 -Nx
+            +determinant(p1.X, p1.W, p2.X, p2.W), // p12 Mx
+            -determinant(p1.X, p1.Z, p2.X, p2.Z), // p13 -Ny
+            +determinant(p1.X, p1.Y, p2.X, p2.Y) // p23 -Nz
     )
     
     val p01 = a
@@ -53,9 +53,9 @@ class LineOP3(
         
         // TODO (Sarah) Compute the intersections of this line with the 2-sphere: 
 
-        var px: Double
-        var py: Double
-        var pz: Double
+        val px: Double
+        val py: Double
+        val pz: Double
 
         // obtain a point on the line by choosing a point parallel to the x, y, or z plane
         // three points of intersection between the line and the x=0, y=0, and z=0 planes

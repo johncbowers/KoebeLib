@@ -25,8 +25,8 @@ class CoaxialFamilyS2(
 
     /* Properties */
     val type by lazy {
-        when (LineOP3(source.dualPointOP3, target.dualPointOP3).getIntersectionWithUnit2Sphere().size) {
-            2 -> Type.HYPERBOLIC
+        when (LineOP3(source.dualPlaneOP3, target.dualPlaneOP3).getIntersectionWithUnit2Sphere().size) {
+            0 -> Type.HYPERBOLIC
             1 -> Type.PARABOLIC
             else -> Type.ELLIPTIC
         }

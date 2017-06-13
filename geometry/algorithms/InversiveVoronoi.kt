@@ -4,11 +4,15 @@ import geometry.primitives.Euclidean3.PointE3
 import geometry.primitives.Spherical2.*
 import geometry.ds.dcel.*
 import geometry.primitives.OrientedProjective3.PointOP3
+import geometry.primitives.inner_product
 import sketches.SphericalSketch
+import geometry.primitives.isZero
 
 /**
  * Created by sarahciresi on 6/5/17.
  */
+
+class InversiveVoronoiDiagram(): ArrayList<CircleArcS2>()
 
 /**
  * A convenience wrapper for easily exposing the convex hull functionality to the Jython interpreter. (Could also be
@@ -41,14 +45,40 @@ class InversiveVoronoiAlgorithms() {
         val genPoints1 = cfDual12a.generatorPoints
         val genPoints2 = cfDual12b.generatorPoints
 
-        voronoiEdge = CircleArcS2(genPoints1[1], genPoints2[0], dual12)
+        val ortho123 = CPlaneS2(d1, d2, d3)
+        val ortho142 = CPlaneS2(d1, d4, d2)
+
+        val pt1 =
+                if (genPoints1.size == 1 ||
+                        isZero(inner_product(
+                                ortho123.a, ortho123.b, ortho123.c, ortho123.d,
+                                genPoints1[0].x, genPoints1[0].y, genPoints1[0].z, 1.0
+                        )))
+                    genPoints1[0]
+                else
+                    genPoints1[1]
+
+        val pt2 =
+                if (genPoints2.size == 1 ||
+                        isZero(inner_product(
+                                ortho142.a, ortho142.b, ortho142.c, ortho142.d,
+                                genPoints2[0].x, genPoints2[0].y, genPoints2[0].z, 1.0
+                        )))
+                    genPoints2[1]
+                else
+                    genPoints2[0]
+
+        //val pt1 = if (genPoints1.size == 2) genPoints1[1] else genPoints1[0]
+        //val pt2 = genPoints2[0]
+
+        voronoiEdge = CircleArcS2(pt1, pt2, dual12)
 
         return voronoiEdge
     }
 
-    fun inversiveVoronoi( convHull: ConvexHull<DiskS2> ): MutableList<CircleArcS2> {
+    fun inversiveVoronoi( convHull: ConvexHull<DiskS2> ): InversiveVoronoiDiagram {
 
-        var voronoiEdges: MutableList<CircleArcS2> = mutableListOf<CircleArcS2>()
+        var voronoiEdges = InversiveVoronoiDiagram()
 
         //for each edge of the convex hull, get the four disks necessary to compute that Voronoi edge
         for (edge in convHull.edges) {
