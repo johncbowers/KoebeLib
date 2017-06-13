@@ -9,6 +9,7 @@ import com.processinghacks.arcball.Arcball
 import geometry.algorithms.IncrementalConvexHullAlgorithms
 import processing.core.PApplet
 
+import geometry.primitives.Euclidean2.*
 import geometry.primitives.Euclidean3.*
 import geometry.primitives.Spherical2.*
 import geometry.primitives.OrientedProjective3.*
@@ -89,12 +90,25 @@ open class SphericalSketch : PApplet() {
 
     }
 
+    fun drawPointE2(p: PointE2) {
+
+        pushMatrix()
+        translate(p.x.toFloat(), p.y.toFloat(), 1.0.toFloat())
+        sphere(0.035f)
+        popMatrix()
+    }
+
+
     fun drawPointE3(p: PointE3) {
 
         pushMatrix()
         translate(p.x.toFloat(), p.y.toFloat(), p.z.toFloat())
         sphere(0.035f)
         popMatrix()
+    }
+
+    fun drawCircleE2(disk: DiskE2) {
+
     }
 
     fun drawCircleS2(disk: DiskS2) {
@@ -382,6 +396,14 @@ open class SphericalSketch : PApplet() {
                             }
                             drawPointE3(it.directionE3.endPoint)
                         }
+                        is PointE2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                noStroke()
+                                fill(100.0f, 125.0f, 255.0f)
+                            }
+                            drawPointE2(it)
+                        }
                         is PointE3 -> {
                             if (style != null) style.set(this)
                             else {
@@ -408,9 +430,15 @@ open class SphericalSketch : PApplet() {
                         is CircleArcS2 -> {
                             if (style != null) style.set(this)
                             else {
-                                stroke(0)
+                                stroke(0.0f, 0.0f, 255.0f)
                             }
                             drawCircleArcS2(it)
+                            if (style == null) {
+                                noStroke()
+                                fill(255.0f, 0.0f, 125.0f)
+                                drawPointE3(it.source.directionE3.endPoint)
+                                drawPointE3(it.target.directionE3.endPoint)
+                            }
                         }
                         is CPlaneS2 -> {
                             if (style != null) style.set(this)

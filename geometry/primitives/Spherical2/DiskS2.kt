@@ -133,4 +133,15 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
         // Return the resulting bisector plane
         return CPlaneS2(a, b, c, d)
     }
+
+    fun getPointE3(): List<PointE3> {
+
+        // translate basis vectors to center of the disk and scale by radius
+        var newBasis1 = normedBasis1.v * radiusE3 + centerE3.toVectorE3()
+        var newBasis2 = normedBasis2.v * radiusE3 + centerE3.toVectorE3()
+        var newBasis3 = normedBasis1.v * -1.0 * radiusE3 + centerE3.toVectorE3()
+
+        return listOf<PointE3>(newBasis1.toPointE3(), newBasis2.toPointE3(), newBasis3.toPointE3() )
+    }
+
 }

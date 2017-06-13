@@ -1,5 +1,7 @@
 package geometry.primitives.Euclidean3
 
+import geometry.primitives.Euclidean2.*
+
 /**
  * Created by johnbowers on 5/20/17.
  */
@@ -32,5 +34,10 @@ class PointE3(val x: Double, val y: Double, val z:Double) {
     fun distTo(p: PointE3) = Math.sqrt(distSqTo(p))
 
     fun toVectorE3() = this - O
+
+    // takes a point in E3 and computes the corresponding point in E2 from  projecting onto z=1 plane
+    fun toPointE2(): PointE2 {
+        return PointE2(x/z, y/z)
+    }
 
 }

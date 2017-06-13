@@ -56,6 +56,11 @@ class PointS2(
             return ExtendedComplex(Complex(1 + d.v.z, 0.0), Complex(d.v.x, -d.v.y))
         }
     }
+
+    // takes a point on S2 and computes the corresponding point in E2 from  projecting onto z=1 plane
+    fun toPointE2(): PointE2 {
+        return PointE2(x/z, y/z)
+    }
 }
 
 
