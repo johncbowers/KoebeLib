@@ -95,7 +95,7 @@ open class SphericalSketch : PApplet() {
     fun drawPointE2(p: PointE2) {
 
         pushMatrix()
-        translate(p.x.toFloat(), p.y.toFloat(), 1.0.toFloat())
+        translate(p.x.toFloat(), p.y.toFloat(), 1.0f)
         sphere(0.035f)
         popMatrix()
     }
@@ -111,6 +111,38 @@ open class SphericalSketch : PApplet() {
 
     fun drawCircleE2(disk: DiskE2) {
 
+        pushMatrix()
+        translate(0.0f, 0.0f, 1.0f)
+
+        /*
+        //find bisectors of p1, p2 and p2, p3
+        val midPt12 = PointE2( (disk.p1.x + disk.p2.x)/2.0, (disk.p1.y + disk.p2.y) / 2.0 )
+        val midPt23 = PointE2( (disk.p2.x + disk.p3.x)/2.0, (disk.p2.y + disk.p3.y) / 2.0 )
+        val slope12 = -1.0 / ( (disk.p2.y - disk.p1.y) / (disk.p2.x- disk.p1.x) )
+       // val slope23 = -1.0 / ( (disk.p3.y - disk.p2.y) / (disk.p3.x- disk.p2.x) )
+        val slope23 = 100000
+
+        val centX = (slope12 * midPt12.x - slope23 * midPt23.x + midPt23.y - midPt12.y) / (slope12 - slope23)
+        val centY =  slope12 * (centX - midPt12.x) + midPt12.y
+        val center = PointE2(centX, centY)
+        val rad = center.distTo(disk.p1)
+
+        ellipse( center.x.toFloat(), center.y.toFloat(), (2.0*rad).toFloat(), (2.0*rad).toFloat())
+        popMatrix()
+        */
+
+        //find bisectors of p1, p2 and p2, p3
+        val bis12 = disk.p1.bisector(disk.p2)
+        val bis23 = disk.p2.bisector(disk.p3)
+
+        // find intersection of two bisector lines to find circle center
+        val center = bis12.intersection(bis23)
+
+        // compute radius of circle
+        val rad = center.distTo(disk.p1)
+
+        ellipse( center.hx.toFloat(), center.hy.toFloat(), (2.0*rad).toFloat(), (2.0*rad).toFloat())
+        popMatrix()
     }
 
     fun drawDiskOP2(disk: DiskOP2) {
@@ -446,6 +478,13 @@ open class SphericalSketch : PApplet() {
                                 stroke(0)
                             }
                             drawCircleS2(it)
+                        }
+                        is DiskE2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0)
+                            }
+                            drawCircleE2(it)
                         }
                         is CircleArcS2 -> {
                             if (style != null) style.set(this)

@@ -61,6 +61,59 @@ class IncrementalConvexHullAlgorithms() {
 
     }
 
+    fun randomConvexHullDiskS2(numPoints: Int): ConvexHull<DiskS2> {
+
+        var disks = mutableListOf<DiskS2>()
+
+        var newHull = DCEL<DiskS2, Unit, Unit>()
+
+        //compute convex hull of random PointE3s
+        val randomHullPointE3 = this.randomConvexHullE3(numPoints)
+
+        // Create maps between old and new convex hulls
+        var oldToNewVerts = mutableMapOf<DCEL<PointE3, Unit, Unit>.Vertex, DCEL<DiskS2, Unit, Unit>.Vertex> ()
+        var oldToNewDarts = mutableMapOf<DCEL<PointE3, Unit, Unit>.Dart, DCEL<DiskS2, Unit, Unit>.Dart> ()
+        var oldToNewEdges = mutableMapOf<DCEL<PointE3, Unit, Unit>.Edge, DCEL<DiskS2, Unit, Unit>.Edge> ()
+        var oldToNewFaces = mutableMapOf<DCEL<PointE3, Unit, Unit>.Face, DCEL<DiskS2, Unit, Unit>.Face> ()
+
+        // Copy data from old hull to new hull
+        for ( vert in randomHullPointE3.verts ) {
+            oldToNewVerts[vert] = newHull.Vertex(data = DiskS2(0.0, 0.0, 1.0, 1.0))
+        }
+        for ( dart in randomHullPointE3.darts ) {
+            oldToNewDarts[dart] = newHull.Dart()
+        }
+        for ( edge in randomHullPointE3.edges ) {
+            oldToNewEdges[edge] = newHull.Edge(data = Unit)
+        }
+        for ( face in randomHullPointE3.faces ) {
+            oldToNewFaces[face] = newHull.Face(data = Unit)
+        }
+
+        // Add appropriate links between data members
+        for (vert in randomHullPointE3.verts) {
+            oldToNewVerts[vert]?.aDart = oldToNewDarts[vert.aDart]
+        }
+
+        for (dart in randomHullPointE3.darts) {
+            oldToNewDarts[dart]?.twin = oldToNewDarts[dart.twin]
+            oldToNewDarts[dart]?.prev = oldToNewDarts[dart.prev]
+            oldToNewDarts[dart]?.next = oldToNewDarts[dart.next]
+
+            oldToNewDarts[dart]?.edge = oldToNewEdges[dart.edge]
+            oldToNewDarts[dart]?.origin = oldToNewVerts[dart.origin]
+            oldToNewDarts[dart]?.face = oldToNewFaces[dart.face]
+        }
+
+        for (edge in randomHullPointE3.edges) {
+            oldToNewEdges[edge]?.aDart = oldToNewDarts[edge.aDart]
+        }
+
+        for (face in randomHullPointE3.faces) {
+            oldToNewFaces[face]?.aDart = oldToNewDarts[face.aDart]
+        }
+        return newHull
+    }
 }
 
 /* Public functions */
