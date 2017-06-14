@@ -10,9 +10,6 @@ import geometry.primitives.isZero
  * Created by johnbowers on 6/13/17.
  */
 
-// Temporarily adding this until Sarah pushes her version to the git:
-class PointOP2(val hx: Double, val hy: Double, val hw: Double)
-
 fun PointE2.toPointOP2() = PointOP2(this.x, this.y, 1.0)
 
 class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {

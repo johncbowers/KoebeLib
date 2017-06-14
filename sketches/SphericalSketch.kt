@@ -132,16 +132,16 @@ open class SphericalSketch : PApplet() {
         */
 
         //find bisectors of p1, p2 and p2, p3
-        val bis12 = disk.p1.bisector(disk.p2)
-        val bis23 = disk.p2.bisector(disk.p3)
-
-        // find intersection of two bisector lines to find circle center
-        val center = bis12.intersection(bis23)
-
-        // compute radius of circle
-        val rad = center.distTo(disk.p1)
-
-        ellipse( center.hx.toFloat(), center.hy.toFloat(), (2.0*rad).toFloat(), (2.0*rad).toFloat())
+//        val bis12 = disk.p1.bisector(disk.p2)
+//        val bis23 = disk.p2.bisector(disk.p3)
+//
+//        // find intersection of two bisector lines to find circle center
+//        val center = bis12.intersection(bis23)
+//
+//        // compute radius of circle
+//        val rad = center.distTo(disk.p1)
+//
+//        ellipse( center.hx.toFloat(), center.hy.toFloat(), (2.0*rad).toFloat(), (2.0*rad).toFloat())
         popMatrix()
     }
 
