@@ -18,6 +18,7 @@ import geometry.algorithms.incrConvexHull
 import geometry.algorithms.orientationPointOP3
 import geometry.algorithms.addPoint
 import geometry.ds.dcel.*
+import geometry.primitives.OrientedProjective2.*
 
 import gui.JythonFrame
 import processing.core.PConstants
@@ -31,6 +32,7 @@ class Color(val x: Float, val y: Float, val z: Float, val a: Float = 255.0f) {
     }
     override fun equals(c: Any?) = (c is Color && c.x == x && c.y == y && c.z == z && c.a == a)
 }
+
 class Style(
         val stroke: Color?,
         val fill: Color?
@@ -109,6 +111,16 @@ open class SphericalSketch : PApplet() {
 
     fun drawCircleE2(disk: DiskE2) {
 
+    }
+
+    fun drawDiskOP2(disk: DiskOP2) {
+        pushMatrix()
+        translate(0.0f, 0.0f, 1.0f)
+        val diameter = disk.radius.toFloat() * 2.0f
+        ellipse(disk.center.x.toFloat(),
+                disk.center.y.toFloat(),
+                diameter, diameter)
+        popMatrix()
     }
 
     fun drawCircleS2(disk: DiskS2) {
@@ -403,6 +415,14 @@ open class SphericalSketch : PApplet() {
                                 fill(100.0f, 125.0f, 255.0f)
                             }
                             drawPointE2(it)
+                        }
+                        is DiskOP2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0.0f, 0.0f, 0.0f)
+                                noFill()
+                            }
+                            drawDiskOP2(it)
                         }
                         is PointE3 -> {
                             if (style != null) style.set(this)
