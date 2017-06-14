@@ -93,6 +93,7 @@ open class SphericalSketch : PApplet() {
         jyFrame.setVisible(true)
         jyFrame.setup()
 
+        this.frame.setResizable(true)
     }
 
     fun drawPointE2(p: PointE2) {
