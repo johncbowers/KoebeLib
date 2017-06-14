@@ -16,24 +16,24 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     constructor (p1: PointOP2, p2: PointOP2, p3: PointOP2): this(
             a = + determinant(
-                    (p1.hx * p1.hw), (p1.hy * p1.hw), (p1.hw * p1.hw),
-                    (p2.hx * p2.hw), (p2.hy * p2.hw), (p2.hw * p2.hw),
-                    (p3.hx * p3.hw), (p3.hy * p3.hw), (p3.hw * p3.hw)
+                    (p1.hx / p1.hw), (p1.hy / p1.hw), (1.0),
+                    (p2.hx / p2.hw), (p2.hy / p2.hw), (1.0),
+                    (p3.hx / p3.hw), (p3.hy / p3.hw), (1.0)
             ),
             b = - determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy), (p1.hy * p1.hw), (p1.hw * p1.hw),
-                    (p2.hx * p2.hx + p2.hy * p2.hy), (p2.hy * p2.hw), (p2.hw * p2.hw),
-                    (p3.hx * p3.hx + p3.hy * p3.hy), (p3.hy * p3.hw), (p3.hw * p3.hw)
+                    (p1.hx * p1.hx + p1.hy * p1.hy) / (p1.hw * p1.hw), (p1.hy / p1.hw), (1.0),
+                    (p2.hx * p2.hx + p2.hy * p2.hy) / (p2.hw * p2.hw), (p2.hy / p2.hw), (1.0),
+                    (p3.hx * p3.hx + p3.hy * p3.hy) / (p3.hw * p3.hw), (p3.hy / p3.hw), (1.0)
             ),
             c = + determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy), (p1.hx * p1.hw), (p1.hw * p1.hw),
-                    (p2.hx * p2.hx + p2.hy * p2.hy), (p2.hx * p2.hw), (p2.hw * p2.hw),
-                    (p3.hx * p3.hx + p3.hy * p3.hy), (p3.hx * p3.hw), (p3.hw * p3.hw)
+                    (p1.hx * p1.hx + p1.hy * p1.hy) / (p1.hw * p1.hw), (p1.hx / p1.hw), (1.0),
+                    (p2.hx * p2.hx + p2.hy * p2.hy) / (p2.hw * p2.hw), (p2.hx / p2.hw), (1.0),
+                    (p3.hx * p3.hx + p3.hy * p3.hy) / (p3.hw * p3.hw), (p3.hx / p3.hw), (1.0)
             ),
             d = - determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy), (p1.hx * p1.hw), (p1.hy * p1.hw),
-                    (p2.hx * p2.hx + p2.hy * p2.hy), (p2.hx * p2.hw), (p2.hy * p2.hw),
-                    (p3.hx * p3.hx + p3.hy * p3.hy), (p3.hx * p3.hw), (p3.hy * p3.hw)
+                    (p1.hx * p1.hx + p1.hy * p1.hy) / (p1.hw * p1.hw), (p1.hx / p1.hw), (p1.hy / p1.hw),
+                    (p2.hx * p2.hx + p2.hy * p2.hy) / (p2.hw * p2.hw), (p2.hx / p2.hw), (p2.hy / p2.hw),
+                    (p3.hx * p3.hx + p3.hy * p3.hy) / (p3.hw * p3.hw), (p3.hx / p3.hw), (p3.hy / p3.hw)
             )
     )
 
@@ -56,7 +56,7 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     // TODO val toLineOP2 by lazy { LineOP2(b, c, d) }
 
-    val center by lazy { PointE2(-b * 0.5, -c * 0.5) }
-    val radiusSq by lazy { center.x*center.x + center.y * center.y - d }
+    val center by lazy { PointE2(-b / (2.0 * a), -c  / (2.0 * a)) }
+    val radiusSq by lazy { center.x*center.x + center.y * center.y - (d/a) }
     val radius by lazy { Math.sqrt(radiusSq) }
 }
