@@ -155,6 +155,7 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
         pi.set("cons", sketch.construction)
         pi.set("objs", sketch.objects)
         pi.set("styles", sketch.objectStyles)
+        pi.set("sketch", sketch)
     }
 }
 
