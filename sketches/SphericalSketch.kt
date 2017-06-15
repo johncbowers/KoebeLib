@@ -22,6 +22,7 @@ import geometry.primitives.OrientedProjective2.*
 
 import gui.JythonFrame
 import processing.core.PConstants
+import processing.event.MouseEvent
 import processing.opengl.PGraphicsOpenGL
 
 import javax.swing.*
@@ -59,6 +60,8 @@ open class SphericalSketch : PApplet() {
 
     val viewSettings = SphericalSketchViewSettings()
 
+    var zoom = 1.0f
+
     class SphericalSketchViewSettings() {
         var showBoundingBox = true
         var showCircleCentersAndNormals = true
@@ -90,6 +93,7 @@ open class SphericalSketch : PApplet() {
         jyFrame.setVisible(true)
         jyFrame.setup()
 
+        this.frame.setResizable(true)
     }
 
     fun drawPointE2(p: PointE2) {
@@ -221,7 +225,7 @@ open class SphericalSketch : PApplet() {
         // Draw the disk
         pushStyle()
         noLights()
-        strokeWeight(0.01f)
+        strokeWeight(0.01f / zoom)
         //stroke(0.0f, 0.0f, 0.0f)
         if (viewSettings.showEuclideanDisks)
             fill(0)
@@ -311,7 +315,7 @@ open class SphericalSketch : PApplet() {
         // Draw the disk
         pushStyle()
         noLights()
-        strokeWeight(0.01f)
+        strokeWeight(0.01f / zoom)
         //stroke(0.0f, 0.0f, 0.0f)
         if (viewSettings.showEuclideanDisks)
             fill(0)
@@ -447,8 +451,9 @@ open class SphericalSketch : PApplet() {
         endCamera()
 
         translate(width / 2.0f, height / 2.0f, 0.0f)
-        scale(200.0f)
-        strokeWeight(0.005f)
+        scale(1.0f, -1.0f, 1.0f);
+        scale(200.0f * zoom)
+        strokeWeight(0.005f / zoom)
 
         pushStyle()
 
@@ -604,6 +609,18 @@ open class SphericalSketch : PApplet() {
 
     override fun mouseDragged() {
         arcball?.mouseDragged()
+    }
+
+    override fun mouseWheel(event: MouseEvent?) {
+        if (event != null) {
+            //val delta = if (event.count > 0) 1.01f else if (event.count < 0) 1.0f/1.01f else 1.0f
+            val delta = if (event.count > 0)
+                Math.pow(1.0005, event.count.toDouble()).toFloat()
+            else if (event.count < 0)
+                Math.pow(1.0005, event.count.toDouble()).toFloat()
+            else 1.0f
+            zoom *= delta
+        }
     }
 }
 
