@@ -6,6 +6,8 @@ import geometry.primitives.Euclidean3.PointE3
 import geometry.primitives.Euclidean3.VectorE3
 import geometry.primitives.Euclidean3.PlaneE3
 import geometry.primitives.Euclidean3.least_dominant
+import geometry.primitives.OrientedProjective2.DiskOP2
+import geometry.primitives.OrientedProjective2.PointOP2
 import geometry.primitives.OrientedProjective3.PointOP3
 import geometry.primitives.OrientedProjective3.PlaneOP3
 
@@ -134,14 +136,27 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
         return CPlaneS2(a, b, c, d)
     }
 
-    fun getPointE3(): List<PointE3> {
+    fun get3PointsOnDisk(): List<PointS2> {
 
         // translate basis vectors to center of the disk and scale by radius
         var newBasis1 = normedBasis1.v * radiusE3 + centerE3.toVectorE3()
         var newBasis2 = normedBasis2.v * radiusE3 + centerE3.toVectorE3()
         var newBasis3 = normedBasis1.v * -1.0 * radiusE3 + centerE3.toVectorE3()
 
-        return listOf<PointE3>(newBasis1.toPointE3(), newBasis2.toPointE3(), newBasis3.toPointE3() )
+        return listOf<PointS2>(PointS2(newBasis1), PointS2(newBasis2), PointS2(newBasis3) )
     }
 
+    fun sgProjectToOP2(): DiskOP2 {
+        var pointsOP2 = mutableListOf<PointOP2>()
+
+        // Get three points on DiskS2
+        var pointsE3 = this.get3PointsOnDisk()
+
+        // Project the PointE3s to PointOP2s
+        for (point in pointsE3) {
+            pointsOP2.add(point.sgProjectToPointOP2())
+        }
+        // Return the diskOP2 through 3 projected PointOP2s
+        return DiskOP2(pointsOP2[0], pointsOP2[1], pointsOP2[2])
+    }
 }

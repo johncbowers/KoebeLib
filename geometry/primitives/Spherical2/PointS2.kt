@@ -7,6 +7,7 @@ import geometry.primitives.Euclidean3.VectorE3
 import geometry.primitives.Euclidean3.DirectionE3
 import geometry.primitives.Euclidean3.least_dominant
 import geometry.primitives.ExtendedComplex.*
+import geometry.primitives.OrientedProjective2.PointOP2
 
 /**
  * Created by johnbowers on 5/20/17.
@@ -57,10 +58,16 @@ class PointS2(
         }
     }
 
-    // takes a point on S2 and computes the corresponding point in E2 from  projecting onto z=1 plane
-    fun toPointE2(): PointE2 {
-        return PointE2(x/z, y/z)
+    // takes a point in S2 and computes the corresponding point in E2 from projecting onto z=1 plane
+    fun sgProjectToPointE2(): PointE2 {
+        return PointE2(x/(z+1), y/(z+1))
     }
+
+    // takes a point in S2 and computes the corresponding point in OP2 from projecting onto z=1 plane
+    fun sgProjectToPointOP2(): PointOP2 {
+        return PointOP2(x, y, z + 1)
+    }
+
 }
 
 

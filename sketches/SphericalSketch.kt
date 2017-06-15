@@ -109,6 +109,14 @@ open class SphericalSketch : PApplet() {
         popMatrix()
     }
 
+    fun drawPointOP2(p: PointOP2) {
+
+        pushMatrix()
+        translate(p.hx.toFloat()/p.hw.toFloat(), p.hy.toFloat()/p.hw.toFloat(), 1.0f)
+        sphere(0.035f)
+        popMatrix()
+    }
+
     fun drawCircleE2(disk: DiskE2) {
 
         pushMatrix()
@@ -153,6 +161,33 @@ open class SphericalSketch : PApplet() {
                 disk.center.y.toFloat(),
                 diameter, diameter)
         popMatrix()
+    }
+
+    fun drawCircleArcOP2(arc: CircleArcOP2) {
+        pushMatrix()
+        translate(0.0f, 0.0f, 1.0f)
+        val diameter = arc.disk.radius.toFloat() * 2.0f
+
+        pushStyle()
+        noLights()
+        strokeWeight(0.01f)
+        noFill()
+
+        val srcX = arc.source.hx.toFloat()/ arc.source.hw.toFloat()
+        val srcY = arc.source.hy.toFloat()/ arc.source.hw.toFloat()
+        val trgX = arc.target.hx.toFloat()/ arc.target.hw.toFloat()
+        val trgY = arc.target.hy.toFloat()/ arc.target.hw.toFloat()
+
+        val srcAngle =  atan(srcY/srcX)
+        var targetAngle = atan(trgX/trgY)
+        if (srcAngle > targetAngle) targetAngle += TWO_PI
+
+        arc(0.0f, 0.0f, diameter, diameter, srcAngle, targetAngle)
+
+        popStyle()
+
+        popMatrix()
+
     }
 
     fun drawCircleS2(disk: DiskS2) {
@@ -464,6 +499,15 @@ open class SphericalSketch : PApplet() {
                             }
                             drawPointE3(it)
                         }
+                        is PointOP2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                noStroke()
+                                fill(100.0f, 125.0f, 255.0f)
+                            }
+                            drawPointOP2(it)
+                        }
+
                         is PointOP3 -> {
                             if (style != null) style.set(this)
                             else {
@@ -485,6 +529,19 @@ open class SphericalSketch : PApplet() {
                                 stroke(0)
                             }
                             drawCircleE2(it)
+                        }
+                        is CircleArcOP2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0.0f, 0.0f, 255.0f)
+                            }
+                            drawCircleArcOP2(it)
+                            if (style == null) {
+                                noStroke()
+                                fill(255.0f, 0.0f, 125.0f)
+                                drawPointOP2(it.source)
+                                drawPointOP2(it.target)
+                            }
                         }
                         is CircleArcS2 -> {
                             if (style != null) style.set(this)

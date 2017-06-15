@@ -4,6 +4,9 @@ package geometry.primitives.Spherical2
 import geometry.primitives.Euclidean3.DirectionE3
 import geometry.primitives.Euclidean3.PointE3
 import geometry.primitives.Euclidean3.VectorE3
+import geometry.primitives.OrientedProjective2.CircleArcOP2
+import geometry.primitives.OrientedProjective2.DiskOP2
+import geometry.primitives.OrientedProjective2.PointOP2
 import geometry.primitives.OrientedProjective3.PointOP3
 
 
@@ -36,6 +39,25 @@ class CircleArcS2(val source: PointS2, val target: PointS2, val disk: DiskS2) {
         assert(source != target && source != -target)
         assert(disk.contains(source) && disk.contains(target))
     }
+
+
+    fun sgToCircleArcOP2() : CircleArcOP2 {
+        val pointsOP2 = mutableListOf<PointOP2>()
+
+        // Get three points on DiskS2
+        val pointsE3 = this.disk.get3PointsOnDisk()
+
+        // Project the PointE3s to PointOP2s
+        for (point in pointsE3) {
+            pointsOP2.add(point.sgProjectToPointOP2())
+        }
+        // Get DiskOP2 through three points
+        val diskOP2 = DiskOP2(pointsOP2[0], pointsOP2[1], pointsOP2[2])
+
+        // Return the CircleArcOP2 through with the source and target PointOP2s and DiskOP2
+        return CircleArcOP2(this.source.sgProjectToPointOP2(), this.target.sgProjectToPointOP2(), diskOP2)
+    }
+
 }
 
 //fun circleSupportingArc(p1: PointS2, p2: PointS2, p3: PointS2): DiskS2 {
