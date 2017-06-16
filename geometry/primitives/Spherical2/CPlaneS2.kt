@@ -42,7 +42,7 @@ class CPlaneS2(val a: Double, val b: Double, val c: Double, val d: Double) {
     /* Properties */
     val type: Type by lazy {
 
-        val dSq = d*d
+        val dSq = d*d // final double dSq = d*d
         val dot_abc = a*a + b*b + c*c
         val scale = dSq / dot_abc
         val aSc = a * scale
