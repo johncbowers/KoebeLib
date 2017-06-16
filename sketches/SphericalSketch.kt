@@ -565,6 +565,7 @@ open class SphericalSketch : PApplet() {
             zoom *= delta
         }
     }
+
 }
 
 /**

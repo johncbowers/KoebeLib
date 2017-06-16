@@ -30,42 +30,30 @@ package com.processinghacks.arcball
 
 import processing.core.PApplet
 import processing.core.PVector
+import java.awt.event.ComponentAdapter
 
 import java.awt.event.MouseEvent
 
-class Arcball(center: PVector?, radius: Float, internal var parent: PApplet) {
-    internal var center: PVector
-    internal var radius: Float = 0.toFloat()
+class Arcball(internal var parent: PApplet) {
+
+    internal val center: PVector get() {
+        return PVector(parent.width.toFloat() * 0.5f, parent.height.toFloat() * 0.5f)
+    }
+
+    internal val radius: Float get() {
+        return PApplet.mag(parent.width.toFloat() * 0.5f, parent.height.toFloat() * 0.5f)
+    }
 
     internal var qNow = Quat()
     internal var qDrag: Quat? = null
     internal var dragFactor = 0.99f
 
-    /** defaults to radius of mag(width, height)/2  */
-    constructor(parent: PApplet) : this(null, 0f, parent) {
-    }
-
     init {
-        var center = center
-        var radius = radius
-
-        if (center == null) {
-            val w = parent.g.width.toFloat()
-            val h = parent.g.height.toFloat()
-            if (radius == 0f) {
-                radius = PApplet.mag(w, h) / 2.0f
-            }
-            center = PVector(w / 2.0f, h / 2.0f)
-        }
-
         //parent.registerMethod("mouseEvent", this)
         parent.registerMethod("mouseDragged", this)
         parent.registerMethod("mousePressed", this)
         parent.registerMethod("mouseReleased", this)
         parent.registerMethod("pre", this)
-
-        this.center = center
-        this.radius = radius
     }
 
     fun reset() {
