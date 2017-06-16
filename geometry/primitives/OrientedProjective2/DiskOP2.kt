@@ -59,4 +59,89 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
     val center by lazy { PointE2(-b / (2.0 * a), -c  / (2.0 * a)) }
     val radiusSq by lazy { center.x*center.x + center.y * center.y - (d/a) }
     val radius by lazy { Math.sqrt(radiusSq) }
+
+
+    fun intersectWithLineOP2(line: LineOP2): List<PointOP2> {
+
+        if (line.a != 0.0) {
+            // x = -(By+C)/A , solve for Y, then X
+            val alpha2 = -this.a * line.b * line.b + this.a * line.a * line.a - this.b * line.b * line.b
+            val beta2 = -2 * this.a * line.b * line.c - 2 * this.b * line.b * line.c + this.c * line.a * line.a
+            val gamma2 = -this.a * line.c * line.c - this.b * line.c * line.c + this.d * line.a * line.a
+
+            /// derivation 2
+            val alpha = this.a * line.b * line.b + this.a * line.a * line.a
+            val beta = 2 * this.a * line.b * line.c - this.b * line.b * line.a + this.c * line.a * line.a
+            val gamma = this.a * line.c * line.c - this.b * line.a * line.c + this.d * line.a * line.a
+
+            // Test for number of intersection points
+            // Case 1: 0 intersection points
+            if ( beta*beta - 4*alpha*gamma < 0.0 )
+                return listOf<PointOP2>()
+
+            // Case 2: 1 intersection point
+            else if ( beta*beta - 4*alpha*gamma == 0.0) {
+                val point1Y = -beta/(2*alpha)
+                val point1X = (-line.b*point1Y-line.c)/line.a
+                return listOf<PointOP2>( PointOP2(point1X, point1Y) )
+            }
+            // Case 3: 2 intersection points
+            else {
+                val point1Y = (-beta + Math.sqrt(beta*beta - 4*alpha*gamma))/(2 * alpha)
+                val point2Y = (-beta - Math.sqrt(beta*beta - 4*alpha*gamma))/(2 * alpha)
+
+                val point1X = (-line.b*point1Y-line.c)/line.a
+                val point2X = (-line.b*point2Y-line.c)/line.a
+
+                return listOf<PointOP2>( PointOP2(point1X, point1Y), PointOP2(point2X, point2Y)  )
+            }
+
+        }
+        else { // if line.b != 0.0
+            // y = -(Ax+C)/B, solve for X, then Y
+            val alpha = this.a * line.b * line.b + this.a * line.a * line.a
+            val beta =  2 * this.a * line.a * line.c + line.b * line.b * this.b - this.c * line.a * line.b
+            val gamma = this.a * line.c * line.c - this.c * line.b * line.c + this.d * line.b * line.b
+
+            // Test for number of intersection points
+            // Case 1: 0 intersection points
+            if ( beta * beta - 4 * alpha * gamma < 0.0 )
+                return listOf<PointOP2>()
+
+            // Case 2: 1 intersection point
+            else if ( beta * beta - 4 * alpha * gamma == 0.0) {
+                val point1X = -beta/(2 * alpha)
+                val point1Y = (-line.a * point1X - line.c)/line.b
+                return listOf<PointOP2>( PointOP2(point1X, point1Y) )
+            }
+            // Case 3: 2 intersection points
+            else {
+                val point1X = (-beta + Math.sqrt(beta*beta - 4*alpha*gamma)) /(2 * alpha)
+                val point2X = (-beta - Math.sqrt(beta*beta - 4*alpha*gamma)) /(2 * alpha)
+
+                val point1Y = (-line.a*point1X-line.c)/line.b
+                val point2Y = (-line.a*point2X-line.c)/line.b
+
+                return listOf<PointOP2>( PointOP2(point1X, point1Y), PointOP2(point2X, point2Y)  )
+            }
+        }
+    }
+
+    fun intersectWithDiskOP2(disk2: DiskOP2): List<PointOP2> {
+
+        val A = determinant(this.a, this.b, disk2.a, disk2.b)
+        val B = determinant(this.a, this.c, disk2.a, disk2.c)
+        val C = determinant(this.a, this.d, disk2.a, disk2.d)
+
+        // if A & B are both = 0 -> circles are concentric; no points of intersection
+        // return an empty list
+        if ( A == 0.0 && B == 0.0 ) {
+            return listOf<PointOP2>()
+        }
+
+        // otherwise, call intersectWithLineOP2 on lineOP2 with coefficients A,B, and C and return result
+        return intersectWithLineOP2( LineOP2(A, B, C) )
+
+    }
+
 }

@@ -60,12 +60,21 @@ class PointS2(
 
     // takes a point in S2 and computes the corresponding point in E2 from projecting onto z=1 plane
     fun sgProjectToPointE2(): PointE2 {
-        return PointE2(x/(z+1), y/(z+1))
+        val invNorm = 1.0/(Math.sqrt(x*x + y*y + z*z))
+        val X = x*invNorm
+        val Y = y*invNorm
+        val Z = z*invNorm
+
+        return PointE2(X/(Z+1), Y/(Z+1))
     }
 
     // takes a point in S2 and computes the corresponding point in OP2 from projecting onto z=1 plane
     fun sgProjectToPointOP2(): PointOP2 {
-        return PointOP2(x, y, z + 1)
+        val invNorm = 1.0/(Math.sqrt(x*x + y*y + z*z))
+        val X = x*invNorm
+        val Y = y*invNorm
+        val Z = z*invNorm
+        return PointOP2(2*X, 2*Y, Z + 1)
     }
 
 }
