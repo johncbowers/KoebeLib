@@ -119,6 +119,7 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
      * @return The CPlaneS2 containing the points of equal inversive distance between this and disk.
      */
     fun bisectorWith(disk: DiskS2): CPlaneS2 {
+
         // First we normalize our vectors with respect to the Minkowski 3,1 inner product:
         val minNorm1 = Math.sqrt(inner_product31(a, b, c, d, a, b, c, d))
         val minNorm2 = Math.sqrt(inner_product31(disk.a, disk.b, disk.c, disk.d, disk.a, disk.b, disk.c, disk.d))
@@ -142,6 +143,20 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
         var newBasis3 = normedBasis1.v * -1.0 * radiusE3 + centerE3.toVectorE3()
 
         return listOf<PointE3>(newBasis1.toPointE3(), newBasis2.toPointE3(), newBasis3.toPointE3() )
+    }
+
+    fun invertThrough(disk: DiskS2): DiskS2 {
+
+        val fact =
+                inner_product31(a, b, c, d, disk.a, disk.b, disk.c, disk.d) /
+                inner_product31(disk.a, disk.b, disk.c, disk.d, disk.a, disk.b, disk.c, disk.d)
+
+        return DiskS2(
+                a - 2 * fact * disk.a,
+                b - 2 * fact * disk.b,
+                c - 2 * fact * disk.c,
+                d - 2 * fact * disk.d
+        )
     }
 
 }
