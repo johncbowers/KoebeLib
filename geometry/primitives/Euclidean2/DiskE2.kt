@@ -9,6 +9,6 @@ import geometry.primitives.OrientedProjective2.*
 
 
 // vs PointE2s...
-class DiskE2 (val p1: PointOP2, val p2: PointOP2, val p3: PointOP2) {
+class DiskE2 (val p1: PointE2, val p2: PointE2, val p3: PointE2) {
 
 }

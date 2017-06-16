@@ -16,4 +16,10 @@ class LineOP2 (
         val detw = determinant(this.a, this.b, line2.a, line2.b)
         return PointOP2(detx, dety, detw)
     }
+
+
+    fun intersectWithDiskOP2(disk: DiskOP2): List<PointOP2> {
+        return disk.intersectWithLineOP2(this)
+    }
+
 }
