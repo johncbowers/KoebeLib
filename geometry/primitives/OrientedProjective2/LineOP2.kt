@@ -18,7 +18,7 @@ class LineOP2 (
     }
 
 
-    fun intersectWithDiskOP2(disk: DiskOP2): List<PointOP2> {
+    fun intersectWith(disk: DiskOP2): List<PointOP2> {
         return disk.intersectWith(this)
     }
 
