@@ -15,6 +15,14 @@ class VectorE2(val x: Double, val y: Double) {
 
     fun normSq() = x*x + y*y
     fun norm() = Math.sqrt(normSq())
+
+    val angleFromXAxis by lazy {
+        val normInv = 1.0 / norm()
+        if (y >= 0)
+            Math.acos(dot(VectorE2(1.0, 0.0)) * normInv)
+        else
+            2 * Math.PI - Math.acos(dot(VectorE2(1.0, 0.0)) * normInv)
+    }
 }
 
 /*** Extensions for interacting with Vectors ***/

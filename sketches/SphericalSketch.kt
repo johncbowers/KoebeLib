@@ -168,23 +168,30 @@ open class SphericalSketch : PApplet() {
     }
 
     fun drawCircleArcOP2(arc: CircleArcOP2) {
+
         pushMatrix()
+
         translate(0.0f, 0.0f, 1.0f)
-        val diameter = arc.radius.toFloat() * 2.0f
 
         pushStyle()
         noLights()
         strokeWeight(0.01f)
         noFill()
 
+        val diameter = arc.radius.toFloat() * 2.0f
+
         val srcX = arc.source.hx.toFloat()/ arc.source.hw.toFloat()
         val srcY = arc.source.hy.toFloat()/ arc.source.hw.toFloat()
         val trgX = arc.target.hx.toFloat()/ arc.target.hw.toFloat()
         val trgY = arc.target.hy.toFloat()/ arc.target.hw.toFloat()
 
-        // might be wrong ?
-        val srcAngle = acos( (srcX - arc.disk.center.x).toFloat() / arc.radius.toFloat() )
-        var targetAngle = asin( (trgY - arc.disk.center.y).toFloat() / arc.radius.toFloat() )
+        val radInv = 1.0 / arc.radius
+
+        val srcV = VectorE2((srcX - arc.disk.center.x) * radInv, (srcY - arc.disk.center.y) * radInv)
+        val trgV = VectorE2((trgX - arc.disk.center.x) * radInv, (trgY - arc.disk.center.y) * radInv)
+
+        val srcAngle = srcV.angleFromXAxis.toFloat()
+        var targetAngle = trgV.angleFromXAxis.toFloat()
 
         if (srcAngle > targetAngle) targetAngle += TWO_PI
 
