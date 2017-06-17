@@ -1,9 +1,6 @@
 package geometry.primitives.OrientedProjective2
 
 import geometry.primitives.Euclidean2.PointE2
-import geometry.primitives.Euclidean3.DirectionE3
-import geometry.primitives.Euclidean3.PointE3
-import geometry.primitives.Euclidean3.VectorE3
 
 /**
  * Created by Sarah Ciresi on 6/14/17.
@@ -21,15 +18,9 @@ class CircleArcOP2(val source: PointOP2, val target: PointOP2, val disk: DiskOP2
     // Euclidean radius of circle
     val radius: Double by lazy { disk.radius }
 
-    /* init {
-        assert(source != target && source != -target)
-        assert(disk.contains(source) && disk.contains(target))
-    }
-    */
-
     fun intersectWith(line: LineOP2): List<PointOP2> {
         //Signed area of triangle ABC = (1/2)( (B.x - A.x) * (C.y - A.y) - (C.x - A.x) * (B.y - A.y) );
-        return disk.intersectWithLineOP2(line).filter {
+        return disk.intersectWith(line).filter {
             p ->
             val psx = p.hx * source.hw - source.hx * p.hw
             val tsy = target.hy * source.hw - source.hy * target.hw

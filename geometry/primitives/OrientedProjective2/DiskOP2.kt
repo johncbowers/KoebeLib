@@ -60,8 +60,7 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
     val radiusSq by lazy { center.x*center.x + center.y * center.y - (d/a) }
     val radius by lazy { Math.sqrt(radiusSq) }
 
-
-    fun intersectWithLineOP2(line: LineOP2): List<PointOP2> {
+    fun intersectWith(line: LineOP2): List<PointOP2> {
 
         if (line.a != 0.0) {
             // x = -(By+C)/A , solve for Y, then X
@@ -127,7 +126,7 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
         }
     }
 
-    fun intersectWithDiskOP2(disk2: DiskOP2): List<PointOP2> {
+    fun intersectWith(disk2: DiskOP2): List<PointOP2> {
 
         val A = determinant(this.a, this.b, disk2.a, disk2.b)
         val B = determinant(this.a, this.c, disk2.a, disk2.c)
@@ -139,8 +138,8 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
             return listOf<PointOP2>()
         }
 
-        // otherwise, call intersectWithLineOP2 on lineOP2 with coefficients A,B, and C and return result
-        return intersectWithLineOP2( LineOP2(A, B, C) )
+        // otherwise, call intersectWith on lineOP2 with coefficients A,B, and C and return result
+        return intersectWith( LineOP2(A, B, C) )
 
     }
 
