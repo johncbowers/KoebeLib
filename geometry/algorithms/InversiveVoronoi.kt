@@ -94,11 +94,19 @@ class InversiveVoronoiAlgorithms() {
                 val disk4 = edge.aDart?.twin?.next?.dest?.data
 
                 if (disk1 != null && disk2 != null && disk3 != null && disk4 != null) {
-                    val vArc = computeVoronoiEdge(disk1, disk2, disk3, disk4)
-                    val vVert1 = vArc.source
-                    val vVert2 = vArc.target
+                    try {
+                        val vArc = computeVoronoiEdge(disk1, disk2, disk3, disk4)
+                        val vVert1 = vArc.source
+                        val vVert2 = vArc.target
 
-                    voronoiEdges.add(vArc)
+                        voronoiEdges.add(vArc)
+                    } catch (e: IndexOutOfBoundsException) {
+                        e.printStackTrace()
+                        System.err.println("computeVoronoiEdge had an ArrayIndexOutOfBoundsExcpetion")
+                        listOf<DiskS2>(disk1, disk2, disk3, disk4).forEach{
+                            System.err.println("disk: (" + it.a + ", " + it.b + ", " + it.c + ", " + it.d + ")")
+                        }
+                    }
 
                 } else {
                     throw MalformedDCELException("This DCEL contains null pointers.")

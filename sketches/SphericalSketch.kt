@@ -117,7 +117,7 @@ open class SphericalSketch : PApplet() {
 
         pushMatrix()
         translate(p.hx.toFloat()/p.hw.toFloat(), p.hy.toFloat()/p.hw.toFloat(), 1.0f)
-        sphere(0.035f)
+        sphere(0.015f)
         popMatrix()
     }
 
@@ -180,26 +180,36 @@ open class SphericalSketch : PApplet() {
 
         val diameter = arc.radius.toFloat() * 2.0f
 
-        val srcX = arc.source.hx.toFloat()/ arc.source.hw.toFloat()
-        val srcY = arc.source.hy.toFloat()/ arc.source.hw.toFloat()
-        val trgX = arc.target.hx.toFloat()/ arc.target.hw.toFloat()
-        val trgY = arc.target.hy.toFloat()/ arc.target.hw.toFloat()
+        val src = if (arc.disk.a >= 0.0) arc.source else arc.target
+        val trg = if (arc.disk.a >= 0.0) arc.target else arc.source
 
-        val radInv = 1.0 / arc.radius
+        val srcX = src.hx.toFloat() / src.hw.toFloat()
+        val srcY = src.hy.toFloat() / src.hw.toFloat()
+        val trgX = trg.hx.toFloat() / trg.hw.toFloat()
+        val trgY = trg.hy.toFloat() / trg.hw.toFloat()
 
-        val srcV = VectorE2((srcX - arc.disk.center.x) * radInv, (srcY - arc.disk.center.y) * radInv)
-        val trgV = VectorE2((trgX - arc.disk.center.x) * radInv, (trgY - arc.disk.center.y) * radInv)
+        // If it is close to straight, let's just draw the line segment
+        val ratio = Math.abs(Math.sqrt(src.distTo(trg)) / arc.radius)
+        if (Math.abs(ratio) < 0.1) {
+            line(srcX, srcY, trgX, trgY)
+        }
+        // otherwise, we'll draw a circular arc
+        else {
 
-        val srcAngle = srcV.angleFromXAxis.toFloat()
-        var targetAngle = trgV.angleFromXAxis.toFloat()
+            val radInv = 1.0 / arc.radius
 
-        if (srcAngle > targetAngle) targetAngle += TWO_PI
+            val srcV = VectorE2((srcX - arc.disk.center.x) * radInv, (srcY - arc.disk.center.y) * radInv)
+            val trgV = VectorE2((trgX - arc.disk.center.x) * radInv, (trgY - arc.disk.center.y) * radInv)
 
-        arc((arc.disk.center.x).toFloat(), (arc.disk.center.y).toFloat(), diameter, diameter, srcAngle, targetAngle)
+            val srcAngle = srcV.angleFromXAxis.toFloat()
+            var targetAngle = trgV.angleFromXAxis.toFloat()
 
+            if (srcAngle > targetAngle) targetAngle += TWO_PI
+
+            arc((arc.disk.center.x).toFloat(), (arc.disk.center.y).toFloat(), diameter, diameter, srcAngle, targetAngle)
+        }
         popStyle()
         popMatrix()
-
     }
 
     fun drawCircleS2(disk: DiskS2) {

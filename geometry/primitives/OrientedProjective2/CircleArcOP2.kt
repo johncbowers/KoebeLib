@@ -24,7 +24,8 @@ class CircleArcOP2(val source: PointOP2, val target: PointOP2, val disk: DiskOP2
         val tsy = target.hy * source.hw - source.hy * target.hw
         val tsx = target.hx * source.hw - source.hx * target.hw
         val psy = p.hy * source.hw - source.hy * p.hw
-        return 0 < psx * tsy - tsx * psy
+        val test = psx * tsy - tsx * psy
+        return if (disk.a > 0) 0 < test else 0 > test
     }
 
     fun intersectWith(aLine: LineOP2): List<PointOP2> {

@@ -140,11 +140,25 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
     fun get3PointsOnDisk(): List<PointS2> {
 
         // translate basis vectors to center of the disk and scale by radius
-        var newBasis1 = normedBasis1.v * radiusE3 + centerE3.toVectorE3()
-        var newBasis2 = normedBasis2.v * radiusE3 + centerE3.toVectorE3()
-        var newBasis3 = normedBasis1.v * -1.0 * radiusE3 + centerE3.toVectorE3()
+        val newBasis1 = normedBasis1.v * radiusE3 + centerE3.toVectorE3()
+        val newBasis2 = normedBasis2.v * radiusE3 + centerE3.toVectorE3()
+        val newBasis3 = - normedBasis1.v * radiusE3 + centerE3.toVectorE3()
+        val newBasis4 = - normedBasis2.v * radiusE3 + centerE3.toVectorE3()
 
-        return listOf<PointS2>(PointS2(newBasis1), PointS2(newBasis2), PointS2(newBasis3) )
+        val negZ = VectorE3(0.0, 0.0, -1.0)
+        val isNegZ1 = isZero(1.0 - newBasis1.dot(negZ) / newBasis1.norm())
+        val isNegZ2 = isZero(1.0 - newBasis2.dot(negZ) / newBasis2.norm())
+        val isNegZ3 = isZero(1.0 - newBasis3.dot(negZ) / newBasis3.norm())
+        val isNegZ4 = isZero(1.0 - newBasis4.dot(negZ) / newBasis4.norm())
+
+        if (!(isNegZ1 || isNegZ2 || isNegZ3))
+            return listOf<PointS2>(PointS2(newBasis1), PointS2(newBasis2), PointS2(newBasis3))
+        else if (!(isNegZ2 || isNegZ3 || isNegZ4))
+            return listOf<PointS2>(PointS2(newBasis2), PointS2(newBasis3), PointS2(newBasis4))
+        else if (!(isNegZ3 || isNegZ4 || isNegZ1))
+            return listOf<PointS2>(PointS2(newBasis3), PointS2(newBasis4), PointS2(newBasis1))
+        else
+            return listOf<PointS2>(PointS2(newBasis4), PointS2(newBasis1), PointS2(newBasis2))
     }
 
     fun invertThrough(disk: DiskS2): DiskS2 {
