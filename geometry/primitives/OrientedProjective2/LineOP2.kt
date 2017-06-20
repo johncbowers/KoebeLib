@@ -1,6 +1,11 @@
 package geometry.primitives.OrientedProjective2
 
+import geometry.primitives.Euclidean2.PointE2
+import geometry.primitives.Euclidean2.VectorE2
+import geometry.primitives.Euclidean3.VectorE3
+import geometry.primitives.OrientedProjective3.VectorOP3
 import geometry.primitives.determinant
+import geometry.primitives.isZero
 
 /**
  * Created by sarahciresi on 6/13/17.

@@ -3,6 +3,7 @@ package geometry.algorithms
 import geometry.primitives.Euclidean3.PointE3
 import geometry.primitives.Spherical2.*
 import geometry.ds.dcel.*
+import geometry.primitives.OrientedProjective2.CircleArcOP2
 import geometry.primitives.OrientedProjective3.PointOP3
 import geometry.primitives.inner_product
 import sketches.SphericalSketch
@@ -117,5 +118,14 @@ class InversiveVoronoiAlgorithms() {
         }
 
         return voronoiEdges
+    }
+
+    fun sgProjectTo2D(VDiagram3D: InversiveVoronoiDiagram): ArrayList<CircleArcOP2> {
+
+        var voronoiArcs = ArrayList<CircleArcOP2>()
+        for (arc in VDiagram3D) {
+            voronoiArcs.add(arc.sgToCircleArcOP2())
+        }
+        return voronoiArcs
     }
 }

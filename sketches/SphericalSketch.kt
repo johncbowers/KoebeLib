@@ -19,6 +19,7 @@ import geometry.algorithms.orientationPointOP3
 import geometry.algorithms.addPoint
 import geometry.ds.dcel.*
 import geometry.primitives.OrientedProjective2.*
+import geometry.primitives.isZero
 
 import gui.JythonFrame
 import processing.core.PConstants
@@ -156,6 +157,114 @@ open class SphericalSketch : PApplet() {
 //        ellipse( center.hx.toFloat(), center.hy.toFloat(), (2.0*rad).toFloat(), (2.0*rad).toFloat())
         popMatrix()
     }
+
+    fun drawLineOP2(line: LineOP2) {
+
+        pushMatrix()
+        translate(0.0f, 0.0f, 1.0f)
+        noLights()
+        strokeWeight(0.01f)
+        noFill()
+
+        // Draw four bounding box lines
+        line(-2.0f, 2.0f, 2.0f, 2.0f)   // y = 2
+        line(-2.0f, 2.0f, -2.0f, -2.0f) // x = -2
+        line(-2.0f, -2.0f, 2.0f, -2.0f) // y = -2
+        line(2.0f,-2.0f, 2.0f, 2.0f)    // x = 2
+
+        val boundLine1 = LineOP2(0.0, 1.0, -2.0) // y = 2
+        val boundLine2 = LineOP2(1.0, 0.0, 2.0)  // x = -2
+        val boundLine3 = LineOP2(0.0, 1.0, 2.0)   // y = -2
+        val boundLine4 = LineOP2(1.0, 0.0, -2.0)  // x = 2
+
+        // Get four intersection points between line and bound lines
+        var intPts = mutableListOf<PointOP2>()
+        intPts.add(line.intersection(boundLine1))
+        intPts.add(line.intersection(boundLine2))
+        intPts.add(line.intersection(boundLine3))
+        intPts.add(line.intersection(boundLine4))
+
+        // Find which two are on the boundary box
+        var endPts = mutableListOf<PointOP2>()
+        for (pt in intPts) {
+            if ( (isZero(2 - pt.hx/pt.hw) || isZero(-2 - pt.hx/pt.hw)) && Math.abs(pt.hy/pt.hw) <= 2.0 )
+                endPts.add(pt)
+            else if ( (isZero(2 - pt.hy/pt.hw) || isZero(-2 - pt.hy/pt.hw)) && Math.abs(pt.hx/pt.hw) <= 2.0 )
+                endPts.add(pt)
+        }
+        val srcX = endPts[0].hx/endPts[0].hw
+        val srcY = endPts[0].hy/endPts[0].hw
+        val trgX = endPts[1].hx/endPts[1].hw
+        val trgY = endPts[1].hy/endPts[1].hw
+
+        line(srcX.toFloat(),srcY.toFloat(), trgX.toFloat(), trgY.toFloat())
+        popMatrix()
+
+        // Draw endpoints of line
+        for (pt in endPts) drawPointOP2(pt)
+
+
+        /* fun glanceOff(disk: DiskOP2) : Boolean {
+        val intPt = this.intersectWith(disk)
+        val vec = VectorOP2(PointE2(intPt[0].hx/intPt[0].hw, intPt[0].hy/intPt[0].hw ) - disk.center)
+
+        // get ray of direction of line... should everything be VectorOP2..
+        val u = VectorOP2(this.b, this.a)
+
+        return (isZero(vec.dot(u)))
+    }*/
+
+    }
+
+    /*
+    fun drawLineOP3(line: LineOP3) {
+
+        pushMatrix()
+        translate(0.0f, 0.0f, 1.0f)
+        noLights()
+        strokeWeight(0.01f)
+        noFill()
+
+        // Get six intersection points between line and bound lines
+          var intPts = mutableListOf<PointOP3>()
+//        intPts.add(line.intersection(boundLine1))
+//        intPts.add(line.intersection(boundLine2))
+//        intPts.add(line.intersection(boundLine3))
+//        intPts.add(line.intersection(boundLine4))
+
+
+        // Find which two are on the boundary box
+        var endPts = mutableListOf<PointOP3>()
+        for (pt in intPts) {
+            if ( (isZero(2 - pt.hx/pt.hw) || isZero(-2 - pt.hx/pt.hw))
+                    && Math.abs(pt.hy/pt.hw) <= 2.0
+                    && Math.abs(pt.hz/pt.hw) <= 2.0 )
+                endPts.add(pt)
+
+            else if ( (isZero(2 - pt.hy/pt.hw) || isZero(-2 - pt.hy/pt.hw))
+                    && Math.abs(pt.hx/pt.hw) <= 2.0
+                    && Math.abs(pt.hz/pt.hw) <= 2.0)
+
+            else if ( (isZero(2 - pt.hz/pt.hw) || isZero(-2 - pt.hz/pt.hw))
+                    && Math.abs(pt.hx/pt.hw) <= 2.0
+                    && Math.abs(pt.hy/pt.hw) <= 2.0)
+
+                endPts.add(pt)
+        }
+
+        val srcX = endPts[0].hx/endPts[0].hw
+        val srcY = endPts[0].hy/endPts[0].hw
+        val srcZ = endPts[0].hz/endPts[0].hw
+        val trgX = endPts[1].hx/endPts[1].hw
+        val trgY = endPts[1].hy/endPts[1].hw
+        val trgZ = endPts[1].hz/endPts[1].hw
+
+        // translate in the z direction then draw a 2D line?
+        line(srcX.toFloat(),srcY.toFloat(), trgX.toFloat(), trgY.toFloat())
+
+        popMatrix()
+
+    } */
 
     fun drawDiskOP2(disk: DiskOP2) {
         pushMatrix()
@@ -513,6 +622,14 @@ open class SphericalSketch : PApplet() {
                                 noFill()
                             }
                             drawDiskOP2(it)
+                        }
+                        is LineOP2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0.0f, 0.0f, 0.0f)
+                                noFill()
+                            }
+                            drawLineOP2(it)
                         }
                         is PointE3 -> {
                             if (style != null) style.set(this)

@@ -28,6 +28,8 @@ internal typealias CHFace<PointT> = DCEL<PointT, Unit, Unit>.Face
  */
 class IncrementalConvexHullAlgorithms() {
 
+    var generator = Random()
+
     /* Functions for computing the convex hull in different geometries */
     fun computeOP3(points: List<PointOP3>): ConvexHull<PointOP3> = incrConvexHull(points, ::orientationPointOP3)
     fun computeE3(points: List<PointE3>): ConvexHull<PointE3> = incrConvexHull(points, ::orientationPointE3)
@@ -43,15 +45,16 @@ class IncrementalConvexHullAlgorithms() {
     }
 
     // Compute a convex hull generated from random points
-    fun randomConvexHullE3( numPoints: Int ): ConvexHull<PointE3> {
+    fun randomConvexHullE3( numPoints: Int): ConvexHull<PointE3> {
         if (numPoints < 4) {
             throw MalformedDCELException("DCEL has not been constructed properly.")
         }
 
         var points = mutableListOf<PointE3>()
+
         for (pt in 1..numPoints) {
-            val theta = Random().nextDouble() * 2 * Math.PI
-            val phi = Random().nextDouble() * Math.PI
+            val theta = generator.nextDouble() * 2 * Math.PI
+            val phi = generator.nextDouble() * Math.PI
             var x = 1.1 * Math.cos(theta) * Math.sin(phi)
             var y = 1.1 * Math.sin(theta) * Math.sin(phi)
             var z = 1.1 * Math.cos(phi)
