@@ -11,6 +11,9 @@ import org.python.util.PythonInterpreter
 import java.io.*
 import geometry.algorithms.*
 
+import org.fife.ui.rtextarea.*
+import org.fife.ui.rsyntaxtextarea.*
+
 /**
  * Created by johnbowers on 5/27/17.
  */
@@ -29,7 +32,7 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
     val splitPane : JSplitPane
     val editorScrollPane : JScrollPane
     val consoleScrollPane : JScrollPane
-    val editor : JTextArea
+    val editor : RSyntaxTextArea
     val console : JTextArea
 
     val pi : PythonInterpreter
@@ -63,7 +66,10 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
 
         // Build the editors:
 
-        editor = JTextArea("#\n#Type your python code\n#\n\n#This adds three points and a disk:\ncons.clear()\n\np1 = cons.makePointS2( 1.0, 0.3, 1.0)\np2 = cons.makePointS2(-0.1,-0.2, 1.0) \np3 = cons.makePointS2( 0.1,-0.2, 1.0) \n\ndisk1 = cons.makeDiskS2(p1, p2, p3)")
+        //editor = JTextArea("#\n#Type your python code\n#\n\n#This adds three points and a disk:\ncons.clear()\n\np1 = cons.makePointS2( 1.0, 0.3, 1.0)\np2 = cons.makePointS2(-0.1,-0.2, 1.0) \np3 = cons.makePointS2( 0.1,-0.2, 1.0) \n\ndisk1 = cons.makeDiskS2(p1, p2, p3)")
+        editor = RSyntaxTextArea(20, 60)
+        editor.syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_PYTHON
+        editor.setCodeFoldingEnabled(true)
         editorScrollPane = JScrollPane(editor)
 
         console = JTextArea("Jython Console Output\n\n")

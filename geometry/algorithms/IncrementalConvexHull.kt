@@ -61,43 +61,98 @@ class IncrementalConvexHullAlgorithms() {
 
     }
 
-    fun randomConvexHullDiskS2(numPoints: Int): ConvexHull<DiskS2> {
+    // Compute a convex hull generated from random points
+    fun randomConvexHullE3UpperHemisphere( numPoints: Int ): ConvexHull<PointE3> {
+        if (numPoints < 4) {
+            throw MalformedDCELException("DCEL has not been constructed properly.")
+        }
 
-        var newHull = DCEL<DiskS2, Unit, Unit>()
+        var points = mutableListOf<PointE3>()
+        for (pt in 1..numPoints-1) {
+            val theta = Random().nextDouble() * 2 * Math.PI
+            val phi = Random().nextDouble() * Math.PI
+            var x = 1.1 * Math.cos(theta) * Math.sin(phi)
+            var y = 1.1 * Math.sin(theta) * Math.sin(phi)
+            var z = Math.abs(1.1 * Math.cos(phi))
+            points.add(PointE3(x, y, z))
+        }
+        points.add(PointE3(0.0, 0.0, -1.1))
+        return computeE3(points)
 
-        //compute convex hull of random PointE3s
-        val randomHullPointE3 = this.randomConvexHullE3(numPoints)
+    }
+
+    // Compute a convex hull generated from random points with a gauranteed vertex of degree highDegree
+    fun randomConvexHullE3WithHighDegreeVertex( numPoints: Int, highDegree: Int ): ConvexHull<PointE3> {
+        if (numPoints < 4) {
+            throw MalformedDCELException("DCEL has not been constructed properly.")
+        }
+
+        // The degree to guarantee
+        val deg = Math.min(numPoints - 1, highDegree)
+
+        // The number of remaining vertices to generate
+        val n = numPoints - deg - 1
+
+        // Generate n points on the upper hemisphere
+        var points = mutableListOf<PointE3>()
+        for (pt in 1..n) {
+            val theta = Random().nextDouble() * 2 * Math.PI
+            val phi = Random().nextDouble() * Math.PI
+            val x = 1.1 * Math.cos(theta) * Math.sin(phi)
+            val y = 1.1 * Math.sin(theta) * Math.sin(phi)
+            val z = Math.abs(1.1 * Math.cos(phi))
+            points.add(PointE3(x, y, z))
+        }
+
+        // Generate deg points on the disk:
+        for (pt in 1..deg) {
+            val theta = Random().nextDouble() * 2 * Math.PI
+            val x = 1.1 * Math.cos(theta)
+            val y = 1.1 * Math.sin(theta)
+            val z = (Random().nextDouble() - 0.5)  * 0.00001 // Small perturbation to keep from having coplanar points
+            points.add(PointE3(x, y, z))
+        }
+
+        // Add the south pole
+        points.add(PointE3(0.0, 0.0, -1.1))
+        return computeE3(points)
+
+    }
+
+    internal fun convexHullE3toConvexHullDiskS2(inHull: ConvexHull<PointE3>): ConvexHull<DiskS2> {
+
+        val newHull = DCEL<DiskS2, Unit, Unit>()
 
         // Create maps between old and new convex hulls
-        var oldToNewVerts = mutableMapOf<DCEL<PointE3, Unit, Unit>.Vertex, DCEL<DiskS2, Unit, Unit>.Vertex> ()
-        var oldToNewDarts = mutableMapOf<DCEL<PointE3, Unit, Unit>.Dart, DCEL<DiskS2, Unit, Unit>.Dart> ()
-        var oldToNewEdges = mutableMapOf<DCEL<PointE3, Unit, Unit>.Edge, DCEL<DiskS2, Unit, Unit>.Edge> ()
-        var oldToNewFaces = mutableMapOf<DCEL<PointE3, Unit, Unit>.Face, DCEL<DiskS2, Unit, Unit>.Face> ()
+        val oldToNewVerts = mutableMapOf<DCEL<PointE3, Unit, Unit>.Vertex, DCEL<DiskS2, Unit, Unit>.Vertex> ()
+        val oldToNewDarts = mutableMapOf<DCEL<PointE3, Unit, Unit>.Dart, DCEL<DiskS2, Unit, Unit>.Dart> ()
+        val oldToNewEdges = mutableMapOf<DCEL<PointE3, Unit, Unit>.Edge, DCEL<DiskS2, Unit, Unit>.Edge> ()
+        val oldToNewFaces = mutableMapOf<DCEL<PointE3, Unit, Unit>.Face, DCEL<DiskS2, Unit, Unit>.Face> ()
 
         // Copy data from old hull to new hull
-        for ( vert in randomHullPointE3.verts ) {
+        for ( vert in inHull.verts ) {
 
             //figure out what circle has that point as its cap
             val p = PointOP3(vert.data)
             val disk = DiskS2(-p.hx, -p.hy, -p.hz, p.hw)
             oldToNewVerts[vert] = newHull.Vertex(data = disk)
         }
-        for ( dart in randomHullPointE3.darts ) {
+        for ( dart in inHull.darts ) {
             oldToNewDarts[dart] = newHull.Dart()
         }
-        for ( edge in randomHullPointE3.edges ) {
+        for ( edge in inHull.edges ) {
             oldToNewEdges[edge] = newHull.Edge(data = Unit)
         }
-        for ( face in randomHullPointE3.faces ) {
+        for ( face in inHull.faces ) {
             oldToNewFaces[face] = newHull.Face(data = Unit)
         }
 
         // Add appropriate links between data members
-        for (vert in randomHullPointE3.verts) {
+        for (vert in inHull.verts) {
             oldToNewVerts[vert]?.aDart = oldToNewDarts[vert.aDart]
         }
 
-        for (dart in randomHullPointE3.darts) {
+        for (dart in inHull.darts) {
             oldToNewDarts[dart]?.edge = oldToNewEdges[dart.edge]
             oldToNewDarts[dart]?.origin = oldToNewVerts[dart.origin]
             oldToNewDarts[dart]?.face = oldToNewFaces[dart.face]
@@ -107,15 +162,19 @@ class IncrementalConvexHullAlgorithms() {
             oldToNewDarts[dart]?.next = oldToNewDarts[dart.next]
         }
 
-        for (edge in randomHullPointE3.edges) {
+        for (edge in inHull.edges) {
             oldToNewEdges[edge]?.aDart = oldToNewDarts[edge.aDart]
         }
 
-        for (face in randomHullPointE3.faces) {
+        for (face in inHull.faces) {
             oldToNewFaces[face]?.aDart = oldToNewDarts[face.aDart]
         }
         return newHull
     }
+
+    fun randomConvexHullDiskS2(numPoints: Int) = convexHullE3toConvexHullDiskS2(this.randomConvexHullE3(numPoints))
+    fun randomConvexHullDiskS2UpperHemisphere(numPoints: Int) = convexHullE3toConvexHullDiskS2(this.randomConvexHullE3UpperHemisphere(numPoints))
+    fun randomConvexHullDiskS2WithHighDegreeVertex( numPoints: Int, highDegree: Int ) = convexHullE3toConvexHullDiskS2(this.randomConvexHullE3WithHighDegreeVertex( numPoints, highDegree ))
 }
 
 /* Public functions */
