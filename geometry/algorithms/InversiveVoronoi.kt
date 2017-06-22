@@ -3,6 +3,7 @@ package geometry.algorithms
 import geometry.primitives.Euclidean3.PointE3
 import geometry.primitives.Spherical2.*
 import geometry.ds.dcel.*
+import geometry.primitives.OrientedProjective2.CircleArcOP2
 import geometry.primitives.OrientedProjective3.PointOP3
 import geometry.primitives.inner_product
 import sketches.SphericalSketch
@@ -94,11 +95,19 @@ class InversiveVoronoiAlgorithms() {
                 val disk4 = edge.aDart?.twin?.next?.dest?.data
 
                 if (disk1 != null && disk2 != null && disk3 != null && disk4 != null) {
-                    val vArc = computeVoronoiEdge(disk1, disk2, disk3, disk4)
-                    val vVert1 = vArc.source
-                    val vVert2 = vArc.target
+                    try {
+                        val vArc = computeVoronoiEdge(disk1, disk2, disk3, disk4)
+                        val vVert1 = vArc.source
+                        val vVert2 = vArc.target
 
-                    voronoiEdges.add(vArc)
+                        voronoiEdges.add(vArc)
+                    } catch (e: IndexOutOfBoundsException) {
+                        e.printStackTrace()
+                        System.err.println("computeVoronoiEdge had an ArrayIndexOutOfBoundsExcpetion")
+                        listOf<DiskS2>(disk1, disk2, disk3, disk4).forEach{
+                            System.err.println("disk: (" + it.a + ", " + it.b + ", " + it.c + ", " + it.d + ")")
+                        }
+                    }
 
                 } else {
                     throw MalformedDCELException("This DCEL contains null pointers.")
@@ -109,5 +118,14 @@ class InversiveVoronoiAlgorithms() {
         }
 
         return voronoiEdges
+    }
+
+    fun sgProjectTo2D(VDiagram3D: InversiveVoronoiDiagram): ArrayList<CircleArcOP2> {
+
+        var voronoiArcs = ArrayList<CircleArcOP2>()
+        for (arc in VDiagram3D) {
+            voronoiArcs.add(arc.sgToCircleArcOP2())
+        }
+        return voronoiArcs
     }
 }

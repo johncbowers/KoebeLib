@@ -6,6 +6,8 @@ import geometry.primitives.Euclidean3.PointE3
 import geometry.primitives.Euclidean3.VectorE3
 import geometry.primitives.Euclidean3.PlaneE3
 import geometry.primitives.Euclidean3.least_dominant
+import geometry.primitives.OrientedProjective2.DiskOP2
+import geometry.primitives.OrientedProjective2.PointOP2
 import geometry.primitives.OrientedProjective3.PointOP3
 import geometry.primitives.OrientedProjective3.PlaneOP3
 
@@ -119,6 +121,7 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
      * @return The CPlaneS2 containing the points of equal inversive distance between this and disk.
      */
     fun bisectorWith(disk: DiskS2): CPlaneS2 {
+
         // First we normalize our vectors with respect to the Minkowski 3,1 inner product:
         val minNorm1 = Math.sqrt(inner_product31(a, b, c, d, a, b, c, d))
         val minNorm2 = Math.sqrt(inner_product31(disk.a, disk.b, disk.c, disk.d, disk.a, disk.b, disk.c, disk.d))
@@ -134,14 +137,55 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
         return CPlaneS2(a, b, c, d)
     }
 
-    fun getPointE3(): List<PointE3> {
+    fun get3PointsOnDisk(): List<PointS2> {
 
         // translate basis vectors to center of the disk and scale by radius
-        var newBasis1 = normedBasis1.v * radiusE3 + centerE3.toVectorE3()
-        var newBasis2 = normedBasis2.v * radiusE3 + centerE3.toVectorE3()
-        var newBasis3 = normedBasis1.v * -1.0 * radiusE3 + centerE3.toVectorE3()
+        val newBasis1 = normedBasis1.v * radiusE3 + centerE3.toVectorE3()
+        val newBasis2 = normedBasis2.v * radiusE3 + centerE3.toVectorE3()
+        val newBasis3 = - normedBasis1.v * radiusE3 + centerE3.toVectorE3()
+        val newBasis4 = - normedBasis2.v * radiusE3 + centerE3.toVectorE3()
 
-        return listOf<PointE3>(newBasis1.toPointE3(), newBasis2.toPointE3(), newBasis3.toPointE3() )
+        val negZ = VectorE3(0.0, 0.0, -1.0)
+        val isNegZ1 = isZero(1.0 - newBasis1.dot(negZ) / newBasis1.norm())
+        val isNegZ2 = isZero(1.0 - newBasis2.dot(negZ) / newBasis2.norm())
+        val isNegZ3 = isZero(1.0 - newBasis3.dot(negZ) / newBasis3.norm())
+        val isNegZ4 = isZero(1.0 - newBasis4.dot(negZ) / newBasis4.norm())
+
+        if (!(isNegZ1 || isNegZ2 || isNegZ3))
+            return listOf<PointS2>(PointS2(newBasis1), PointS2(newBasis2), PointS2(newBasis3))
+        else if (!(isNegZ2 || isNegZ3 || isNegZ4))
+            return listOf<PointS2>(PointS2(newBasis2), PointS2(newBasis3), PointS2(newBasis4))
+        else if (!(isNegZ3 || isNegZ4 || isNegZ1))
+            return listOf<PointS2>(PointS2(newBasis3), PointS2(newBasis4), PointS2(newBasis1))
+        else
+            return listOf<PointS2>(PointS2(newBasis4), PointS2(newBasis1), PointS2(newBasis2))
     }
 
+    fun invertThrough(disk: DiskS2): DiskS2 {
+
+        val fact =
+                inner_product31(a, b, c, d, disk.a, disk.b, disk.c, disk.d) /
+                inner_product31(disk.a, disk.b, disk.c, disk.d, disk.a, disk.b, disk.c, disk.d)
+
+        return DiskS2(
+                a - 2 * fact * disk.a,
+                b - 2 * fact * disk.b,
+                c - 2 * fact * disk.c,
+                d - 2 * fact * disk.d
+        )
+    }
+
+    fun sgProjectToOP2(): DiskOP2 {
+        var pointsOP2 = mutableListOf<PointOP2>()
+
+        // Get three points on DiskS2
+        var pointsE3 = this.get3PointsOnDisk()
+
+        // Project the PointE3s to PointOP2s
+        for (point in pointsE3) {
+            pointsOP2.add(point.sgProjectToPointOP2())
+        }
+        // Return the diskOP2 through 3 projected PointOP2s
+        return DiskOP2(pointsOP2[0], pointsOP2[1], pointsOP2[2])
+    }
 }

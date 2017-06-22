@@ -64,13 +64,13 @@ class LineOP3(
         // larger than or equal to
 
         // x = 0 plane
-        if (v.x >= v.y && v.x >= v.z) {
+        if (Math.abs(v.x) >= Math.abs(v.y) && Math.abs(v.x) >= Math.abs(v.z)) {
             px = 0.0
             py = m.z / v.x
             pz = -m.y / v.x
         }
         // y = 0 plane
-        else if (v.y >= v.x && v.y >= v.z) {
+        else if (Math.abs(v.y) >= Math.abs(v.x) && Math.abs(v.y) >= Math.abs(v.z)) {
             px = -m.z / v.y
             py = 0.0
             pz = m.x / v.y

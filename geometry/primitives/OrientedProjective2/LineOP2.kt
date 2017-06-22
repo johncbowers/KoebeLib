@@ -1,6 +1,11 @@
 package geometry.primitives.OrientedProjective2
 
+import geometry.primitives.Euclidean2.PointE2
+import geometry.primitives.Euclidean2.VectorE2
+import geometry.primitives.Euclidean3.VectorE3
+import geometry.primitives.OrientedProjective3.VectorOP3
 import geometry.primitives.determinant
+import geometry.primitives.isZero
 
 /**
  * Created by sarahciresi on 6/13/17.
@@ -16,4 +21,10 @@ class LineOP2 (
         val detw = determinant(this.a, this.b, line2.a, line2.b)
         return PointOP2(detx, dety, detw)
     }
+
+
+    fun intersectWith(disk: DiskOP2): List<PointOP2> {
+        return disk.intersectWith(this)
+    }
+
 }
