@@ -177,31 +177,69 @@ open class SphericalSketch : PApplet() {
         val boundLine3 = LineOP2(0.0, 1.0, 2.0)   // y = -2
         val boundLine4 = LineOP2(1.0, 0.0, -2.0)  // x = 2
 
-        // Get four intersection points between line and bound lines
-        var intPts = mutableListOf<PointOP2>()
-        intPts.add(line.intersection(boundLine1))
-        intPts.add(line.intersection(boundLine2))
-        intPts.add(line.intersection(boundLine3))
-        intPts.add(line.intersection(boundLine4))
 
-        // Find which two are on the boundary box
-        var endPts = mutableListOf<PointOP2>()
-        for (pt in intPts) {
-            if ( (isZero(2 - pt.hx/pt.hw) || isZero(-2 - pt.hx/pt.hw)) && Math.abs(pt.hy/pt.hw) <= 2.0 )
-                endPts.add(pt)
-            else if ( (isZero(2 - pt.hy/pt.hw) || isZero(-2 - pt.hy/pt.hw)) && Math.abs(pt.hx/pt.hw) <= 2.0 )
-                endPts.add(pt)
+        // Get 2-4 intersection points between line and bound lines (lines 2 & 4)
+        var intPts = mutableListOf<PointOP2>()
+        var srcPt: PointOP2
+        var trgPt: PointOP2
+
+        // If line is horizontal line, only intersect with two vertical lines (lines 1 & 3)
+        if ( line.a == 0.0 ) {
+            srcPt = line.intersection(boundLine2)
+            trgPt = line.intersection(boundLine4)
+//            endPts.addAll(intPts)
         }
-        val srcX = endPts[0].hx/endPts[0].hw
-        val srcY = endPts[0].hy/endPts[0].hw
-        val trgX = endPts[1].hx/endPts[1].hw
-        val trgY = endPts[1].hy/endPts[1].hw
+
+        // If line is a vertical line, only intersect with two horizontal lines
+        else if (line.b == 0.0) {
+            srcPt = line.intersection(boundLine1)
+            trgPt= line.intersection(boundLine3)
+        }
+        else { // If line is not a vertical or horizontal lines
+            val intPt1 =  line.intersection(boundLine1)   //p1
+            val intPt2 = line.intersection(boundLine2)    //p2
+            val intPt3 = line.intersection(boundLine3)    //p3
+            val intPt4 = line.intersection(boundLine4)    //p4
+
+            // Find which two are on the boundary box
+            /*for (pt in intPts) {
+                if ((isZero(2 - pt.hx / pt.hw) || isZero(-2 - pt.hx / pt.hw)) && Math.abs(pt.hy / pt.hw) <= 2.0)
+                    endPts.add(pt)
+                else if ((isZero(2 - pt.hy / pt.hw) || isZero(-2 - pt.hy / pt.hw)) && Math.abs(pt.hx / pt.hw) <= 2.0)
+                    endPts.add(pt)
+            }*/
+
+            // if sign(line.a)!= sign(line.b)
+            if ( line.a * line.b < 0 ) {
+                srcPt =
+                        if( intPt1.hx * intPt4.hw < intPt4.hx * intPt1.hw)    intPt1
+                        else intPt4
+                trgPt =
+                        if( intPt2.hx * intPt3.hw > intPt3.hx  * intPt2.hw)   intPt2
+                        else intPt3
+            }
+            else {
+                srcPt =
+                        if( intPt3.hx * intPt4.hw < intPt4.hx *intPt3.hw) intPt3
+                        else intPt4
+                trgPt =
+                        if( intPt1.hx * intPt2.hw > intPt2.hx  * intPt1.hw) intPt1
+                        else intPt2
+            }
+
+        }
+
+        val srcX = srcPt.hx/srcPt.hw
+        val srcY = srcPt.hy/srcPt.hw
+        val trgX = trgPt.hx/trgPt.hw
+        val trgY = trgPt.hy/trgPt.hw
 
         line(srcX.toFloat(),srcY.toFloat(), trgX.toFloat(), trgY.toFloat())
         popMatrix()
 
         // Draw endpoints of line
-        for (pt in endPts) drawPointOP2(pt)
+        drawPointOP2(srcPt)
+        drawPointOP2(trgPt)
 
 
         /* fun glanceOff(disk: DiskOP2) : Boolean {

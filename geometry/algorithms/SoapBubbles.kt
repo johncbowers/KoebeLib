@@ -86,7 +86,29 @@ class SoapBubbles() {
     }
 
 
-    fun renderBubbleImage ( intersectionPts: ArrayList<PointOP2>, filePath: String) {
+    fun renderBubbleImage ( intersectionPts: ArrayList<PointOP2>, filePath: String, imageSize: Int) {
 
+        val img = BufferedImage(imageSize, imageSize, BufferedImage.TYPE_INT_RGB )
+        val outputFile: File = File(filePath)
+
+        // set pixels to black for intersection points, white if not
+        for ( x in 0..imageSize - 1 ) {
+            for ( y in 0..imageSize -1 ) {
+                img.setRGB(x,y, Color(255, 255, 255).rgb)
+            }
+        }
+
+        // toInt ?
+        for ( pt in intersectionPts) {
+            val scaledX = (pt.hx/pt.hw + 2)*(imageSize/4)
+            val scaledY = (pt.hy/pt.hw + 2)*(imageSize/4)
+            //print("scX = " + scaledX + "scY = " + scaledY)
+            if( (0 <= scaledX && scaledX <= imageSize-1) && (0 <= scaledY && scaledY <= imageSize-1)) {
+                img.setRGB(scaledX.toInt(), scaledY.toInt(), Color(0, 0, 0).rgb)
+            }
+        }
+
+        // write the image to the output file
+        ImageIO.write(img, "jpeg", outputFile)
     }
 }
