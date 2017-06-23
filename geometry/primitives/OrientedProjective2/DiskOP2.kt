@@ -62,7 +62,7 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     fun intersectWith(line: LineOP2): List<PointOP2> {
 
-        if (line.a != 0.0) {
+        if (!isZero(line.a)) {
             // x = -(By+C)/A , solve for Y, then X
             val alpha2 = -this.a * line.b * line.b + this.a * line.a * line.a - this.b * line.b * line.b
             val beta2 = -2 * this.a * line.b * line.c - 2 * this.b * line.b * line.c + this.c * line.a * line.a
@@ -74,16 +74,15 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
             val gamma = this.a * line.c * line.c - this.b * line.a * line.c + this.d * line.a * line.a
 
             // Test for number of intersection points
-            // Case 1: 0 intersection points
-            if ( beta*beta - 4*alpha*gamma < 0.0 )
-                return listOf<PointOP2>()
-
-            // Case 2: 1 intersection point
-            else if ( beta*beta - 4*alpha*gamma == 0.0) {
+            // Case 1: 1 intersection point
+            if ( isZero(beta*beta - 4*alpha*gamma) ) {
                 val point1Y = -beta/(2*alpha)
                 val point1X = (-line.b*point1Y-line.c)/line.a
                 return listOf<PointOP2>( PointOP2(point1X, point1Y) )
             }
+            // Case 1: 0 intersection points
+            else if ( beta*beta - 4*alpha*gamma < 0.0 )
+                return listOf<PointOP2>()
             // Case 3: 2 intersection points
             else {
                 val point1Y = (-beta + Math.sqrt(beta*beta - 4*alpha*gamma))/(2 * alpha)
@@ -103,15 +102,15 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
             val gamma = this.a * line.c * line.c - this.c * line.b * line.c + this.d * line.b * line.b
 
             // Test for number of intersection points
-            // Case 1: 0 intersection points
-            if ( beta * beta - 4 * alpha * gamma < 0.0 )
+            // Case 1: 1 intersection point
+            if ( isZero(beta * beta - 4 * alpha * gamma) ) {
+                val point1X = -beta / (2 * alpha)
+                val point1Y = (-line.a * point1X - line.c) / line.b
+                return listOf<PointOP2>(PointOP2(point1X, point1Y))
+            }
+            // Case 2: 0 intersection points
+            else if ( beta * beta - 4 * alpha * gamma < 0.0 ) {
                 return listOf<PointOP2>()
-
-            // Case 2: 1 intersection point
-            else if ( beta * beta - 4 * alpha * gamma == 0.0) {
-                val point1X = -beta/(2 * alpha)
-                val point1Y = (-line.a * point1X - line.c)/line.b
-                return listOf<PointOP2>( PointOP2(point1X, point1Y) )
             }
             // Case 3: 2 intersection points
             else {
