@@ -20,6 +20,8 @@ import allMains.CPBase
 import packing.PackData
 import rePack.RePacker
 import rePack.SphPacker.SPH_GOPACK_THRESHOLD
+import geometry.primitives.norm31
+import geometry.primitives.inner_product31
 
 
 
@@ -127,6 +129,41 @@ class CirclePack() {
         return packing
     }
 
+    /**
+     * Function to create a circle pack using the gradient
+     */
+    fun gradientPackOnePass(convHull: ConvexHull<DiskS2>, delta:Double) {
+        for (v in convHull.verts) {
+            var a = v.data.a
+            var b = v.data.b
+            var c = v.data.c
+            var d = v.data.d
+            var updateA = 0.0
+            var updateB = 0.0
+            var updateC = 0.0
+            var updateD = 0.0
+            val normC1 = norm31(a,b,c,d);
+            for (ver in v.neighbors()) {
+                val a2 = ver.data.a
+                val b2 = ver.data.b
+                val c2 = ver.data.c
+                val d2 = ver.data.d
+                val normC2 = norm31(a2, b2, c2, d2);
+                val dotProduct = inner_product31(a,b,c,d,a2,b2,c2,d2);
+                val inverDist = (a*a2 + b*b2 + c*c2 - d*d2)/
+                        (Math.sqrt(a*a + b*b + c*c - (d*d)) *Math.sqrt(a2*a2 + b2*b2 + c2*c2 - (d2*d2)))
+                updateA += (1-(a/(normC1*normC2) - (a2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist
+                updateB += (1-(b/(normC1*normC2) - (b2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+                updateC += (1-(c/(normC1*normC2) - (c2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+                updateD += (1-(-d/(normC1*normC2) + (d2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+            }
+            println("updateA: " + updateA * delta)
+            println("updateB: " + updateB * delta)
+            println("updateC: " + updateC * delta)
+            println("updateD: " + updateD * delta)
+            v.data = DiskS2(a + delta*updateA, b + delta*updateB, c + delta*updateC, d + delta*updateD)
+        }
+    }
 
     // This comes from Ken Stephenson's CirclePack, but we needed to edit without actually editing:
     fun repack_call(packing: PackData, passes: Int, useC: Boolean): Int {

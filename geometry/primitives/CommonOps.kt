@@ -34,6 +34,7 @@ fun inner_product(x1:Double, y1:Double, z1:Double, w1:Double,
 
 fun inner_product31(x1:Double, y1:Double, z1:Double, w1:Double,
                   x2:Double, y2:Double, z2:Double, w2:Double) = x1*x2 + y1*y2 + z1*z2 - w1*w2
+fun norm31(x1:Double, y1:Double, z1:Double, w1:Double) = x1*x1 + y1*y1 + z1*z1 - (w1*w1)
 
 fun are_dependent(a1:Double, b1:Double, c1:Double,
                   a2:Double, b2:Double, c2:Double) =

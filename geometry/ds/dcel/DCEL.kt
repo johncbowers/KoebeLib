@@ -127,6 +127,17 @@ class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
                 throw MalformedDCELException("Vertex has a null outgoing dart or its outgoing dart has a null twin.")
             }
         }
+        fun neighbors(): List<Vertex> {
+            return inDarts().map {
+                dart ->
+                val origin = dart?.origin
+                if (origin!= null) {
+                    origin
+                } else {
+                    throw MalformedDCELException("Dart has a null vertex")
+                }
+            }
+        }
     }
 
     inner class Dart(

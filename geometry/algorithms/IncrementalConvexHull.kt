@@ -55,9 +55,9 @@ class IncrementalConvexHullAlgorithms() {
         for (pt in 1..numPoints) {
             val theta = generator.nextDouble() * 2 * Math.PI
             val phi = generator.nextDouble() * Math.PI
-            var x = 1.1 * Math.cos(theta) * Math.sin(phi)
-            var y = 1.1 * Math.sin(theta) * Math.sin(phi)
-            var z = 1.1 * Math.cos(phi)
+            var x = 1.01 * Math.cos(theta) * Math.sin(phi)
+            var y = 1.01 * Math.sin(theta) * Math.sin(phi)
+            var z = 1.01 * Math.cos(phi)
             points.add(PointE3(x, y, z))
         }
         return computeE3(points)
