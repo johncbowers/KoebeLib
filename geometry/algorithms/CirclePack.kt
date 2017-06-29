@@ -135,36 +135,50 @@ class CirclePack() {
     fun gradientPackOnePass(convHull: ConvexHull<DiskS2>, delta:Double) {
         for (v in convHull.verts) {
             var a = v.data.a
+            //System.out.println("a " + a)
             var b = v.data.b
+            //System.out.println("b " + b)
             var c = v.data.c
+            //System.out.println("c " + c)
             var d = v.data.d
+            //System.out.println("d " + d)
             var updateA = 0.0
             var updateB = 0.0
             var updateC = 0.0
             var updateD = 0.0
             val normC1 = norm31(a,b,c,d);
+            //System.out.println("Norm C1 " + normC1)
             for (ver in v.neighbors()) {
                 val a2 = ver.data.a
+                //System.out.println("a2 " + a2)
                 val b2 = ver.data.b
+                //System.out.println("b2 " + b2)
                 val c2 = ver.data.c
+                //System.out.println("c2 " + c2)
                 val d2 = ver.data.d
-                val normC2 = norm31(a2, b2, c2, d2);
+                //System.out.println("d2 " + d2)
+                val normC2 = norm31(a2, b2, c2, d2);1
+                //System.out.println("Norm C2 " + normC2)
                 val dotProduct = inner_product31(a,b,c,d,a2,b2,c2,d2);
+                //System.out.println("dot product" + dotProduct)
                 val inverDist = v.data.inversiveDistTo(ver.data)
 
                 val invDenom = 1.0 / (normC1 * normC2 * normC2 * normC2)
+                var deltaA = - ((a * normC2*normC2) - (a2 * dotProduct)) * invDenom
+                //System.out.println("deltaA " + deltaA)
+                var deltaB = - ((b * normC2*normC2) - (b2 * dotProduct)) * invDenom
+                //System.out.println("deltaB " + deltaB)
+                var deltaC = - ((c * normC2*normC2) - (c2 * dotProduct)) * invDenom
+                //System.out.println("deltaC " + deltaC)
+                var deltaD = + ((d * normC2*normC2) - (d2 * dotProduct)) * invDenom
+                //System.out.println("delta D " + deltaD)
 
-                var deltaA = - ((a * normC2*normC2) - (2.0 * a2 * dotProduct)) * invDenom
-                var deltaB = - ((b * normC2*normC2) - (2.0 * b2 * dotProduct)) * invDenom
-                var deltaC = - ((c * normC2*normC2) - (2.0 * c2 * dotProduct)) * invDenom
-                var deltaD = + ((d * normC2*normC2) - (2.0 * d2 * dotProduct)) * invDenom
+                //val scale = (1.0 - inverDist) / Math.sqrt(deltaA*deltaA + deltaB*deltaB + deltaC*deltaC - deltaD*deltaD)
 
-                val scale = (1.0 - inverDist) / Math.sqrt(deltaA*deltaA + deltaB*deltaB + deltaC*deltaC - deltaD*deltaD)
-
-                deltaA *= scale
-                deltaB *= scale
-                deltaC *= scale
-                deltaD *= scale
+                //deltaA *= scale
+                //deltaB *= scale
+                //deltaC *= scale
+                //deltaD *= scale
 
                 updateA += deltaA
                 updateB += deltaB
@@ -181,6 +195,13 @@ class CirclePack() {
 //            println("updateB: " + updateB * delta)
 //            println("updateC: " + updateC * delta)
 //            println("updateD: " + updateD * delta)
+           // if (a == Double.NaN || b == Double.NaN || c == Double.NaN || d == Double.NaN) {
+           //     System.out.println("a " + a)
+           //     System.out.println("b" + b)
+           //     System.out.println("c" + c)
+           //    System.out.println("d" + d)
+           //     System.out.println()
+           // }
             val newDisk = DiskS2(a + delta*updateA, b + delta*updateB, c + delta*updateC, d + delta*updateD)
             v.data = newDisk.normalize()
         }
