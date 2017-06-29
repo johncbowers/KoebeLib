@@ -433,7 +433,7 @@ fun orientationPointOP3(p1: PointOP3, p2: PointOP3, p3: PointOP3, p4: PointOP3) 
             p1.hx, p1.hy, p1.hz, p1.hw,
             p2.hx, p2.hy, p2.hz, p2.hw,
             p3.hx, p3.hy, p3.hz, p3.hw,
-            p4.hx, p4.hy, p4.hz, p4.hw
+            p4.hx, p4.hy, p4.hz, p4. hw
     )
 
 fun orientationDiskS2(d1: DiskS2, d2: DiskS2, d3: DiskS2, d4: DiskS2) =
