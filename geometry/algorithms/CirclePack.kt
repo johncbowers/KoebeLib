@@ -150,18 +150,82 @@ class CirclePack() {
                 val d2 = ver.data.d
                 val normC2 = norm31(a2, b2, c2, d2);
                 val dotProduct = inner_product31(a,b,c,d,a2,b2,c2,d2);
-                val inverDist = (a*a2 + b*b2 + c*c2 - d*d2)/
-                        (Math.sqrt(a*a + b*b + c*c - (d*d)) *Math.sqrt(a2*a2 + b2*b2 + c2*c2 - (d2*d2)))
-                updateA += (1-(a/(normC1*normC2) - (a2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist
-                updateB += (1-(b/(normC1*normC2) - (b2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
-                updateC += (1-(c/(normC1*normC2) - (c2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
-                updateD += (1-(-d/(normC1*normC2) + (d2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+                val inverDist = v.data.inversiveDistTo(ver.data)
+
+                val invDenom = 1.0 / (normC1 * normC2 * normC2 * normC2)
+
+                var deltaA = - ((a * normC2*normC2) - (2.0 * a2 * dotProduct)) * invDenom
+                var deltaB = - ((b * normC2*normC2) - (2.0 * b2 * dotProduct)) * invDenom
+                var deltaC = - ((c * normC2*normC2) - (2.0 * c2 * dotProduct)) * invDenom
+                var deltaD = + ((d * normC2*normC2) - (2.0 * d2 * dotProduct)) * invDenom
+
+                val scale = (1.0 - inverDist) / Math.sqrt(deltaA*deltaA + deltaB*deltaB + deltaC*deltaC - deltaD*deltaD)
+
+                deltaA *= scale
+                deltaB *= scale
+                deltaC *= scale
+                deltaD *= scale
+
+                updateA += deltaA
+                updateB += deltaB
+                updateC += deltaC
+                updateD += deltaD
+
+                // Original Code (update is above)
+//                updateA += (1-(a/(normC1*normC2) - (a2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist
+//                updateB += (1-(b/(normC1*normC2) - (b2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+//                updateC += (1-(c/(normC1*normC2) - (c2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+//                updateD += (1-(-d/(normC1*normC2) + (d2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
             }
-            println("updateA: " + updateA * delta)
-            println("updateB: " + updateB * delta)
-            println("updateC: " + updateC * delta)
-            println("updateD: " + updateD * delta)
-            v.data = DiskS2(a + delta*updateA, b + delta*updateB, c + delta*updateC, d + delta*updateD)
+//            println("updateA: " + updateA * delta)
+//            println("updateB: " + updateB * delta)
+//            println("updateC: " + updateC * delta)
+//            println("updateD: " + updateD * delta)
+            val newDisk = DiskS2(a + delta*updateA, b + delta*updateB, c + delta*updateC, d + delta*updateD)
+            v.data = newDisk.normalize()
+        }
+    }
+
+
+    /**
+     * Function to create a circle pack using the gradient
+     */
+    fun gradientEdgePackOnePass(convHull: ConvexHull<DiskS2>, delta:Double) {
+        for (d in convHull.darts) {
+            val v = d.origin
+            val ver = d.dest
+            if (v != null && ver != null) {
+                val a = v.data.a
+                val b = v.data.b
+                val c = v.data.c
+                val d = v.data.d
+
+                val a2 = ver.data.a
+                val b2 = ver.data.b
+                val c2 = ver.data.c
+                val d2 = ver.data.d
+
+                val normC1 = norm31(a,b,c,d);
+                val normC2 = norm31(a2, b2, c2, d2);
+                val dotProduct = inner_product31(a,b,c,d,a2,b2,c2,d2);
+                val inverDist = v.data.inversiveDistTo(ver.data)
+
+                val invDenom = 1.0 / (normC1 * normC2 * normC2 * normC2)
+
+                var deltaA = - ((a * normC2*normC2) - (2.0 * a2 * dotProduct)) * invDenom
+                var deltaB = - ((b * normC2*normC2) - (2.0 * b2 * dotProduct)) * invDenom
+                var deltaC = - ((c * normC2*normC2) - (2.0 * c2 * dotProduct)) * invDenom
+                var deltaD = + ((d * normC2*normC2) - (2.0 * d2 * dotProduct)) * invDenom
+
+                val scale = (1.0 - inverDist)// / Math.sqrt(deltaA*deltaA + deltaB*deltaB + deltaC*deltaC + deltaD*deltaD)
+                deltaA *= scale
+                deltaB *= scale
+                deltaC *= scale
+                deltaD *= scale
+
+                val newDisk = DiskS2(a + delta*deltaA, b + delta*deltaB, c + delta*deltaC, d + delta*deltaD)
+                v.data = newDisk.normalize()
+            }
         }
     }
 
