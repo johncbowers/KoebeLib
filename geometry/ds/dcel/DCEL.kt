@@ -17,6 +17,45 @@ class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
 
     val outerFace: Face?
 
+
+      /**
+      * Creates the dual graph of a DCEL
+      */
+      fun DualHull() : DCEL<FaceData, EdgeData, VertexData> {
+         val dualFtoV = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Face, DCEL<FaceData, EdgeData, VertexData>.Vertex>();
+         val dualEtoE = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Edge, DCEL<FaceData, EdgeData, VertexData>.Edge>();
+         val dualVtoF = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Vertex, DCEL<FaceData, EdgeData, VertexData>.Face>();
+         val dualDtoD = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Dart, DCEL<FaceData, EdgeData, VertexData>.Dart>();
+         val dual = DCEL<FaceData, EdgeData, VertexData>();
+         for (f in faces) {
+           val A = dual.Vertex(data = f.data);
+           dualFtoV.put(f, A);
+         }
+         for (v in verts) {
+           val dualFace = dual.Face(data = v.data);
+           dualVtoF.put(v, dualFace);
+         }
+         for (he in darts) {
+           val origin = dualFtoV.get(he.face);
+           val incident = dualVtoF.get(he.origin);
+           val newHe = dual.Dart();
+           newHe.origin = origin;
+           newHe.face = incident;
+           dualDtoD.put(he, newHe);
+         }
+         for (edge in edges) {
+           val dualEdge = dual.Edge(data = edge.data);
+           dualEtoE.put(edge, dualEdge);
+         }
+         for (he in darts) {
+           val dualHe = dualDtoD.get(he);
+           dualHe?.next = dualDtoD.get(he.twin?.prev);
+           dualHe?.prev = dualDtoD.get(he.next?.twin);
+           dualHe?.twin = dualDtoD.get(he.twin);
+           dualHe?.edge = dualDtoD.get(he)?.edge;
+         }
+         return dual;
+      }
     init {
         outerFace = if (outerFaceData != null) Face(data = outerFaceData) else null
     }
@@ -86,6 +125,17 @@ class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
                 return darts
             }  else {
                 throw MalformedDCELException("Vertex has a null outgoing dart or its outgoing dart has a null twin.")
+            }
+        }
+        fun neighbors(): List<Vertex> {
+            return inDarts().map {
+                dart ->
+                val origin = dart?.origin
+                if (origin!= null) {
+                    origin
+                } else {
+                    throw MalformedDCELException("Dart has a null vertex")
+                }
             }
         }
     }

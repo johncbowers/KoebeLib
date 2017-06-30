@@ -55,9 +55,9 @@ class IncrementalConvexHullAlgorithms() {
         for (pt in 1..numPoints) {
             val theta = generator.nextDouble() * 2 * Math.PI
             val phi = generator.nextDouble() * Math.PI
-            var x = 1.1 * Math.cos(theta) * Math.sin(phi)
-            var y = 1.1 * Math.sin(theta) * Math.sin(phi)
-            var z = 1.1 * Math.cos(phi)
+            var x = 1.01 * Math.cos(theta) * Math.sin(phi)
+            var y = 1.01 * Math.sin(theta) * Math.sin(phi)
+            var z = 1.01 * Math.cos(phi)
             points.add(PointE3(x, y, z))
         }
         return computeE3(points)
@@ -433,7 +433,7 @@ fun orientationPointOP3(p1: PointOP3, p2: PointOP3, p3: PointOP3, p4: PointOP3) 
             p1.hx, p1.hy, p1.hz, p1.hw,
             p2.hx, p2.hy, p2.hz, p2.hw,
             p3.hx, p3.hy, p3.hz, p3.hw,
-            p4.hx, p4.hy, p4.hz, p4.hw
+            p4.hx, p4.hy, p4.hz, p4. hw
     )
 
 fun orientationDiskS2(d1: DiskS2, d2: DiskS2, d3: DiskS2, d4: DiskS2) =

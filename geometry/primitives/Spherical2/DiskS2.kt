@@ -188,4 +188,13 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
         // Return the diskOP2 through 3 projected PointOP2s
         return DiskOP2(pointsOP2[0], pointsOP2[1], pointsOP2[2])
     }
+
+    fun inversiveNormalize(): DiskS2 {
+        val scale = 1.0 / inversiveDistTo(this)
+        return DiskS2(a * scale, b * scale, c * scale, d * scale)
+    }
+    fun normalize(): DiskS2 {
+        val scale = 1.0 / Math.sqrt(inner_product(a, b, c, d, a, b, c, d))
+        return DiskS2(a * scale, b * scale, c * scale, d * scale)
+    }
 }
