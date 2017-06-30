@@ -241,17 +241,6 @@ open class SphericalSketch : PApplet() {
         drawPointOP2(srcPt)
         drawPointOP2(trgPt)
 
-
-        /* fun glanceOff(disk: DiskOP2) : Boolean {
-        val intPt = this.intersectWith(disk)
-        val vec = VectorOP2(PointE2(intPt[0].hx/intPt[0].hw, intPt[0].hy/intPt[0].hw ) - disk.center)
-
-        // get ray of direction of line... should everything be VectorOP2..
-        val u = VectorOP2(this.b, this.a)
-
-        return (isZero(vec.dot(u)))
-    }*/
-
     }
 
     /*
