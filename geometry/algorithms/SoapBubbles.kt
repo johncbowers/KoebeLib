@@ -59,7 +59,7 @@ class SoapBubbles() {
                     val Rp = Math.pow((1.0 * Math.cos(thetaIncident) - soapRefractionIndex * Math.cos(thetaTransmission)) /
                             (1.0 * Math.cos(thetaIncident) + soapRefractionIndex * Math.cos(thetaTransmission)), 2.0)
 
-                    val Tp = (2*Math.cos(thetaIncident))/(Math.cos(thetaIncident)+soapRefractionIndex * Math.cos(thetaTransmission))
+                     val Tp = (2*Math.cos(thetaIncident))/(Math.cos(thetaIncident)+soapRefractionIndex * Math.cos(thetaTransmission))
 
                     //println("Rp = " + Rp)
                     // Update the intensity proportion
