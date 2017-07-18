@@ -44,7 +44,7 @@ import geometry.primitives.inner_product31
 class CirclePack() {
 
     /* Functions for computing a Circle Packing  */
-    fun pack( convHull: ConvexHull<DiskS2> ): PackData {
+    fun pack( convHull: ConvexHull<DiskS2>, iterations: Int = 1000): PackData {
 
         // Find the max degree vertex and swap it to last index:
         var maxDegree = convHull.verts[convHull.verts.size-1].edges().size
@@ -61,6 +61,9 @@ class CirclePack() {
         convHull.verts[convHull.verts.size - 1] = tmp
 
         var packing = PackData(null)  //packData is class that holds the packing information, combinatorics, etc..
+
+        packing.alloc_pack_space(convHull.verts.size, true)
+        packing.status = true
 
         // Create a map from a vertex to an index
         var vtoi = mutableMapOf<DCEL<DiskS2, Unit, Unit>.Vertex, Int> ()
@@ -106,11 +109,12 @@ class CirclePack() {
 
         // After inputting data, must call
         packing.setCombinatorics()
+        packing.setGamma(packing.nodeCount)
 
         // Determine how many iterations N you want in the radius computation, then call repack_call
         // new centers and radii should be stored in packing
         //packing.repack_call(1000,false,false);
-        this.repack_call(packing, 1000, false)
+        this.repack_call(packing, iterations, false)
 
         for (i in 1..convHull.verts.size) {
             val rData = packing.rData[i]
