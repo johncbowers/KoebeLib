@@ -95,6 +95,7 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     // Euclidean radius of circle
     val radiusE3: Double by lazy { Math.sqrt(1.0 - (centerE3 - PointE3.O).normSq()) }
+    val radiusS2: Double by lazy { Math.acos(radiusE3) } // TODO This only works if <pi/2, needs to be fixed otherwise.
 
     /* Tests */
 
