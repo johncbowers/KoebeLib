@@ -44,7 +44,10 @@ import geometry.primitives.inner_product31
 class CirclePack() {
 
     /* Functions for computing a Circle Packing  */
-    fun pack( convHull: ConvexHull<DiskS2>, iterations: Int = 1000): PackData {
+    fun pack( convHull: ConvexHull<DiskS2>): PackData {
+        return pack(convHull, 1000)
+    }
+    fun pack( convHull: ConvexHull<DiskS2>, iterations: Int): PackData {
 
         // Find the max degree vertex and swap it to last index:
         var maxDegree = convHull.verts[convHull.verts.size-1].edges().size
