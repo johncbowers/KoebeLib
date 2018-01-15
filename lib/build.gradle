@@ -21,17 +21,42 @@ dependencies {
     }
 }
 
+// Ensure jar directory exists
+task chkJar {
+    doLast {
+        def f = new File('../lib/jar')
+        if (!f.exists()) { f.mkdirs() }
+    }
+}
+
 // Get cpcore.jar on unix
-task get_unix(type:Exec) {
+task get_nix(type:Exec) {
+    dependsOn chkJar 
     workingDir 'jar'
     commandLine '../getCirclePack.sh'
 }
 
 // Get cpcore.jar on windows
 task get_win(type:Exec) {
+    dependsOn chkJar
     workingDir 'jar'
     commandLine 'powershell', '-c', '../getCirclePack.ps1', '-executionPolicy', 'RemoteSigned'
 }
+
+// Get the right CirclePack cpcore.jar
+task get {
+    if (osdetector.os == 'windows') {
+        dependsOn get_win
+    }
+    else {
+        dependsOn get_nix
+    }
+}
+
+// Only retrieve CirclePack cpcore.jar if not alread done
+def cpcore = new File('../lib/jar/cpcore.jar')
+get_nix.onlyIf { !cpcore.exists() }
+get_win.onlyIf { !cpcore.exists() }
 
 // Copy all dependencies to ./jar
 task copy(type:Copy) {
@@ -39,14 +64,8 @@ task copy(type:Copy) {
     from configurations.copy
 }
 
+// Aggregate all dependency managment
 task all {
     dependsOn copy
-
-    // Get the right CirclePack cpcore.jar
-    if (osdetector.os == 'windows') {
-        dependsOn get_win
-    }
-    else {
-        dependsOn get_unix
-    }
+    dependsOn get
 }
