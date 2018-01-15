@@ -6,7 +6,7 @@ plugins {
 // Set the main class for application and jar building
 //  - set in settings.gradle or 
 //    defined with -Pmain=<class> in build command
-mainClassName = project.findProperty('main') ?: defaultClassName
+mainClassName = project.findProperty('main') ?: gradle.ext.defaultClassName
 
 // Set default source path
 sourceSets {
