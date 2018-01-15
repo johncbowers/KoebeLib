@@ -21,30 +21,36 @@ dependencies {
     }
 }
 
-// Ensure jar directory exists
 task chkJar {
+    group 'KoebeLib'
+    description 'Ensure that the jar directory exists'
+
     doLast {
         def f = new File('../lib/jar')
         if (!f.exists()) { f.mkdirs() }
     }
 }
 
-// Get cpcore.jar on unix
-task get_nix(type:Exec) {
-    dependsOn chkJar 
+task get_nix(type:Exec, dependsOn:chkJar) {
+    group 'KoebeLib'
+    description 'Downloads CirclePack and extracts cpcore.jar; *nix'
+
     workingDir 'jar'
     commandLine '../getCirclePack.sh'
 }
 
-// Get cpcore.jar on windows
-task get_win(type:Exec) {
-    dependsOn chkJar
+task get_win(type:Exec, dependsOn:chkJar) {
+    group 'KoebeLib'
+    description 'Downloads CirclePack and extracts cpcore.jar; Windows'
+
     workingDir 'jar'
     commandLine 'powershell', '-c', '../getCirclePack.ps1', '-executionPolicy', 'RemoteSigned'
 }
 
-// Get the right CirclePack cpcore.jar
 task get {
+    group 'KoebeLib'
+    description 'Detect OS for downloading CirclePack'
+
     if (osdetector.os == 'windows') {
         dependsOn get_win
     }
@@ -58,14 +64,19 @@ def cpcore = new File('../lib/jar/cpcore.jar')
 get_nix.onlyIf { !cpcore.exists() }
 get_win.onlyIf { !cpcore.exists() }
 
-// Copy all dependencies to ./jar
 task copy(type:Copy) {
+    group 'KoebeLib'
+    description 'Copy dependencies managed in MavenCentral to jar directory'
+
     into './jar'
     from configurations.copy
 }
 
 // Aggregate all dependency managment
 task all {
+    group 'KoebeLib'
+    description 'Downloads all dependencies to jar directory.'
+
     dependsOn copy
     dependsOn get
 }

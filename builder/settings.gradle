@@ -1,1 +1,4 @@
 rootProject.name='koebelib'
+
+// Define the default main class for the build
+def defaultClassName = 'sketches.SphericalSketchKt'
