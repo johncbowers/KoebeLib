@@ -1,0 +1,4 @@
+rootProject.name='koebelib'
+
+// Define the default main class for the build
+gradle.ext.defaultClassName = 'sketches.SphericalSketchKt'
