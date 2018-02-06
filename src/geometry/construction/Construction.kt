@@ -65,16 +65,16 @@ interface INode<OutputType> {
 
     fun readyToOutputQ(): Boolean
 
-    fun setDirty() {
+    fun dfsSetDirty() {
         dirty = true
-        outgoing.forEach { it.setDirty() }
+        outgoing.forEach { it.dfsSetDirty() }
     }
 
 }
 
 class BaseNode<OutputType>(
         override val construction: Construction,
-        val theObject: OutputType
+        var theObject: OutputType
 ): INode<OutputType> {
 
     override var visited = false
@@ -89,6 +89,11 @@ class BaseNode<OutputType>(
 
     override fun getOutput(): OutputType {
         return theObject
+    }
+
+    fun resetBaseNodeWith(x: Any) {
+        theObject = x as OutputType
+        this.dfsSetDirty()
     }
 }
 
