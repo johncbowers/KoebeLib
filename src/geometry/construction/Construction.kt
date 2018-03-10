@@ -30,17 +30,17 @@ class Construction {
     }
 
     // Base constructions
-    fun makePointS2(x: Double, y: Double, z:Double) = BaseNode<PointS2>(this, PointS2(x, y, z))
+    fun makePointS2(x: Double, y: Double, z:Double) = BaseNode<PointS2>(this, PointS2(x, y, z), null)
 
     // Other constructions
     fun makeDiskS2(p1: INode<PointS2>, p2: INode<PointS2>, p3: INode<PointS2>) =
-            ConstructionNode<DiskS2>(this, listOf(p1, p2, p3), ThreePointsToDiskS2())
+            ConstructionNode<DiskS2>(this, listOf(p1, p2, p3), ThreePointsToDiskS2(), null)
 
     fun makeCoaxialFamilyS2(disk1: INode<DiskS2>, disk2: INode<DiskS2>) =
-            ConstructionNode<CoaxialFamilyS2>(this, listOf(disk1, disk2), TwoPointsToCoaxialFamilyS2())
+            ConstructionNode<CoaxialFamilyS2>(this, listOf(disk1, disk2), TwoPointsToCoaxialFamilyS2(), null)
 
     fun makeCPlaneS2(disk1: INode<DiskS2>, disk2: INode<DiskS2>, disk3: INode<DiskS2>) =
-            ConstructionNode<CPlaneS2>(this, listOf(disk1, disk2, disk3), ThreeDisksToCPlaneS2())
+            ConstructionNode<CPlaneS2>(this, listOf(disk1, disk2, disk3), ThreeDisksToCPlaneS2(), null)
 }
 
 
@@ -50,6 +50,7 @@ interface INode<OutputType> {
     val outgoing : MutableList<INode<*>>
     var dirty : Boolean
     var visited : Boolean
+    var style : Any?
 
     fun getOutput() : OutputType
 
@@ -70,11 +71,13 @@ interface INode<OutputType> {
         outgoing.forEach { it.dfsSetDirty() }
     }
 
+
 }
 
 class BaseNode<OutputType>(
         override val construction: Construction,
-        var theObject: OutputType
+        var theObject: OutputType,
+        override var style : Any? = null
 ): INode<OutputType> {
 
     override var visited = false
@@ -100,7 +103,8 @@ class BaseNode<OutputType>(
 class ConstructionNode<OutputType>(
         override val construction: Construction,
         val incoming: List<INode<*>>,
-        val algorithm: IAlgorithm<OutputType>
+        val algorithm: IAlgorithm<OutputType>,
+        override var style : Any? = null
 ): INode<OutputType> {
 
     override var visited = false

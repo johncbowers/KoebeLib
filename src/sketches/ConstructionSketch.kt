@@ -64,8 +64,6 @@ class ArcballTool(val arcball: Arcball?) : MouseTool {
 }
 
 open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
-    //   var selectedPoint : PointS2 = PointS2(0.0, 0.0, 0.0) //BaseNode<PointS2> = BaseNode<PointS2>(sketch.construction, PointS2(0.0, 0.0, 0.0))
-    //   var selectedPoints = mutableListOf<PointS2>()//mutableListOf<BaseNode<PointS2>>()
 
     var selectedNode : INode<*>? = null;
     var selectedNodes = mutableListOf<INode<*>>()
@@ -75,7 +73,6 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
         if (gl is PGraphicsOpenGL) {
             var Minv = PMatrix3D(gl.projmodelview)
             Minv.invert() //PVM inverted
-            //System.out.println("wdith " + width)
             var mousex = (2.0f * mouseX) / sketch.width - 1.0f
             var mousey = 1.0f - (2.0f * mouseY) / sketch.height
 
@@ -118,7 +115,6 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
     override fun mousePressed(mouseX: Int, mouseY: Int) {
         var cursor = transform(mouseX, mouseY)
         if (cursor != null) {
-            //var pointClicked = PointS2(cursor.x, cursor.y, cursor.z)
 
             for (node in sketch.construction.nodes) {
                 if (node != null) {
@@ -128,10 +124,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
                         if (Math.abs(cursor.x.toFloat() - output.x) <= .1
                                 && Math.abs(cursor.y.toFloat() - output.y) <= .1
                                 && Math.abs(cursor.z.toFloat() - output.z) <= .1) {
-//                        selectedPoint = output
-//                        selectedPoints.add(output);
-//                        sketch.pointsDrawn.remove(selectedPoint)
-//                        sketch.objects.remove(selectedPoint)
+                            //TODO: change the cursor so the point is visible when being dragged
                             selectedNode = node
                             break
                         }
@@ -141,21 +134,6 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
             }
         }
     }
-//
-//            var iterator = sketch.pointsDrawn.listIterator()
-//            while (iterator.hasNext()) {
-//                var point = iterator.next()
-//                if (Math.abs(cursor.x.toFloat() - point.x) <= .1
-//                        && Math.abs(cursor.y.toFloat() - point.y) <= .1
-//                        && Math.abs(cursor.z.toFloat() - point.z) <= .1) {
-//                    selectedPoint = point
-//                    selectedPoints.add(point);
-//                    sketch.pointsDrawn.remove(selectedPoint)
-//                    sketch.objects.remove(selectedPoint)
-//                    break
-//                }
-//            }
-
 
     override fun mouseReleased(mouseX: Int, mouseY: Int) {
 
@@ -175,7 +153,6 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
         var drawNode = true
         var cursor = transform(mouseX, mouseY)
         if (cursor != null) {
-            //var pointClicked = PointS2(cursor.x, cursor.y, cursor.z)
             for (node in sketch.construction.nodes) {
                 if(node != null) {
                     var output = node.getOutput()
@@ -184,6 +161,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
                                 && Math.abs(cursor.y.toFloat() - output.y) <= .1
                                 && Math.abs(cursor.z.toFloat() - output.z) <= .1) {
                             drawNode = false
+                            node.style = Style(Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()), Color.noColor)
                             break
                         }
                     }
@@ -193,23 +171,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
                 sketch.construction.makePointS2(cursor.x, cursor.y, cursor.z)
             }
         }
-//
-//            var iterator = sketch.pointsDrawn.listIterator()
-//            var drawPoint = true
-//            while (iterator.hasNext()) {
-//                var point = iterator.next()
-//                if (Math.abs(cursor.x.toFloat() - point.x) <= .1
-//                        && Math.abs(cursor.y.toFloat() - point.y) <= .1
-//                        && Math.abs(cursor.z.toFloat() - point.z) <= .1) {
-//                    drawPoint = false;
-//                    break
-//                }
-//            }
-//            if (drawPoint && keyCodes != 67) {
-//                sketch.objects.add(pointClicked)
-//                sketch.pointsDrawn.add(pointClicked)
-//            }
-//        }
+
     }
 
     class CircleTool(sketch: ConstructionSketch) : MouseTool, PointEditorTool(sketch) {
@@ -217,20 +179,16 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
         override fun mousePressed(mouseX: Int, mouseY: Int) {
             var cursor = transform(mouseX, mouseY)
             if (cursor != null) {
-                //var pointClicked = PointS2(cursor.x, cursor.y, cursor.z)
 
                 for (node in sketch.construction.nodes) {
                     if (node != null) {
                         var output = node.getOutput()
                         if (output is PointS2) {
-                            //should change this so its the closet found point
+                            //TODO: should change this so its the closet found point
                             if (Math.abs(cursor.x.toFloat() - output.x) <= .1
                                     && Math.abs(cursor.y.toFloat() - output.y) <= .1
                                     && Math.abs(cursor.z.toFloat() - output.z) <= .1) {
-//                        selectedPoint = output
-//                        selectedPoints.add(output);
-//                        sketch.pointsDrawn.remove(selectedPoint)
-//                        sketch.objects.remove(selectedPoint)
+
                                 selectedNode = node
                                 break
                             }
@@ -242,9 +200,30 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
             
             selectedNodes.add(selectedNode as INode<*>)
         }
+
+        override fun mouseClicked(mouseX: Int, mouseY: Int) {
+            var transformedCursor = super.transform(mouseX, mouseY)
+            for (node in sketch.construction.nodes) {
+                var x = transformedCursor.x
+                var y = transformedCursor.y
+                var z = transformedCursor.z
+                if(node != null) {
+                    var output = node.getOutput()
+                    if (output is DiskS2) {
+                        var a = output.a
+                        var b = output.b
+                        var c = output.c
+                        var d = output.d
+                        var result = a*x + b*y + c*z + d
+                        if(result == 0.0) {
+                            node.style = Style(Color(255.0.toFloat(), 255.0.toFloat(), 0.0.toFloat()), Color.noColor)
+                        }
+                    }
+                }
+            }
+        }
+
         override fun mouseReleased(mouseX: Int, mouseY: Int) {
-//            sketch.pointsDrawn.add(selectedPoint)
-                //           sketch.objects.add(selectedPoint)
                 if (selectedNodes.size >= 3) {
                     var obj1 = selectedNodes[0]
                     var obj2 = selectedNodes[1]
@@ -255,11 +234,6 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
                             obj2 as INode<PointS2>,
                             obj3 as INode<PointS2>)
 
-//                var draw = DiskS2(selectedPoints.get(0), selectedPoints.get(1), selectedPoints.get(2))
-//                sketch.objects.add(draw)
-//                selectedPoints.removeAt(0)
-//                selectedPoints.removeAt(0)
-//                selectedPoints.removeAt(0)
                 }
             }
 
@@ -300,7 +274,6 @@ open class ConstructionSketch : SphericalSketch() {
 
     }
 
-    //val pointsDrawn = mutableListOf<PointS2>();
     //for mouseClick()
     var clicked = false;
     var sphereCursor : PointS2? = null;
@@ -343,7 +316,7 @@ open class ConstructionSketch : SphericalSketch() {
             ).forEach {
                 list ->
                 list.forEach {
-                    val style = objectStyles[it]
+                    val style = if(it is INode<*>) it.style as Style? else objectStyles[it]
                     when (it) {
                         is PointS2 -> {
                             if (style != null) style.set(this)
@@ -558,7 +531,7 @@ open class ConstructionSketch : SphericalSketch() {
     }
 
     override fun mousePressed() {
-        currentTool?.mousePressed(mouseX, mouseY)//arcball?.mousePressed()
+        currentTool?.mousePressed(mouseX, mouseY)
     }
 
     override fun mouseReleased() {

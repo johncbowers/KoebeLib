@@ -17,6 +17,7 @@ import geometry.construction.Construction
 import geometry.algorithms.incrConvexHull
 import geometry.algorithms.orientationPointOP3
 import geometry.algorithms.addPoint
+import geometry.construction.INode
 import geometry.ds.dcel.*
 import geometry.primitives.OrientedProjective2.*
 import geometry.primitives.isZero
@@ -46,6 +47,7 @@ class Style(
         if (fill != null && fill != Color.noColor) p.fill(fill.x, fill.y, fill.z, fill.a)
         else if (fill == Color.noColor) p.noFill()
     }
+
 }
 
 open class SphericalSketch : PApplet() {
@@ -624,7 +626,7 @@ open class SphericalSketch : PApplet() {
             ).forEach {
                 list ->
                 list.forEach {
-                    val style = objectStyles[it]
+                    val style = if(it is INode<*>) it.style as Style? else objectStyles[it]
                     when (it) {
                         is PointS2 -> {
                             if (style != null) style.set(this)
