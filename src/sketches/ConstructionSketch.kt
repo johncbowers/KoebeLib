@@ -70,30 +70,30 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
 
     fun transform(mouseX: Int, mouseY: Int): PointE3 {
         val gl = sketch.g
-        if (gl is PGraphicsOpenGL) {
-            var Minv = PMatrix3D(gl.projmodelview)
-            Minv.invert() //PVM inverted
-            var mousex = (2.0f * mouseX) / sketch.width - 1.0f
-            var mousey = 1.0f - (2.0f * mouseY) / sketch.height
+                if (gl is PGraphicsOpenGL) {
+                    var Minv = PMatrix3D(gl.projmodelview)
+                    Minv.invert() //PVM inverted
+                    var mousex = (2.0f * mouseX) / sketch.width - 1.0f
+                    var mousey = 1.0f - (2.0f * mouseY) / sketch.height
 
-            var w1 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m33
-            var w2 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m32 + Minv.m33
+                    var w1 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m33
+                    var w2 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m32 + Minv.m33
 
-            var new1 = PointE3(
-                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m03) / w1).toDouble(),
-                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m13) / w1).toDouble(),
-                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m23) / w1).toDouble()
-            )
+                    var new1 = PointE3(
+                            ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m03) / w1).toDouble(),
+                            ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m13) / w1).toDouble(),
+                            ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m23) / w1).toDouble()
+                    )
 
-            var new2 = PointE3(
-                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m02 + Minv.m03) / w2).toDouble(),
-                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m12 + Minv.m13) / w2).toDouble(),
-                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m22 + Minv.m23) / w2).toDouble()
-            )
+                    var new2 = PointE3(
+                            ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m02 + Minv.m03) / w2).toDouble(),
+                            ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m12 + Minv.m13) / w2).toDouble(),
+                            ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m22 + Minv.m23) / w2).toDouble()
+                    )
 
-            var direction = (new2 - new1).normalize()
+                    var direction = (new2 - new1).normalize()
 
-            var l = PointE3.O - new1
+                    var l = PointE3.O - new1
 
             var tca = l.dot(direction)
             var d = (Math.sqrt(l.normSq() - tca * tca))//(200.0*zoom)
@@ -201,12 +201,44 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
             selectedNodes.add(selectedNode as INode<*>)
         }
 
+        fun isIntersection(mouseX : Int, mouseY : Int, a : Double, b : Double, c : Double, d : Double) : Boolean {
+            val gl = sketch.g
+            if (gl is PGraphicsOpenGL) {
+                var Minv = PMatrix3D(gl.projmodelview)
+                Minv.invert() //PVM inverted
+                var mousex = (2.0f * mouseX) / sketch.width - 1.0f
+                var mousey = 1.0f - (2.0f * mouseY) / sketch.height
+
+                var w1 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m33
+                var w2 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m32 + Minv.m33
+
+                var new1 = PointE3(
+                        ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m03) / w1).toDouble(),
+                        ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m13) / w1).toDouble(),
+                        ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m23) / w1).toDouble()
+                )
+
+                var new2 = PointE3(
+                        ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m02 + Minv.m03) / w2).toDouble(),
+                        ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m12 + Minv.m13) / w2).toDouble(),
+                        ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m22 + Minv.m23) / w2).toDouble()
+                )
+
+                var direction = (new2 - new1).normalize()
+                var rayOrigin = VectorE3(new1.x, new1.y, new1.z)
+                var worldOrigin = VectorE3(0.0, 0.0, 0.0)
+                var normalVector = VectorE3(a, b, c)
+                var denom = direction.dot(normalVector)
+                var t = ((worldOrigin - rayOrigin).dot(normalVector)) / denom
+                return t >= 0
+            }
+
+            return false;
+        }
+
         override fun mouseClicked(mouseX: Int, mouseY: Int) {
-            var transformedCursor = super.transform(mouseX, mouseY)
             for (node in sketch.construction.nodes) {
-                var x = transformedCursor.x
-                var y = transformedCursor.y
-                var z = transformedCursor.z
+
                 if(node != null) {
                     var output = node.getOutput()
                     if (output is DiskS2) {
@@ -214,8 +246,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
                         var b = output.b
                         var c = output.c
                         var d = output.d
-                        var result = a*x + b*y + c*z + d
-                        if(result == 0.0) {
+                        if(isIntersection(mouseX, mouseY, a, b, c, d)) {
                             node.style = Style(Color(255.0.toFloat(), 255.0.toFloat(), 0.0.toFloat()), Color.noColor)
                         }
                     }
