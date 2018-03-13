@@ -22,15 +22,15 @@ class Construction {
     /**
      * @return The actual geometric objects used in this construction. These are sorted topologically based on construction dependencies.
      */
-    fun getGeometricObjects() : MutableList<Any> {
+    fun getGeometricObjects(styles: HashMap<Any, Any>? = null) : MutableList<Any> {
         val objList = mutableListOf<Any>()
         nodes.forEach { it.visited = false }
-        getSourceNodes().forEach { it.visit(objList) }
+        getSourceNodes().forEach { it.visit(objList, styles) }
         return objList
     }
 
     // Base constructions
-    fun makePointS2(x: Double, y: Double, z:Double) = BaseNode<PointS2>(this, PointS2(x, y, z), null)
+    fun makePointS2(x: Double, y: Double, z:Double, style:Any? = null) = BaseNode<PointS2>(this, PointS2(x, y, z), style)
 
     // Other constructions
     fun makeDiskS2(p1: INode<PointS2>, p2: INode<PointS2>, p3: INode<PointS2>) =
@@ -54,11 +54,16 @@ interface INode<OutputType> {
 
     fun getOutput() : OutputType
 
-    fun visit(objList: MutableList<Any>) {
+    fun visit(objList: MutableList<Any>, styles: HashMap<Any, Any>? = null) {
         try {
-            objList.add(getOutput() as Any)
+            val geomObj = getOutput()
+            val style = this.style
+            objList.add(geomObj as Any)
+            if (styles != null && style != null) {
+                styles[geomObj] = style
+            }
             visited = true
-            outgoing.forEach { if (!it.visited && it.readyToOutputQ()) it.visit(objList) }
+            outgoing.forEach { if (!it.visited && it.readyToOutputQ()) it.visit(objList, styles) }
         } catch (e: InvalidConstructionParametersException) {
             e.printStackTrace()
         }

@@ -161,14 +161,13 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
                                 && Math.abs(cursor.y.toFloat() - output.y) <= .1
                                 && Math.abs(cursor.z.toFloat() - output.z) <= .1) {
                             drawNode = false
-                            node.style = Style(Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()), Color.noColor)
                             break
                         }
                     }
                 }
             }
             if (drawNode) {
-                sketch.construction.makePointS2(cursor.x, cursor.y, cursor.z)
+                val node = sketch.construction.makePointS2(cursor.x, cursor.y, cursor.z)
             }
         }
 
@@ -190,6 +189,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
                                     && Math.abs(cursor.z.toFloat() - output.z) <= .1) {
 
                                 selectedNode = node
+                                node.style = Style(Color.noColor, Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()))
                                 break
                             }
                         }
@@ -261,7 +261,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
                     var obj3 = selectedNodes[2]
 
                     @Suppress("UNCHECKED_CAST")
-                    sketch.construction.makeDiskS2( obj1 as INode<PointS2>,
+                    var node = sketch.construction.makeDiskS2( obj1 as INode<PointS2>,
                             obj2 as INode<PointS2>,
                             obj3 as INode<PointS2>)
 
@@ -341,13 +341,16 @@ open class ConstructionSketch : SphericalSketch() {
 
         // Draw the points
         synchronized(constructionLock, {
+            val consStyles = HashMap<Any, Any>()
             listOf<MutableList<Any>>(
-                    construction.getGeometricObjects(),
+                    construction.getGeometricObjects(consStyles),
                     objects
             ).forEach {
                 list ->
                 list.forEach {
-                    val style = if(it is INode<*>) it.style as Style? else objectStyles[it]
+
+                    val style = if (consStyles[it] is Style) consStyles[it] as Style else objectStyles[it]
+
                     when (it) {
                         is PointS2 -> {
                             if (style != null) style.set(this)

@@ -29,11 +29,11 @@ import processing.opengl.PGraphicsOpenGL
 
 import javax.swing.*
 
-class Color(val x: Float, val y: Float, val z: Float, val a: Float = 255.0f) {
+class Color(val r: Float, val g: Float, val b: Float, val a: Float = 255.0f) {
     companion object {
         val noColor = Color(-1.0f, -1.0f, -1.0f, -1.0f)
     }
-    override fun equals(c: Any?) = (c is Color && c.x == x && c.y == y && c.z == z && c.a == a)
+    override fun equals(c: Any?) = (c is Color && c.r == r && c.g == g && c.b == b && c.a == a)
 }
 
 class Style(
@@ -41,10 +41,10 @@ class Style(
         val fill: Color?
 ) {
     fun set(p: PApplet) {
-        if (stroke != null && stroke != Color.noColor) p.stroke(stroke.x, stroke.y, stroke.z, stroke.a)
+        if (stroke != null && stroke != Color.noColor) p.stroke(stroke.r, stroke.g, stroke.b, stroke.a)
         else if (stroke == Color.noColor) p.noStroke()
 
-        if (fill != null && fill != Color.noColor) p.fill(fill.x, fill.y, fill.z, fill.a)
+        if (fill != null && fill != Color.noColor) p.fill(fill.r, fill.g, fill.b, fill.a)
         else if (fill == Color.noColor) p.noFill()
     }
 
