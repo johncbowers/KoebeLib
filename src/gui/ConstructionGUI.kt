@@ -1,10 +1,7 @@
 package gui
 
-import sketches.ConstructionSketch
-
 import javax.swing.*
 import java.awt.*
-import sketches.SphericalSketch
 import java.io.OutputStream
 
 import org.python.core.*
@@ -15,8 +12,7 @@ import geometry.algorithms.*
 
 import org.fife.ui.rtextarea.*
 import org.fife.ui.rsyntaxtextarea.*
-import sketches.ArcballTool
-import sketches.PointEditorTool
+import sketches.*
 
 /**
  * Created by browermb on 2/12/2018.
@@ -28,6 +24,7 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
     val arcballButton : JButton
     val pointButton : JButton
     val circleButton : JButton
+    val selectionButton : JButton
 
     init {
         // Build the GUI:
@@ -44,10 +41,12 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
         arcballButton = JButton("arcball")
         pointButton = JButton("point")
         circleButton = JButton("circle")
+        selectionButton = JButton("Select")
 
         buttonFlowPanel.add(arcballButton)
         buttonFlowPanel.add(pointButton)
         buttonFlowPanel.add(circleButton)
+        buttonFlowPanel.add(selectionButton)
 
         buttonPanel.add(buttonFlowPanel, BorderLayout.WEST)
         this.contentPane.add(buttonPanel, BorderLayout.PAGE_START)
@@ -62,6 +61,10 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
 
         circleButton.addActionListener {
             sketch.currentTool = PointEditorTool.CircleTool(sketch)
+        }
+
+        selectionButton.addActionListener {
+            sketch.currentTool = SelectionTool(sketch)
         }
     }
 

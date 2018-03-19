@@ -41,6 +41,10 @@ class Construction {
 
     fun makeCPlaneS2(disk1: INode<DiskS2>, disk2: INode<DiskS2>, disk3: INode<DiskS2>) =
             ConstructionNode<CPlaneS2>(this, listOf(disk1, disk2, disk3), ThreeDisksToCPlaneS2(), null)
+
+    fun makeIntersectionPoint(disk1: INode<DiskS2>, disk2: INode<DiskS2>) {
+
+    }
 }
 
 

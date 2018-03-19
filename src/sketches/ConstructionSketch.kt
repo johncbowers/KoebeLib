@@ -63,6 +63,24 @@ class ArcballTool(val arcball: Arcball?) : MouseTool {
     }
 }
 
+class SelectionTool(val sketch : ConstructionSketch) : MouseTool {
+    override fun mouseClicked(mouseX: Int, mouseY: Int) {
+
+    }
+
+    override fun mouseDragged(mouseX: Int, mouseY: Int) {
+
+    }
+
+    override fun mousePressed(mouseX: Int, mouseY: Int) {
+
+    }
+
+    override fun mouseReleased(mouseX: Int, mouseY: Int) {
+
+    }
+}
+
 open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
 
     var selectedNode : INode<*>? = null;
