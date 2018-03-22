@@ -60,7 +60,7 @@ class TwoPointsToCoaxialFamilyS2() : IAlgorithm<CoaxialFamilyS2> {
 }
 
 class TwoDisksIntersectionPoint() : IAlgorithm<PointS2> {
-    override fun run(node: ConstructionNode<PointS2>): PointS2 {
+    override fun run(node: ConstructionNode<PointS2>): MutableList<PointS2> {
         if (node.incoming.size != 2) {
             throw InvalidConstructionParametersException("TwoDisksIntersectionPoint expects two DiskS2s. ${node.incoming.size} given.")
         }
@@ -73,11 +73,43 @@ class TwoDisksIntersectionPoint() : IAlgorithm<PointS2> {
         val intersectionNormal = disk1Normal.cross(disk2Normal)
         val point = pointOnPlanes(disk1, disk2)
 
-        return PointS2()
+        val tValues = solveForTValues(intersectionNormal, point)
+
+        val point1 = PointS2(point.x + tValues[0]*intersectionNormal.x, point.y + tValues[0]*intersectionNormal.y,
+                             point.z + tValues[0]*intersectionNormal.z)
+
+
+        val point2 = PointS2(point.x + tValues[1]*intersectionNormal.x, point.y + tValues[1]*intersectionNormal.y,
+                point.z + tValues[1]*intersectionNormal.z)
+
+        var list = mutableListOf<PointS2>()
+        list.add(point1)
+        list.add(point2)
+
+        return list
 
 
     }
 
+    fun solveForTValues(intersectionNormal : VectorE3, point : PointS2) : MutableList<Double>{
+        val bCoefficient = (2*point.x*intersectionNormal.x + 2*point.y*intersectionNormal.y + 2*point.z*intersectionNormal.z)
+        val aCoefficient = intersectionNormal.x*intersectionNormal.x + intersectionNormal.y*intersectionNormal.y +
+                intersectionNormal.z*intersectionNormal.z
+        val cCoefficient = point.x*point.x + point.y*point.y + point.z*point.z - 1
+        val denom = 2*aCoefficient
+
+        var t1Numerator = -bCoefficient + Math.sqrt(Math.pow(bCoefficient,2.0) - 4*aCoefficient*cCoefficient)
+        var t1 = t1Numerator/denom
+
+        var t2Numerator = -bCoefficient - Math.sqrt(Math.pow(bCoefficient,2.0) - 4*aCoefficient*cCoefficient)
+        var t2 = t2Numerator/denom
+
+        var list = mutableListOf<Double>()
+        list.add(t1)
+        list.add(t2)
+
+        return list
+    }
     fun pointOnPlanes(disk1 : DiskS2, disk2 : DiskS2): PointS2 {
         var numerator = -1*(disk1.d*disk2.a + disk1.a*disk2.d)
         var denom = -1*(disk1.a*disk2.b + disk1.b*disk2.a)
@@ -86,4 +118,5 @@ class TwoDisksIntersectionPoint() : IAlgorithm<PointS2> {
 
         return PointS2(x, y, 0.0)
     }
+
 }
