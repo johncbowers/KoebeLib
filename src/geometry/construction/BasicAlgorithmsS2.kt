@@ -59,8 +59,8 @@ class TwoPointsToCoaxialFamilyS2() : IAlgorithm<CoaxialFamilyS2> {
     }
 }
 
-class TwoDisksIntersectionPoint() : IAlgorithm<PointS2> {
-    override fun run(node: ConstructionNode<PointS2>): MutableList<PointS2> {
+class TwoDisksIntersectionPoint() : IAlgorithm<List<PointS2>> {
+    override fun run(node: ConstructionNode<List<PointS2>>): List<PointS2> {
         if (node.incoming.size != 2) {
             throw InvalidConstructionParametersException("TwoDisksIntersectionPoint expects two DiskS2s. ${node.incoming.size} given.")
         }
@@ -82,9 +82,7 @@ class TwoDisksIntersectionPoint() : IAlgorithm<PointS2> {
         val point2 = PointS2(point.x + tValues[1]*intersectionNormal.x, point.y + tValues[1]*intersectionNormal.y,
                 point.z + tValues[1]*intersectionNormal.z)
 
-        var list = mutableListOf<PointS2>()
-        list.add(point1)
-        list.add(point2)
+        var list = listOf<PointS2>(point1, point2)
 
         return list
 

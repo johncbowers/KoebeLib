@@ -43,7 +43,7 @@ class Construction {
             ConstructionNode<CPlaneS2>(this, listOf(disk1, disk2, disk3), ThreeDisksToCPlaneS2(), null)
 
     fun makeIntersectionPoint(disk1: INode<DiskS2>, disk2: INode<DiskS2>) {
-            ConstructionNode<PointS2>(this, listOf(disk1, disk2), TwoDisksIntersectionPoint(), null)
+            ConstructionNode<List<PointS2>>(this, listOf(disk1, disk2), TwoDisksIntersectionPoint(), null)
     }
 }
 
