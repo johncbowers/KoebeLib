@@ -38,22 +38,60 @@ import javax.swing.*
  * Created by browermb on 7/27/2017.
  */
 
-var circleTool = false
 
-interface MouseTool {
-    fun mousePressed(mouseX: Int, mouseY: Int)
-    fun mouseReleased(mouseX: Int, mouseY: Int)
-    fun mouseDragged(mouseX: Int, mouseY: Int)
-    fun mouseClicked(mouseX: Int, mouseY: Int)
+open class MouseTool {
+    var mouseDown = false
+    var startX = -1
+    var startY = -1
+    var dragged = false
 
+    open fun mousePressed(mouseX: Int, mouseY: Int) {
+        mouseDown = true
+        dragged = false
+        startX = mouseX
+        startY = mouseY
+    }
+
+    open fun mouseReleased(mouseX: Int, mouseY: Int) {
+        mouseDown = false
+        if (!dragged) {
+            mouseClicked(mouseX, mouseY)
+        }
+        dragged = false
+    }
+
+    open fun mouseDragged(mouseX: Int, mouseY: Int) {
+
+    }
+
+    open fun mouseClicked(mouseX: Int, mouseY: Int) {
+    }
+
+    open fun mouseMoved(mouseX: Int, mouseY: Int) {
+        if (mouseDown) {
+            val dx = mouseX - startX
+            val dy = mouseY - startY
+
+            if ((dx * dx) + (dy * dy) >= 4) {
+                dragged = true
+            }
+
+            if (dragged) {
+                this.mouseDragged(mouseX, mouseY)
+            }
+        }
+    }
 }
 
-class ArcballTool(val arcball: Arcball?) : MouseTool {
+class ArcballTool(val arcball: Arcball?) : MouseTool() {
+
     override fun mousePressed(mouseX: Int, mouseY: Int) {
+        super.mousePressed(mouseX, mouseY)
         arcball?.mousePressed()
     }
     override fun mouseReleased(mouseX: Int, mouseY: Int) {
-        arcball?.mouseReleased()
+        super.mouseReleased(mouseX, mouseY)
+        arcball?.mousePressed()
     }
     override fun mouseDragged(mouseX: Int, mouseY: Int) {
         arcball?.mouseDragged()
@@ -61,9 +99,12 @@ class ArcballTool(val arcball: Arcball?) : MouseTool {
     override fun mouseClicked(mouseX: Int, mouseY: Int) {
 
     }
+    override fun mouseMoved(mouseX: Int, mouseY: Int) {
+        super.mouseMoved(mouseX, mouseY)
+    }
 }
 
-class SelectionTool(val sketch : ConstructionSketch) : MouseTool {
+class SelectionTool(val sketch : ConstructionSketch) : MouseTool() {
     fun transform(mouseX: Int, mouseY: Int) : PointE3{
         val gl = sketch.g
         if (gl is PGraphicsOpenGL) {
@@ -174,20 +215,24 @@ class SelectionTool(val sketch : ConstructionSketch) : MouseTool {
         //(selectedNode as INode<*>).style = Style()
     }
 
+    override fun mouseMoved(mouseX: Int, mouseY: Int) {
+        super.mouseMoved(mouseX, mouseY)
+    }
+
     override fun mouseDragged(mouseX: Int, mouseY: Int) {
 
     }
 
     override fun mousePressed(mouseX: Int, mouseY: Int) {
-
+        super.mousePressed(mouseX, mouseY)
     }
 
     override fun mouseReleased(mouseX: Int, mouseY: Int) {
-
+        super.mouseReleased(mouseX, mouseY)
     }
 }
 
-open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
+open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
 
     var selectedNode : INode<*>? = null;
     var selectedNodes = mutableListOf<INode<*>>()
@@ -236,7 +281,12 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
         return PointE3()
     }
 
+    override fun mouseMoved(mouseX: Int, mouseY: Int) {
+        super.mouseMoved(mouseX, mouseY)
+    }
+
     override fun mousePressed(mouseX: Int, mouseY: Int) {
+        super.mousePressed(mouseX, mouseY)
         var cursor = transform(mouseX, mouseY)
         if (cursor != null) {
 
@@ -259,19 +309,19 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
         }
     }
 
-    override fun mouseReleased(mouseX: Int, mouseY: Int) {
 
+    override fun mouseReleased(mouseX: Int, mouseY: Int) {
+        super.mouseReleased(mouseX, mouseY)
     }
 
     override fun mouseDragged(mouseX: Int, mouseY: Int) {
-
-            var cursor = transform(mouseX, mouseY)
-            if (cursor != null) {
-                var node = selectedNode
-                if (node is BaseNode<*>) {
-                    node.resetBaseNodeWith(PointS2(cursor.x, cursor.y, cursor.z))
-                }
+        var cursor = transform(mouseX, mouseY)
+        if (cursor != null) {
+            var node = selectedNode
+            if (node is BaseNode<*>) {
+                node.resetBaseNodeWith(PointS2(cursor.x, cursor.y, cursor.z))
             }
+        }
     }
     override fun mouseClicked(mouseX: Int, mouseY: Int) {
         var drawNode = true
@@ -297,9 +347,10 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
 
     }
 
-    class CircleTool(sketch: ConstructionSketch) : MouseTool, PointEditorTool(sketch) {
+    class CircleTool(sketch: ConstructionSketch) : PointEditorTool(sketch) {
 
         override fun mousePressed(mouseX: Int, mouseY: Int) {
+            super.mousePressed(mouseX, mouseY)
             var cursor = transform(mouseX, mouseY)
             if (cursor != null) {
 
@@ -325,12 +376,16 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool {
             selectedNodes.add(selectedNode as INode<*>)
         }
 
+        override fun mouseMoved(mouseX: Int, mouseY: Int) {
+            super.mouseMoved(mouseX, mouseY)
+        }
 
         override fun mouseClicked(mouseX: Int, mouseY: Int) {
 
         }
 
         override fun mouseReleased(mouseX: Int, mouseY: Int) {
+            super.mouseReleased(mouseX, mouseY)
                 if (selectedNodes.size >= 3) {
                     var obj1 = selectedNodes[0]
                     var obj2 = selectedNodes[1]
@@ -634,6 +689,10 @@ open class ConstructionSketch : SphericalSketch() {
             }
         }
         return it
+    }
+
+    override fun mouseMoved() {
+        currentTool?.mouseMoved(mouseX, mouseY)
     }
 
     override fun mouseClicked() {
