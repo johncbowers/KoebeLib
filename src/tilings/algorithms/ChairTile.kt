@@ -70,181 +70,274 @@ fun makeChairDCEL (s: ArrayList<PointE2>) : DCEL<PointE2, Unit, Unit> {
 
 }
 
-fun subDivideChair(parent : DCEL<PointE2, Unit, Unit>) : DCEL<PointE2, Unit, Unit> {
+fun subDivideChair (parent : DCEL<PointE2, Unit, Unit>) {
 
+    val len = parent.faces.size
+    val lonelyDarts = ArrayList<DCEL<PointE2, Unit, Unit>.Dart>()
+
+    for (k in 0..len-1) {
+        print ("Face ")
+        println (k)
+        /*for (j in 0..parent.faces[k].darts().size-1) {
+            print ("X: ")
+            print (parent.faces[k].darts()[j].origin!!.data.x)
+            print (" Y: ")
+            print (parent.faces[k].darts()[j].origin!!.data.y)
+            print (" TO ")
+            print ("X: ")
+            print (parent.faces[k].darts()[j].dest!!.data.x)
+            print (" Y: ")
+            println (parent.faces[k].darts()[j].dest!!.data.y)
+        }*/
+        subDivideChairFace(parent, parent.faces[k], lonelyDarts)
+    }
+
+    pairLonelyDarts(lonelyDarts)
+
+    for (k in 0..len-1) {
+        parent.faces.removeAt(0)
+    }
+
+}
+
+fun subDivideChairFace (parent : DCEL<PointE2, Unit, Unit>, face : DCEL<PointE2, Unit, Unit>.Face,
+                        lonelyDarts : ArrayList<DCEL<PointE2, Unit, Unit>.Dart>) {
     val numFaces = 4
-    val numEdges = 8
-    val numExterior = 16
-    var count = 0
+    val newFaces = ArrayList<DCEL<PointE2, Unit, Unit>.Face>()
 
-    val allChair = DCEL<PointE2, Unit, Unit>()
-    val chairs = ArrayList<DCEL<PointE2, Unit, Unit>>()
+    val newVerts = ArrayList<DCEL<PointE2, Unit, Unit>.Vertex>()
+    val newDarts = ArrayList<DCEL<PointE2, Unit, Unit>.Dart>()
+    val outerDarts = ArrayList<DCEL<PointE2, Unit, Unit>.Dart>()
 
-    val faces = ArrayList<DCEL<PointE2, Unit, Unit>.Face>()
-
-    // Add faces
     for (k in 0..numFaces-1) {
-        chairs.add(DCEL<PointE2, Unit, Unit>())
-        faces.add(allChair.Face(data = Unit))
-        chairs.get(k).faces.add(faces.get(k))
+        newFaces.add(parent.Face(data = Unit))
     }
 
+    // Exterior Darts and Vertices
+    val darts = face.darts()
+    val len = darts.size
+    for (k in 0..len-1) {
 
-    val verts = ArrayList<DCEL<PointE2, Unit, Unit>.Vertex>()
-    var currDart = parent.faces[0].aDart
-    val startDart = currDart
+        println (k)
+        /*newVerts.add(parent.Vertex(data = PointE2((darts[k].origin!!.data.x + darts[k].dest!!.data.x) / 2.0,
+                (darts[k].origin!!.data.y + darts[k].dest!!.data.y) / 2.0)))*/
+        newVerts.add(parent.Vertex(data = PointE2((darts[k].origin!!.data.x + darts[(k+1) % len].origin!!.data.x) / 2.0,
+                (darts[k].origin!!.data.y + darts[(k+1) % len].origin!!.data.y) / 2.0)))
+        newDarts.add(parent.Dart(origin = darts[k].origin))
+        newDarts.add(parent.Dart(origin = newVerts[newVerts.size-1]))
 
-    // Add exterior vertices
-    verts.add(allChair.Vertex(data = PointE2(currDart!!.origin!!.data.x, currDart.origin!!.data.y)))
-    do {
-        //subDivideEdge(currDart!!, parent, allChair)
+        if (darts[k].twin != null && darts[k].twin!!.face == parent.outerFace) {
+            outerDarts.add(parent.Dart(origin = newVerts[newVerts.size-1], twin = newDarts[newDarts.size-2],
+                    face = parent.outerFace))
+            outerDarts.add(parent.Dart(origin = darts[k].dest, prev = outerDarts[outerDarts.size-1],
+                    twin = newDarts[newDarts.size-1], face = parent.outerFace))
+            //parent.darts.remove(darts[k].twin)
+        }
+        else {
+            lonelyDarts.add(newDarts[newDarts.size-2])
+            lonelyDarts.add(newDarts[newDarts.size-1])
+        }
 
-        verts.add(allChair.Vertex(data = PointE2((currDart!!.origin!!.data.x + currDart!!.dest!!.data.x) / 2.0,
-                (currDart!!.origin!!.data.y + currDart!!.dest!!.data.y) / 2.0)))
+        //parent.darts.remove(darts[k])
 
-        verts.add(allChair.Vertex(data = PointE2(currDart!!.dest!!.data.x, currDart.dest!!.data.y)))
-
-        currDart = currDart!!.next
-        count = count + 1
-
-    } while (currDart != startDart)
-
-    // Temporary fix
-    verts.removeAt(16)
-    allChair.verts.removeAt(16)
-
-    // Add interior vertices
-
-    verts.add(allChair.Vertex(data = PointE2((allChair.verts[0].data.x + allChair.verts[8].data.x) / 2.0,
-            (allChair.verts[0].data.y + allChair.verts[8].data.y) / 2.0)))
-    verts.add(allChair.Vertex(data = PointE2((allChair.verts[2].data.x + allChair.verts[8].data.x) / 2.0,
-            (allChair.verts[2].data.y + allChair.verts[8].data.y) / 2.0)))
-    verts.add(allChair.Vertex(data = PointE2((allChair.verts[3].data.x + allChair.verts[7].data.x) / 2.0,
-            (allChair.verts[3].data.y + allChair.verts[7].data.y) / 2.0)))
-    verts.add(allChair.Vertex(data = PointE2((allChair.verts[13].data.x + allChair.verts[9].data.x) / 2.0,
-            (verts[13].data.y + allChair.verts[9].data.y) / 2.0)))
-    verts.add(allChair.Vertex(data = PointE2((allChair.verts[14].data.x + allChair.verts[8].data.x) / 2.0,
-            (allChair.verts[14].data.y + allChair.verts[8].data.y) / 2.0)))
-
-
-    // Edges
-    for (k in 0..numEdges*numFaces+2*numEdges) {
-        allChair.Edge(data = Unit)
     }
+
+    // Face 0
+    newDarts[0].face = newFaces[0]
+    newDarts[1].face = newFaces[0]
+    newDarts[14].face = newFaces[0]
+    newDarts[15].face = newFaces[0]
+
+    newDarts[0].makeNext(newDarts[1])
+    newDarts[14].makeNext(newDarts[15])
+    newDarts[15].makeNext(newDarts[0])
 
     // Face 1
-    allChair.Dart(edge = allChair.edges[0], origin = allChair.verts[0], face = faces[0])
-    allChair.Dart(edge = allChair.edges[1], origin = allChair.verts[1], face = faces[0])
-    allChair.Dart(edge = allChair.edges[2], origin = allChair.verts[2], face = faces[0])
-    allChair.Dart(edge = allChair.edges[3], origin = allChair.verts[17], face = faces[0])
-    allChair.Dart(edge = allChair.edges[4], origin = allChair.verts[16], face = faces[0])
-    allChair.Dart(edge = allChair.edges[5], origin = allChair.verts[20], face = faces[0])
-    allChair.Dart(edge = allChair.edges[6], origin = allChair.verts[14], face = faces[0])
-    allChair.Dart(edge = allChair.edges[7], origin = allChair.verts[15], face = faces[0])
+    newDarts[2].face = newFaces[1]
+    newDarts[3].face = newFaces[1]
+    newDarts[4].face = newFaces[1]
+    newDarts[5].face = newFaces[1]
 
-
-
-    for (k in 0..7) {
-        allChair.darts[k].makeNext(allChair.darts[(k+1) % numEdges])
-    }
+    newDarts[2].makeNext(newDarts[3])
+    newDarts[3].makeNext(newDarts[4])
+    newDarts[4].makeNext(newDarts[5])
+    newDarts[5].makeNext(newDarts[6])
 
     // Face 2
-    allChair.Dart(edge = allChair.edges[8], origin = allChair.verts[4], face = faces[1])
-    allChair.Dart(edge = allChair.edges[9], origin = allChair.verts[5], face = faces[1])
-    allChair.Dart(edge = allChair.edges[10], origin = allChair.verts[6], face = faces[1])
-    allChair.Dart(edge = allChair.edges[11], origin = allChair.verts[7], face = faces[1])
-    allChair.Dart(edge = allChair.edges[12], origin = allChair.verts[18], face = faces[1])
-    allChair.Dart(edge = allChair.edges[13], origin = allChair.verts[17], face = faces[1])
-    allChair.Dart(edge = allChair.edges[14], origin = allChair.verts[2], face = faces[1])
-    allChair.Dart(edge = allChair.edges[15], origin = allChair.verts[3], face = faces[1])
+    newDarts[6].face = (newFaces[2])
+    newDarts[7].face = newFaces[2]
+    newDarts[8].face = newFaces[2]
+    newDarts[9].face = newFaces[0]
 
-    for (k in 8..14) {
-        allChair.darts[k].makeNext(allChair.darts[(k+1) % (numEdges*2)])
-    }
-    allChair.darts[15].makeNext(allChair.darts[8])
+    newDarts[7].makeNext(newDarts[8])
 
     // Face 3
-    allChair.Dart(edge = allChair.edges[16], origin = allChair.verts[16], face = faces[2])
-    allChair.Dart(edge = allChair.edges[17], origin = allChair.verts[17], face = faces[2])
-    allChair.Dart(edge = allChair.edges[18], origin = allChair.verts[18], face = faces[2])
-    allChair.Dart(edge = allChair.edges[19], origin = allChair.verts[7], face = faces[2])
-    allChair.Dart(edge = allChair.edges[20], origin = allChair.verts[8], face = faces[2])
-    allChair.Dart(edge = allChair.edges[21], origin = allChair.verts[9], face = faces[2])
-    allChair.Dart(edge = allChair.edges[22], origin = allChair.verts[19], face = faces[2])
-    allChair.Dart(edge = allChair.edges[23], origin = allChair.verts[20], face = faces[2])
+    newDarts[10].face = newFaces[3]
+    newDarts[11].face = newFaces[3]
+    newDarts[12].face = newFaces[3]
+    newDarts[13].face = newFaces[3]
 
-    for (k in 16..22) {
-        allChair.darts[k].makeNext(allChair.darts[(k+1) % (numEdges*3)])
+    newDarts[9].makeNext(newDarts[10])
+    newDarts[10].makeNext(newDarts[11])
+    newDarts[11].makeNext(newDarts[12])
+    newDarts[12].makeNext(newDarts[13])
+
+    for (j in 0..newDarts.size-1) {
+        print ("X: ")
+        print (newDarts[j].origin!!.data.x)
+        print (" Y: ")
+        println (newDarts[j].origin!!.data.y)
+        /*print (" TO ")
+        print ("X: ")
+        print (newDarts[j].dest!!.data.x)
+        print (" Y: ")
+        println (newDarts[j].dest!!.data.y)*/
     }
-    allChair.darts[23].makeNext(allChair.darts[16])
 
-    // Face 4
-    allChair.Dart(edge = allChair.edges[24], origin = allChair.verts[12], face = faces[3])
-    allChair.Dart(edge = allChair.edges[25], origin = allChair.verts[13], face = faces[3])
-    allChair.Dart(edge = allChair.edges[26], origin = allChair.verts[14], face = faces[3])
-    allChair.Dart(edge = allChair.edges[27], origin = allChair.verts[20], face = faces[3])
-    allChair.Dart(edge = allChair.edges[28], origin = allChair.verts[19], face = faces[3])
-    allChair.Dart(edge = allChair.edges[29], origin = allChair.verts[9], face = faces[3])
-    allChair.Dart(edge = allChair.edges[30], origin = allChair.verts[10], face = faces[3])
-    allChair.Dart(edge = allChair.edges[31], origin = allChair.verts[11], face = faces[3])
+    //Interior Vertices and Darts
+    val innerVerts = ArrayList<DCEL<PointE2, Unit, Unit>.Vertex>()
 
-    for (k in 24..30) {
-        allChair.darts[k].makeNext(allChair.darts[(k+1) % (numEdges*4)])
+    // We need to use midpoints because of rotations between tiles
+    /*innerVerts.add(parent.Vertex(data = PointE2(
+            newDarts[1].origin!!.data.x,
+            newDarts[15].origin!!.data.y)))
+    innerVerts.add(parent.Vertex(data = PointE2(
+            newDarts[2].origin!!.data.x,
+            newDarts[15].origin!!.data.y)))
+    innerVerts.add(parent.Vertex(data = PointE2(
+            newDarts[3].origin!!.data.x,
+            newDarts[15].origin!!.data.y)))
+    innerVerts.add(parent.Vertex(data = PointE2(
+            newDarts[1].origin!!.data.x,
+            newDarts[13].origin!!.data.y)))
+    innerVerts.add(parent.Vertex(data = PointE2(
+            newDarts[1].origin!!.data.x,
+            newDarts[14].origin!!.data.y)))*/
+
+    innerVerts.add(parent.Vertex(data = PointE2(
+            (newDarts[0].origin!!.data.x + newDarts[8].origin!!.data.x) / 2.0,
+            (newDarts[0].origin!!.data.y + newDarts[8].origin!!.data.y) / 2.0
+    )))
+    innerVerts.add(parent.Vertex(data = PointE2(
+            (newDarts[2].origin!!.data.x + newDarts[8].origin!!.data.x) / 2.0,
+            (newDarts[2].origin!!.data.y + newDarts[8].origin!!.data.y) / 2.0
+    )))
+    innerVerts.add(parent.Vertex(data = PointE2(
+            (newDarts[3].origin!!.data.x + newDarts[7].origin!!.data.x) / 2.0,
+            (newDarts[3].origin!!.data.y + newDarts[7].origin!!.data.y) / 2.0
+    )))
+    innerVerts.add(parent.Vertex(data = PointE2(
+            (newDarts[9].origin!!.data.x + newDarts[13].origin!!.data.x) / 2.0,
+            (newDarts[9].origin!!.data.y + newDarts[13].origin!!.data.y) / 2.0
+    )))
+    innerVerts.add(parent.Vertex(data = PointE2(
+            (newDarts[1].origin!!.data.x + newDarts[11].origin!!.data.x) / 2.0,
+            (newDarts[1].origin!!.data.y + newDarts[11].origin!!.data.y) / 2.0
+    )))
+
+    println ("Inner Verts")
+    for (j in 0..innerVerts.size-1) {
+        print ("X: ")
+        print (innerVerts[j].data.x)
+        print (" Y: ")
+        println (innerVerts[j].data.y)
     }
-    allChair.darts[31].makeNext(allChair.darts[24])
+
+    val innerDarts = ArrayList<DCEL<PointE2, Unit, Unit>.Dart>()
+    innerDarts.add(parent.Dart(origin = innerVerts[0], face = newFaces[2]))
+    innerDarts.add(parent.Dart(origin = innerVerts[1], twin = innerDarts[innerDarts.size-1], face = newFaces[0]))
+
+    innerDarts.add(parent.Dart(origin = innerVerts[1], face = newFaces[2]))
+    innerDarts.add(parent.Dart(origin = innerVerts[2], twin = innerDarts[innerDarts.size-1], face = newFaces[1]))
+
+    innerDarts.add(parent.Dart(origin = innerVerts[2], face = newFaces[2]))
+    innerDarts.add(parent.Dart(origin = newVerts[3], twin = innerDarts[innerDarts.size-1], face = newFaces[1]))
+
+    innerDarts.add(parent.Dart(origin = newVerts[4], face = newFaces[2]))
+    innerDarts.add(parent.Dart(origin = innerVerts[3], twin = innerDarts[innerDarts.size-1], face = newFaces[3]))
+
+    innerDarts.add(parent.Dart(origin = innerVerts[3], face = newFaces[2]))
+    innerDarts.add(parent.Dart(origin = innerVerts[4], twin = innerDarts[innerDarts.size-1], face = newFaces[1]))
+
+    innerDarts.add(parent.Dart(origin = innerVerts[4], face = newFaces[2], prev = innerDarts[innerDarts.size-2]))
+    innerDarts.add(parent.Dart(origin = innerVerts[0], twin = innerDarts[innerDarts.size-1], face = newFaces[0]))
+
+    innerDarts.add(parent.Dart(origin = innerVerts[1], face = newFaces[1]))
+    innerDarts.add(parent.Dart(origin = newDarts[2].origin, twin = innerDarts[innerDarts.size-1], face = newFaces[0]))
+
+    innerDarts.add(parent.Dart(origin = innerVerts[4], face = newFaces[0]))
+    innerDarts.add(parent.Dart(origin = newDarts[14].origin, twin = innerDarts[innerDarts.size-1], face = newFaces[3]))
+
+    newFaces[2].aDart = innerDarts[0]
+    newFaces[3].aDart = newDarts[12]
+    newFaces[1].aDart = newDarts[4]
+    newFaces[0].aDart = newDarts[0]
+
+    innerDarts[0].makeNext(innerDarts[2])
+    innerDarts[1].makeNext(innerDarts[11])
+    innerDarts[2].makeNext(innerDarts[4])
+    innerDarts[3].makeNext(innerDarts[12])
+    innerDarts[4].makeNext(newDarts[7])
+    innerDarts[5].makeNext(innerDarts[3])
+    innerDarts[5].makePrev(newDarts[6])
+    innerDarts[6].makeNext(innerDarts[8])
+    innerDarts[6].makePrev(newDarts[8])
+    innerDarts[7].makeNext(newDarts[9])
+    innerDarts[8].makeNext(innerDarts[10])
+    innerDarts[9].makeNext(innerDarts[7])
+    innerDarts[10].makeNext(innerDarts[0])
+    innerDarts[11].makeNext(innerDarts[14])
+    innerDarts[12].makeNext(newDarts[2])
+    innerDarts[13].makeNext(innerDarts[1])
+    innerDarts[13].makePrev(newDarts[1])
+    innerDarts[14].makeNext(newDarts[14])
+    innerDarts[15].makeNext(innerDarts[9])
+    innerDarts[15].makePrev(newDarts[13])
 
 
-    // Exterior Darts
-    allChair.Dart(edge = allChair.edges[32], origin = allChair.verts[1], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[33], origin = allChair.verts[0], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[34], origin = allChair.verts[15], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[35], origin = allChair.verts[14], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[36], origin = allChair.verts[13], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[37], origin = allChair.verts[11], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[38], origin = allChair.verts[12], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[39], origin = allChair.verts[10], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[40], origin = allChair.verts[9], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[41], origin = allChair.verts[8], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[42], origin = allChair.verts[7], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[43], origin = allChair.verts[6], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[44], origin = allChair.verts[5], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[45], origin = allChair.verts[4], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[46], origin = allChair.verts[3], face = allChair.outerFace)
-    allChair.Dart(edge = allChair.edges[47], origin = allChair.verts[2], face = allChair.outerFace)
-
-    // Set interior twins
-    allChair.darts[2].makeTwin(allChair.darts[13])
-    allChair.darts[3].makeTwin(allChair.darts[16])
-    allChair.darts[4].makeTwin(allChair.darts[23])
-    allChair.darts[5].makeTwin(allChair.darts[26])
-
-    allChair.darts[11].makeTwin(allChair.darts[18])
-    allChair.darts[12].makeTwin(allChair.darts[17])
-
-    allChair.darts[21].makeTwin(allChair.darts[28])
-    allChair.darts[22].makeTwin(allChair.darts[27])
-
-    // Set exterior twins
-    allChair.darts[32].makeTwin(allChair.darts[0])
-    allChair.darts[33].makeTwin(allChair.darts[7])
-    allChair.darts[34].makeTwin(allChair.darts[6])
-    allChair.darts[35].makeTwin(allChair.darts[25])
-    allChair.darts[36].makeTwin(allChair.darts[24])
-    allChair.darts[37].makeTwin(allChair.darts[31])
-    allChair.darts[38].makeTwin(allChair.darts[30])
-    allChair.darts[39].makeTwin(allChair.darts[29])
-    allChair.darts[40].makeTwin(allChair.darts[20])
-    allChair.darts[41].makeTwin(allChair.darts[19])
-    allChair.darts[42].makeTwin(allChair.darts[10])
-    allChair.darts[43].makeTwin(allChair.darts[9])
-    allChair.darts[44].makeTwin(allChair.darts[8])
-    allChair.darts[45].makeTwin(allChair.darts[15])
-    allChair.darts[46].makeTwin(allChair.darts[14])
-    allChair.darts[47].makeTwin(allChair.darts[1])
-
-
-    return allChair
 }
+
+fun pairLonelyDarts (lonelyDarts: ArrayList<DCEL<PointE2, Unit, Unit>.Dart>) {
+    val len = lonelyDarts.size
+    var stepSize = 0.0
+
+
+    if (lonelyDarts.size > 0) {
+        stepSize = lonelyDarts[0].origin!!.data.distTo(lonelyDarts[1].origin!!.data)
+    }
+
+    println("Pairing")
+    while (lonelyDarts.size > 0) {
+        for (j in 0..lonelyDarts.size-1) {
+            if (lonelyDarts[0].face != lonelyDarts[j].face) {
+                //println(lonelyDarts[0].origin!!.data.distTo(lonelyDarts[j].origin!!.data))
+            }
+            if (areOpposite(lonelyDarts[0], lonelyDarts[j])
+                    && lonelyDarts[0].origin!!.data.distTo(lonelyDarts[j].origin!!.data) == stepSize
+                    &&  lonelyDarts[0].origin!!.data.distTo(lonelyDarts[j].next!!.origin!!.data) == 0.0
+                    && lonelyDarts[0].face != lonelyDarts[j].face) {
+                lonelyDarts[0].makeTwin(lonelyDarts[j])
+                lonelyDarts.removeAt(j)
+                lonelyDarts.removeAt(0)
+                break
+            }
+        }
+    }
+
+    println("Done Pairing")
+
+}
+
+fun areOpposite(dart1 : DCEL<PointE2, Unit, Unit>.Dart, dart2 : DCEL<PointE2, Unit, Unit>.Dart) : Boolean{
+    val dx1 = dart1.next!!.origin!!.data.x - dart1.origin!!.data.x
+    val dx2 = dart2.next!!.origin!!.data.x - dart2.origin!!.data.x
+
+    val dy1 = dart1.next!!.origin!!.data.y - dart1.origin!!.data.y
+    val dy2 = dart2.next!!.origin!!.data.y - dart2.origin!!.data.y
+
+    return (dx1 == -dx2 && dy1 == -dy2)
+}
+
 
 /*fun subDivideEdge(dart : DCEL<PointE2, Unit, Unit>.Dart,
                   parent : DCEL<PointE2, Unit, Unit>, newChair : DCEL<PointE2, Unit, Unit>) {

@@ -20,6 +20,7 @@ class TileView () : JFrame() {
     val chairButton : JButton
     val twistButton : JButton
     val subdivButton : JButton
+    val triButton : JButton
 
     init {
         this.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
@@ -37,15 +38,18 @@ class TileView () : JFrame() {
         buttonPanel.layout = BorderLayout()
 
         buttonFlowPanel = JPanel()
-        buttonFlowPanel.layout = FlowLayout()
+        buttonFlowPanel.layout = BoxLayout(buttonFlowPanel, BoxLayout.Y_AXIS)
+        buttonFlowPanel.add(Box.createRigidArea(Dimension(0, 4)))
 
         chairButton = JButton("Chair")
         twistButton = JButton("Pentagonal Twist")
         subdivButton = JButton("Subdivide")
+        triButton = JButton("Triangulate")
 
         buttonFlowPanel.add(chairButton)
         buttonFlowPanel.add(twistButton)
         buttonFlowPanel.add(subdivButton)
+        buttonFlowPanel.add(triButton)
 
         buttonPanel.add(buttonFlowPanel, BorderLayout.WEST)
         this.contentPane.add(graphPanel, BorderLayout.CENTER)
@@ -53,17 +57,22 @@ class TileView () : JFrame() {
 
         chairButton.addActionListener {
             paintChair(graphPanel)
+            contentPane.repaint()
         }
 
         twistButton.addActionListener {
             paintTwist(graphPanel)
+            contentPane.repaint()
         }
 
         subdivButton.addActionListener {
             graphPanel.subdivide()
-            graphPanel.revalidate()
-            graphPanel.repaint()
-            revalidate()
+            contentPane.repaint()
+        }
+
+        triButton.addActionListener {
+            graphPanel.triangulate()
+            contentPane.repaint()
         }
 
     }
@@ -99,6 +108,13 @@ class GraphPanel (which : Int) : JPanel() {
 
         this.isVisible = true
 
+        if (tileIdx == 0) {
+            createChair()
+        }
+        else if (tileIdx == 1) {
+
+        }
+
     }
 
     override fun paintComponent(g: Graphics?) {
@@ -107,21 +123,18 @@ class GraphPanel (which : Int) : JPanel() {
         g?.clearRect(0, 0, this.width, this.height)
         val g2 : Graphics2D = g as Graphics2D
 
-        if (tileIdx == 0) {
-            createChair()
-        }
-        else if (tileIdx == 1) {
-            paintTwist(g2)
-        }
-
         paintGraph(g2)
     }
 
-    fun subdivide() {
+    fun subdivide () {
         println("In subdivide")
-        graph = subDivideChair(graph)
-        repaint()
-        revalidate()
+        subDivideChair(graph)
+        println("")
+    }
+
+    fun triangulate () {
+        println("In triangulate")
+        triangulateDCEL(graph)
     }
 
     fun createChair () {
@@ -138,20 +151,17 @@ class GraphPanel (which : Int) : JPanel() {
 
         val chair = ChairTile(points)
         graph = chair.chair
-        graph = subDivideChair(graph)
-        triangulateDCEL(graph)
-        //println("")
         //graph = subDivideChair(graph)
-        //graph = makeChairDCEL(points)
+        //triangulateDCEL(graph)
+        //println("ccc")
     }
 
     fun paintGraph(g: Graphics2D?) {
-        //println("Painting")
+        println (graph.faces.size)
+
         // paint vertices
         g?.paint = Color.BLUE
         for (k in 0..graph.verts.size-1) {
-            //println(graph.verts[k].data.x)
-            //println(graph.verts[k].data.y)
             g?.draw(Ellipse2D.Double(graph.verts[k].data.x - 5, graph.verts[k].data.y - 5, 10.0, 10.0))
         }
 
@@ -165,12 +175,8 @@ class GraphPanel (which : Int) : JPanel() {
         /*// paint face edge
         g?.paint = Color.RED
         g?.draw(Line2D.Double(graph.faces[0].aDart?.origin?.data!!.x, graph.faces[0].aDart?.origin?.data!!.y,
-                graph.faces[0].aDart?.dest?.data!!.x, graph.faces[0].aDart?.dest?.data!!.y))
+                graph.faces[0].aDart?.dest?.data!!.x, graph.faces[0].aDart?.dest?.data!!.y))*/
 
-        // paint midpoint
-        val x = (graph.verts[0].data.x + graph.verts[3].data.x) / 2.0
-        val y = (graph.verts[0].data.y + graph.verts[3].data.y) / 2.0
-        g?.draw(Ellipse2D.Double(x - 5, y - 5, 10.0, 10.0))*/
     }
 
     fun paintTwist(g: Graphics2D?) {

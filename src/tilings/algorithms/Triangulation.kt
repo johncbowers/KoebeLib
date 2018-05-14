@@ -5,13 +5,13 @@ import geometry.primitives.Euclidean2.PointE2
 
 fun triangulateDCEL (graph : DCEL<PointE2, Unit, Unit>) {
 
-    print("Start: ")
+    //print("Start: ")
 
     val len = graph.faces.size
-    println(len)
+    //println(len)
     for (k in 0..len-1) {
 
-        println(graph.faces[k].darts().size)
+        //println(graph.faces[k].darts().size)
         triangulateFace(graph, graph.faces[k])
 
     }
@@ -21,9 +21,13 @@ fun triangulateDCEL (graph : DCEL<PointE2, Unit, Unit>) {
     }
 }
 
+/*
+    Creates a vertex at the average x,y position of the face and connects all vertices to that face
+    Modifies the original DCEL
+ */
 fun triangulateFace (graph : DCEL<PointE2, Unit, Unit>, face : DCEL<PointE2, Unit, Unit>.Face) {
 
-    println("Face")
+    //println("Face")
     val faceVertex : DCEL<PointE2, Unit, Unit>.Vertex
     val faceCenter : PointE2
     var faceNew : DCEL<PointE2, Unit, Unit>.Face
@@ -32,7 +36,7 @@ fun triangulateFace (graph : DCEL<PointE2, Unit, Unit>, face : DCEL<PointE2, Uni
     var dart2 : DCEL<PointE2, Unit, Unit>.Dart
 
     val darts = face.darts()
-    println(darts.size)
+    //println(darts.size)
 
     faceCenter = calculateAvgPosition(darts)
     faceVertex = graph.Vertex(data = faceCenter)
@@ -57,9 +61,9 @@ fun triangulateFace (graph : DCEL<PointE2, Unit, Unit>, face : DCEL<PointE2, Uni
         dart2.makeNext(darts[k])
     }
 
-    println(graph.faces[0])
+    //println(graph.faces[0])
     //graph.faces.removeAt(0)
-    println(graph.faces[0])
+    //println(graph.faces[0])
 }
 
 fun calculateAvgPosition(darts : List<DCEL<PointE2, Unit, Unit>.Dart>) : PointE2 {
