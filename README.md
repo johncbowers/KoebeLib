@@ -57,7 +57,7 @@ Building and Running is all done through IntelliJ's systems.
 4. Select the `<project-path>/lib/jar` folder
 5. Click the 'Export' checkbox and click 'Apply' and 'OK'
 
-### Step 7: Create a runtime configuration.
+### Step 4: Create a runtime configuration.
 1. Right click on the the `src/sketches/SphericalSketch.kt` file
 2. Select the Run option
 
