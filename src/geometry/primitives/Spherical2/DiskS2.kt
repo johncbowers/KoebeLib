@@ -201,6 +201,10 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     companion object {
 
+        /**
+         * Given four disks that are linearly independent, returns one of the two disks that is
+         * equiinversivedistant to each of them.
+         */
         fun circumcenter(disk1: DiskS2, disk2: DiskS2, disk3: DiskS2, disk4: DiskS2): DiskS2 {
 
             val ndisk1 = disk1.inversiveNormalize()
