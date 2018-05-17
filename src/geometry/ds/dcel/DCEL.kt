@@ -18,44 +18,45 @@ class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
     val outerFace: Face?
 
 
-      /**
-      * Creates the dual graph of a DCEL
-      */
-      fun DualHull() : DCEL<FaceData, EdgeData, VertexData> {
-         val dualFtoV = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Face, DCEL<FaceData, EdgeData, VertexData>.Vertex>();
-         val dualEtoE = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Edge, DCEL<FaceData, EdgeData, VertexData>.Edge>();
-         val dualVtoF = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Vertex, DCEL<FaceData, EdgeData, VertexData>.Face>();
-         val dualDtoD = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Dart, DCEL<FaceData, EdgeData, VertexData>.Dart>();
-         val dual = DCEL<FaceData, EdgeData, VertexData>();
-         for (f in faces) {
-           val A = dual.Vertex(data = f.data);
-           dualFtoV.put(f, A);
-         }
-         for (v in verts) {
-           val dualFace = dual.Face(data = v.data);
-           dualVtoF.put(v, dualFace);
-         }
-         for (he in darts) {
-           val origin = dualFtoV.get(he.face);
-           val incident = dualVtoF.get(he.origin);
-           val newHe = dual.Dart();
-           newHe.origin = origin;
-           newHe.face = incident;
-           dualDtoD.put(he, newHe);
-         }
-         for (edge in edges) {
-           val dualEdge = dual.Edge(data = edge.data);
-           dualEtoE.put(edge, dualEdge);
-         }
-         for (he in darts) {
-           val dualHe = dualDtoD.get(he);
-           dualHe?.next = dualDtoD.get(he.twin?.prev);
-           dualHe?.prev = dualDtoD.get(he.next?.twin);
-           dualHe?.twin = dualDtoD.get(he.twin);
-           dualHe?.edge = dualDtoD.get(he)?.edge;
-         }
-         return dual;
-      }
+    /**
+    * Creates the dual graph of a DCEL
+    */
+    fun dualHull() : DCEL<FaceData, EdgeData, VertexData> {
+        val dualFtoV = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Face, DCEL<FaceData, EdgeData, VertexData>.Vertex>();
+        val dualEtoE = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Edge, DCEL<FaceData, EdgeData, VertexData>.Edge>();
+        val dualVtoF = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Vertex, DCEL<FaceData, EdgeData, VertexData>.Face>();
+        val dualDtoD = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Dart, DCEL<FaceData, EdgeData, VertexData>.Dart>();
+        val dual = DCEL<FaceData, EdgeData, VertexData>();
+        for (f in faces) {
+            val A = dual.Vertex(data = f.data);
+            dualFtoV.put(f, A);
+        }
+        for (v in verts) {
+            val dualFace = dual.Face(data = v.data);
+            dualVtoF.put(v, dualFace);
+        }
+        for (he in darts) {
+            val origin = dualFtoV.get(he.face);
+            val incident = dualVtoF.get(he.origin);
+            val newHe = dual.Dart();
+            newHe.origin = origin;
+            newHe.face = incident;
+            dualDtoD.put(he, newHe);
+        }
+        for (edge in edges) {
+            val dualEdge = dual.Edge(data = edge.data);
+            dualEtoE.put(edge, dualEdge);
+        }
+        for (he in darts) {
+            val dualHe = dualDtoD.get(he);
+            dualHe?.next = dualDtoD.get(he.twin?.prev);
+            dualHe?.prev = dualDtoD.get(he.next?.twin);
+            dualHe?.twin = dualDtoD.get(he.twin);
+            dualHe?.edge = dualDtoD.get(he)?.edge;
+        }
+        return dual;
+    }
+
     init {
         outerFace = if (outerFaceData != null) Face(data = outerFaceData) else null
     }
@@ -215,6 +216,26 @@ class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
         fun reverse_cycle(): List<Dart> {
             return cycle().reversed()
         }
+
+
+        /**
+         * Introduces a zero area face between this dart and its twin.
+         * The new edge data is given by eData and the new face's data
+         * is given by fData.
+         * The new edge data is used for the twin's new edge.
+         */
+        fun cut(eData: EdgeData, fData: FaceData) {
+            // TODO
+        }
+
+        /**
+         * Splits this dart (and twin) by the introduction of a vertex. The new vertex
+         * data is given by vData, and the new edge data is given by eData.
+         * The old dart is recycled to be the dart ccw before the new one.
+         */
+        fun split(vData: VertexData, eData: EdgeData) {
+            // TODO
+        }
     }
 
     inner class Edge(var aDart: Dart? = null, var data: EdgeData) {
@@ -223,6 +244,28 @@ class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
             edges.add(this)
         }
 
+        /**
+         * Cuts this edge into two, by introducing a zero-area face.
+         * The new edge data is given by eData and the new face's data
+         * is given by fData.
+         *
+         * Note that this is just a convenience wrapper for the same
+         * function defined on this edge's dart.
+         */
+        fun cut(eData: EdgeData, fData: FaceData) {
+            aDart?.cut(eData, fData)
+        }
+
+        /**
+         * Splits this edge by the introduction of a vertex. The new vertex
+         * data is given by vData, and the new edge data is given by eData.
+         *
+         * Note that this is just a convenience wrapper for the same function
+         * defined on this edge's dart.
+         */
+        fun split(vData: VertexData, eData: EdgeData) {
+            aDart?.split(vData, eData)
+        }
     }
 
     inner class Face(var aDart: Dart? = null, var data: FaceData) {

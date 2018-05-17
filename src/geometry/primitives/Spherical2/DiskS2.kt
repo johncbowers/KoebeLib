@@ -198,4 +198,48 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
         val scale = 1.0 / Math.sqrt(inner_product(a, b, c, d, a, b, c, d))
         return DiskS2(a * scale, b * scale, c * scale, d * scale)
     }
+
+    companion object {
+
+        /**
+         * Given four disks that are linearly independent, returns one of the two disks that is
+         * equiinversivedistant to each of them.
+         */
+        fun circumcenter(disk1: DiskS2, disk2: DiskS2, disk3: DiskS2, disk4: DiskS2): DiskS2 {
+
+            val ndisk1 = disk1.inversiveNormalize()
+            val ndisk2 = disk2.inversiveNormalize()
+            val ndisk3 = disk3.inversiveNormalize()
+            val ndisk4 = disk4.inversiveNormalize()
+
+            val a1 = ndisk1.a
+            val b1 = ndisk1.b
+            val c1 = ndisk1.c
+            val d1 = ndisk1.d
+
+            val a2 = ndisk2.a
+            val b2 = ndisk2.b
+            val c2 = ndisk2.c
+            val d2 = ndisk2.d
+
+            val a3 = ndisk3.a
+            val b3 = ndisk3.b
+            val c3 = ndisk3.c
+            val d3 = ndisk3.d
+
+            val a4 = ndisk4.a
+            val b4 = ndisk4.b
+            val c4 = ndisk4.c
+            val d4 = ndisk4.d
+
+            val fact = 1.0 / (a2 * b4 * c3 * d1 - a2 * b3 * c4 * d1 - a1 * b4 * c3 * d2 + a1 * b3 * c4 * d2 - a2 * b4 * c1 * d3 + a1 * b4 * c2 * d3 + a2 * b1 * c4 * d3 - a1 * b2 * c4 * d3 + a4 * (b3 * c2 * d1 - b2 * c3 * d1 - b3 * c1 * d2 + b1 * c3 * d2 + b2 * c1 * d3 - b1 * c2 * d3) + a2 * b3 * c1 * d4 - a1 * b3 * c2 * d4 - a2 * b1 * c3 * d4 + a1 * b2 * c3 * d4 + a3 * ((-b4) * c2 * d1 + b2 * c4 * d1 + b4 * c1 * d2 - b1 * c4 * d2 - b2 * c1 * d4 + b1 * c2 * d4))
+
+            return DiskS2(
+                    ((-b2) * c3 * d1 + b2 * c4 * d1 + b1 * c3 * d2 - b1 * c4 * d2 + b2 * c1 * d3 - b1 * c2 * d3 + b1 * c4 * d3 - b2 * c4 * d3 + b4 * ((-c2) * d1 + c3 * d1 + c1 * d2 - c3 * d2 - c1 * d3 + c2 * d3) - b2 * c1 * d4 + b1 * c2 * d4 - b1 * c3 * d4 + b2 * c3 * d4 + b3 * ((-c4) * d1 - c1 * d2 + c4 * d2 + c2 * (d1 - d4) +  c1 * d4)) * fact,
+                    (a2  * c3 * d1 - a2 * c4 * d1 - a1 * c3 * d2 + a1 * c4 * d2 - a2 * c1 * d3 + a1 * c2 * d3 - a1 * c4 * d3 + a2 * c4 * d3 + a4 *   (c2  * d1 - c3 * d1 - c1 * d2 + c3 * d2 + c1 * d3 - c2 * d3) + a2 * c1 * d4 - a1 * c2 * d4 + a1 * c3 * d4 - a2 * c3 * d4 + a3 * (  c4 *  d1 + c1 * d2 - c4 * d2 - c1 *  d4 + c2 * (-d1 + d4))) * fact,
+                    ((-a2) * b3 * d1 + a2 * b4 * d1 + a1 * b3 * d2 - a1 * b4 * d2 + a2 * b1 * d3 - a1 * b2 * d3 + a1 * b4 * d3 - a2 * b4 * d3 + a4 * ((-b2) * d1 + b3 * d1 + b1 * d2 - b3 * d2 - b1 * d3 + b2 * d3) - a2 * b1 * d4 + a1 * b2 * d4 - a1 * b3 * d4 + a2 * b3 * d4 + a3 * ((-b4) * d1 - b1 * d2 + b4 * d2 + b2 * (d1 - d4) +  b1 * d4)) * fact,
+                    ((-a2) * b3 * c1 + a2 * b4 * c1 + a1 * b3 * c2 - a1 * b4 * c2 + a2 * b1 * c3 - a1 * b2 * c3 + a1 * b4 * c3 - a2 * b4 * c3 + a4 * ((-b2) * c1 + b3 * c1 + b1 * c2 - b3 * c2 - b1 * c3 + b2 * c3) - a2 * b1 * c4 + a1 * b2 * c4 - a1 * b3 * c4 + a2 * b3 * c4 + a3 * ((-b4) * c1 - b1 * c2 + b4 * c2 + b2 * (c1 - c4) +  b1 * c4)) * fact
+            )
+        }
+    }
 }
