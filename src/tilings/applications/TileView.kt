@@ -11,6 +11,7 @@ import java.awt.geom.Line2D
 import tilings.algorithms.makeChairDCEL
 import tilings.algorithms.subDivideChair
 import tilings.algorithms.triangulateDCEL
+import tilings.ds.PentagonalTwistTile
 import java.awt.geom.Ellipse2D
 
 class TileView () : JFrame() {
@@ -61,6 +62,9 @@ class TileView () : JFrame() {
         this.contentPane.add(graphPanel, BorderLayout.CENTER)
         this.contentPane.add(buttonPanel, BorderLayout.EAST)
 
+
+        // Action listeners for all of the buttons.
+        // Each button calls a specific method in the graph panel
         chairButton.addActionListener {
             paintChair(graphPanel)
             contentPane.repaint()
@@ -93,6 +97,9 @@ class TileView () : JFrame() {
 
     }
 
+    /**
+     * Adds a new graph panel to the frame that contains a chair tile
+     */
     fun paintChair (panel : JPanel) {
         this.contentPane.remove(panel)
         graphPanel = GraphPanel(0)
@@ -101,6 +108,9 @@ class TileView () : JFrame() {
 
     }
 
+    /**
+     * Adds a new graph panel to the frame that contains a pentagonal twist tile
+     */
     fun paintTwist (panel : JPanel) {
         this.contentPane.remove(panel)
         graphPanel = GraphPanel(1)
@@ -110,11 +120,14 @@ class TileView () : JFrame() {
     }
 }
 
+/**
+ * Jpanel class that contains the tile instance and performs operations on the tile
+ */
 class GraphPanel (which : Int) : JPanel() {
 
-    val tileIdx = which
-    var collarIdx = -1
-    var superTileIdx = -1
+    val tileIdx = which     //identifies the tile type
+    var collarIdx = -1      //counter for which collar to select
+    var superTileIdx = -1   //counter for which supertile to select
     var currFaces = ArrayList<DCEL<PointE2, Unit, Unit>.Face>()
     var points : ArrayList<PointE2>
     var tile : Tile<PointE2, Unit, Unit>
@@ -126,6 +139,7 @@ class GraphPanel (which : Int) : JPanel() {
 
         this.isVisible = true
 
+        // Creating a Chair Tile
         if (tileIdx == 0) {
             points = ArrayList<PointE2>()
 
@@ -144,16 +158,13 @@ class GraphPanel (which : Int) : JPanel() {
         else {
             points = ArrayList<PointE2>()
 
-            points.add(PointE2(x = 100.0, y = 100.0))
-            points.add(PointE2(x = 300.0, y = 100.0))
-            points.add(PointE2(x = 500.0, y = 100.0))
-            points.add(PointE2(x = 500.0, y = 300.0))
-            points.add(PointE2(x = 300.0, y = 300.0))
-            points.add(PointE2(x = 300.0, y = 500.0))
-            points.add(PointE2(x = 100.0, y = 500.0))
-            points.add(PointE2(x = 100.0, y = 300.0))
+            points.add(PointE2(x = 200.0, y = 100.0))
+            points.add(PointE2(x = 400.0, y = 100.0))
+            points.add(PointE2(x = 500.0, y = 400.0))
+            points.add(PointE2(x = 300.0, y = 550.0))
+            points.add(PointE2(x = 100.0, y = 400.0))
 
-            this.tile = ChairTile(points)
+            this.tile = PentagonalTwistTile(points)
             //createChair()
         }
 
@@ -168,6 +179,9 @@ class GraphPanel (which : Int) : JPanel() {
         paintGraph(g2)
     }
 
+    /**
+     * Subdivides the tile and resets the collar and supertile idxs
+     */
     fun subdivide () {
         println("In subdivide")
         tile.subdivide()
@@ -176,12 +190,20 @@ class GraphPanel (which : Int) : JPanel() {
         println("")
     }
 
+    /**
+     * Loops through each tile selecting the super tile and storing it in currFaces
+     */
     fun superTile () {
         superTileIdx = (superTileIdx + 1) % tile.graph.faces.size
+        //currFaces = (tile as ChairTile).superTile(tile.graph.faces[superTileIdx], 3)
         currFaces = tile.superTile(tile.graph.faces[superTileIdx])
+
         collarIdx = -1
     }
 
+    /**
+     * Triangulates all of the faces of the tile
+     */
     fun triangulate () {
         println("In triangulate")
         triangulateDCEL(tile.graph)
@@ -189,6 +211,9 @@ class GraphPanel (which : Int) : JPanel() {
         superTileIdx = -1
     }
 
+    /**
+     * Lopps through each tile selecting the collar and storing it in currFaces
+     */
     fun collar () {
         superTileIdx = -1
         collarIdx = (collarIdx + 1) % tile.graph.faces.size
@@ -211,14 +236,17 @@ class GraphPanel (which : Int) : JPanel() {
 
     }
 
+    /**
+     * Paints the panel and the current graph of the tile
+     */
     fun paintGraph(g: Graphics2D?) {
 
         // paint vertices
-        g?.paint = Color.BLUE
+        /*g?.paint = Color.BLUE
         for (k in 0..tile.graph.verts.size-1) {
             g?.draw(Ellipse2D.Double(tile.graph.verts[k].data.x - 5,
                     tile.graph.verts[k].data.y - 5, 10.0, 10.0))
-        }
+        }*/
 
         // paint edges
         //for (k in 0..graph.darts.size-1)
@@ -246,6 +274,7 @@ class GraphPanel (which : Int) : JPanel() {
             }
         }
 
+        // Paints supertile edges red and edges of current face green
         if (superTileIdx != -1)
         {
 

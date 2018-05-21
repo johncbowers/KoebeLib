@@ -3,7 +3,7 @@ package tilings.ds
 import geometry.ds.dcel.DCEL
 import geometry.primitives.Euclidean2.PointE2
 
-class ChairTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (null){
+class ChairTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (null) {
     val chairSize = 8
 
     /*
@@ -57,14 +57,26 @@ class ChairTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (null){
 
     }
 
-    override fun superTile (face : DCEL<PointE2, Unit, Unit>.Face) :
+    fun superTile (face : DCEL<PointE2, Unit, Unit>.Face, depth : Int) :
             ArrayList<DCEL<PointE2, Unit, Unit>.Face> {
         val superTile = ArrayList<DCEL<PointE2, Unit, Unit>.Face>()
 
+        var count = 1;
+        var next = root?.depthFirstSearch(face)
+        var parent = next
 
-        if (root?.depthFirstSearch(face) != null) {
-            println ("hhhhhhhhhhhhhhhhhhh")
-            takeFaces(superTile, root?.depthFirstSearch(face)!!.siblings()!!)
+
+        while (next != null && count <= depth) {
+            parent = next
+            next = parent.parent
+            count++
+        }
+
+        if (count != 1) {
+            //takeFaces(superTile, parent!!.children)
+            superTile.add(parent!!.value)
+        } else {
+            superTile.add(next!!.value)
         }
 
         return  superTile
@@ -345,10 +357,4 @@ class ChairTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (null){
 
     }
 
-    private fun takeFaces (faceList : ArrayList<DCEL<PointE2, Unit, Unit>.Face>,
-                           faceNodes : MutableList<TreeNode<DCEL<PointE2, Unit, Unit>.Face>>) {
-        for (node in faceNodes) {
-            faceList.add(node.value)
-        }
-    }
 }

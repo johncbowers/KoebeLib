@@ -59,6 +59,7 @@ fun triangulateFace (graph : DCEL<PointE2, Unit, Unit>, face : DCEL<PointE2, Uni
         dart1.makePrev(darts[k])
 
         dart2.makeNext(darts[k])
+        darts[k].face = faceNew
     }
 
     //println(graph.faces[0])
