@@ -303,6 +303,16 @@ open class SphericalSketch : PApplet() {
         popMatrix()
     }
 
+    fun drawDiskE2(disk: DiskE2) {
+        pushMatrix()
+        translate(0.0f, 0.0f, 1.0f)
+        val diameter = disk.radius.toFloat() * 2.0f
+        ellipse(disk.center.x.toFloat(),
+                disk.center.y.toFloat(),
+                diameter, diameter)
+        popMatrix()
+    }
+
     fun drawCircleArcOP2(arc: CircleArcOP2) {
 
         pushMatrix()
@@ -650,6 +660,14 @@ open class SphericalSketch : PApplet() {
                             }
                             drawDiskOP2(it)
                         }
+                        is DiskE2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0.0f, 0.0f, 0.0f)
+                                noFill()
+                            }
+                            drawDiskE2(it)
+                        }
                         is LineOP2 -> {
                             if (style != null) style.set(this)
                             else {
@@ -792,7 +810,7 @@ open class SphericalSketch : PApplet() {
  */
 fun main(passedArgs : Array<String>) {
     val appletArgs = arrayOf("sketches.SphericalSketch")
-    if (passedArgs != null) {
+    if (passedArgs != null && passedArgs.size > 0) {
         PApplet.main(PApplet.concat(appletArgs, passedArgs))
     } else {
         PApplet.main(appletArgs)

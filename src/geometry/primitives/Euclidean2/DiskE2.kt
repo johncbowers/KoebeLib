@@ -20,7 +20,7 @@ class DiskE2(val a: Double, val b: Double, val c: Double, val d: Double) {
                             p2.x, p2.y, 1.0,
                             p3.x, p3.y, 1.0
                     ),
-                    b = determinant(
+                    b = - determinant(
                             p1.x*p1.x + p1.y*p1.y, p1.y, 1.0,
                             p2.x*p2.x + p2.y*p2.y, p2.y, 1.0,
                             p3.x*p3.x + p3.y*p3.y, p3.y, 1.0
@@ -30,12 +30,21 @@ class DiskE2(val a: Double, val b: Double, val c: Double, val d: Double) {
                             p2.x*p2.x + p2.y*p2.y, p2.x, 1.0,
                             p3.x*p3.x + p3.y*p3.y, p3.x, 1.0
                     ),
-                    d = determinant(
+                    d = - determinant(
                             p1.x*p1.x + p1.y*p1.y, p1.x, p1.y,
                             p2.x*p2.x + p2.y*p2.y, p2.x, p2.y,
                             p3.x*p3.x + p3.y*p3.y, p3.x, p3.y
                     )
             )
+
+    constructor (center: PointE2, radius: Double) :
+            this (
+                    a = 1.0,
+                    b = -2.0 * center.x,
+                    c = -2.0 * center.y,
+                    d = center.x * center.x + center.y * center.y - radius * radius
+            )
+
     fun relativeOrientationOf(p: PointE2): DiskOrientation {
         val eval = (a * (p.x * p.x + p.y * p.y) + b * p.x + c * p.y + d) * a
         if (isZero(eval)) return DiskOrientation.COCIRCULAR
@@ -44,6 +53,6 @@ class DiskE2(val a: Double, val b: Double, val c: Double, val d: Double) {
     }
 
     val center: PointE2 by lazy { val inv2A = 0.5 / a;PointE2(-b * inv2A, -c * inv2A) }
-    val radiusSq: Double by lazy { val inv4a2 = 0.25/(a*a); (b*b + c*c - 4*d*a)*inv4a2 }
+    val radiusSq: Double by lazy { (b*b + c*c - 4 * d * a) / (4 * a * a) }
     val radius: Double by lazy { Math.sqrt(radiusSq)}
 }
