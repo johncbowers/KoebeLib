@@ -1,20 +1,13 @@
-package tilings.ds
+package tilings.algorithms
 
 import dcel.*
 import geometry.ds.dcel.DCEL
 import geometry.primitives.Euclidean2.PointE2
 import geometry.primitives.Spherical2.DiskS2
-import komplex.KData
 import packing.PackData
 import geometry.algorithms.CirclePack
 import geometry.algorithms.IncrementalConvexHullAlgorithms
-import panels.CPScreen
-import rePack.EuclPacker
-import rePack.SphPacker
-import sketches.SphericalSketch
-import sketches.SphericalSketchTestbed
-import tilings.algorithms.Spherifier
-import tilings.algorithms.triangulateDCEL
+import tilings.ds.ChairTile
 
 fun test () {
 
