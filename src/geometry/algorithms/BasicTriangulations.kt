@@ -111,3 +111,19 @@ import geometry.primitives.Euclidean2.*;
 //
 //    return tri
 //}
+
+/**
+ * Generates a unit size penny packing of circles in E2.
+ * @param nRows The number of triangle rows. Must be greater than or equal to 1.
+ * @param nCols The number of triangle columns. Must be greater than or equal to 1.
+ */
+fun genPennyPacking(nRows: Int, nCols: Int): DCEL<DiskE2, Unit, Unit> {
+    val packing = DCEL<DiskE2, Unit, Unit>()
+
+    // Bad inputs get a blank DCEL
+    if (nRows <= 0 || nCols <= 0) return packing
+
+    var v = packing.Vertex(data = DiskE2(PointE2(1.0,0.0), PointE2(0.0,1.0), PointE2(-1.0,0.0)))
+
+    return packing
+}
