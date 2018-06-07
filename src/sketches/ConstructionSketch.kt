@@ -1,7 +1,6 @@
 package sketches
 
 import com.processinghacks.arcball.Arcball
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const
 import geometry.construction.Construction
 import geometry.construction.BaseNode
 import geometry.construction.INode
