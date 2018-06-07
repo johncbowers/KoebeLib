@@ -107,6 +107,7 @@ fun subDivideChairFace (parent : DCEL<PointE2, Unit, Unit>, face : DCEL<PointE2,
         newVerts.add(parent.Vertex(data = PointE2((darts[k].origin!!.data.x + darts[(k+1) % len].origin!!.data.x) / 2.0,
                 (darts[k].origin!!.data.y + darts[(k+1) % len].origin!!.data.y) / 2.0)))
         newDarts.add(parent.Dart(origin = darts[k].origin))
+        darts[k].origin!!.aDart = newDarts[newDarts.size-1]
         newDarts.add(parent.Dart(origin = newVerts[newVerts.size-1]))
 
         if (darts[k].twin != null && darts[k].twin!!.face == parent.outerFace) {
@@ -114,7 +115,9 @@ fun subDivideChairFace (parent : DCEL<PointE2, Unit, Unit>, face : DCEL<PointE2,
                     face = parent.outerFace))
             outerDarts.add(parent.Dart(origin = darts[k].dest, prev = outerDarts[outerDarts.size-1],
                     twin = newDarts[newDarts.size-1], face = parent.outerFace))
+            outerDarts[outerDarts.size-1].makePrev(outerDarts[outerDarts.size-2])
             //parent.darts.remove(darts[k].twin)
+            //println("HELLOLOLOLOLO")
         }
         else {
             lonelyDarts.add(newDarts[newDarts.size-2])

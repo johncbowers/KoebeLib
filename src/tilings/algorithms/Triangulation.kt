@@ -83,3 +83,43 @@ fun calculateAvgPosition(darts : List<DCEL<PointE2, Unit, Unit>.Dart>) : PointE2
     retPoint = PointE2(xAvg, yAvg)
     return retPoint
 }
+
+class Spherifier<VertexData, EdgeData, FaceData> {
+
+    init {
+
+    }
+
+    fun spherify(graph : DCEL<VertexData, EdgeData, FaceData>) {
+        //val newVert = graph.Vertex( data = )
+        val bdryVerts = ArrayList<DCEL<VertexData, EdgeData, FaceData>.Vertex>()
+        val bdryDarts = ArrayList<DCEL<VertexData, EdgeData, FaceData>.Dart>()
+        var vtoi = mutableMapOf<DCEL<VertexData, EdgeData, FaceData>.Vertex, Int>()
+        for ( i in 0..graph.verts.lastIndex ) {
+            vtoi[graph.verts[i]] = i+1
+        }
+
+
+
+    }
+
+    private fun isInterior(vert : DCEL<VertexData, EdgeData, FaceData>.Vertex, dcel : DCEL<VertexData, EdgeData, FaceData>) : Boolean {
+
+        var inDarts = vert.inDarts()
+        var outDarts = vert.outDarts()
+
+        for (dart in inDarts) {
+            if (dart.face == dcel.outerFace) {
+                return false
+            }
+        }
+
+        for (dart in outDarts) {
+            if (dart.face == dcel.outerFace) {
+                return false
+            }
+        }
+
+        return true
+    }
+}

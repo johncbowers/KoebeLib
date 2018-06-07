@@ -49,7 +49,10 @@ class ChairTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (null) {
             frontier.removeAt(frontierIdx)
         }
 
+        println("Starting Lonely")
         pairLonelyDarts(lonelyDarts)
+        println("Finishing Lonely")
+
 
         for (k in 0..len-1) {
             graph.faces.removeAt(0)
@@ -216,16 +219,19 @@ class ChairTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (null) {
         val darts = face.darts()
         val len = darts.size
         for (k in 0..len-1) {
-            newVerts.add(graph.Vertex(data = PointE2((darts[k].origin!!.data.x + darts[(k+1) % len].origin!!.data.x) / 2.0,
+            newVerts.add(findVertex(PointE2((darts[k].origin!!.data.x + darts[(k+1) % len].origin!!.data.x) / 2.0,
                     (darts[k].origin!!.data.y + darts[(k+1) % len].origin!!.data.y) / 2.0)))
+            //newVerts.add(graph.Vertex(data = PointE2((darts[k].origin!!.data.x + darts[(k+1) % len].origin!!.data.x) / 2.0,
+                    //(darts[k].origin!!.data.y + darts[(k+1) % len].origin!!.data.y) / 2.0)))
             newDarts.add(graph.Dart(origin = darts[k].origin))
             newDarts.add(graph.Dart(origin = newVerts[newVerts.size-1]))
 
             if (darts[k].twin != null && darts[k].twin!!.face == graph.outerFace) {
                 outerDarts.add(graph.Dart(origin = newVerts[newVerts.size-1], twin = newDarts[newDarts.size-2],
                         face = graph.outerFace))
-                outerDarts.add(graph.Dart(origin = darts[k].dest, prev = outerDarts[outerDarts.size-1],
+                outerDarts.add(graph.Dart(origin = darts[k].dest, /*prev = outerDarts[outerDarts.size-1],*/
                         twin = newDarts[newDarts.size-1], face = graph.outerFace))
+
                 graph.darts.remove(darts[k].twin)
             }
             else {
@@ -236,6 +242,12 @@ class ChairTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (null) {
             graph.darts.remove(darts[k])
 
         }
+
+        for (k in 0..outerDarts.size-1) {
+            outerDarts[k].makePrev(outerDarts[(k+1) % (outerDarts.size)])
+            //outerDarts[(k + outerDarts.size-) % (outerDarts.size-1)].makePrev(outerDarts[(k+1) % (outerDarts.size-1)])
+        }
+        println("Done with outer")
 
         // Face 0
         newDarts[0].face = newFaces[0]
@@ -355,6 +367,15 @@ class ChairTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (null) {
         innerDarts[15].makePrev(newDarts[13])
 
 
+    }
+
+    private fun findVertex (p: PointE2) : DCEL<PointE2, Unit, Unit>.Vertex {
+        for (vert in graph.verts) {
+            if (vert.data.distTo(p) == 0.0) {
+                return vert
+            }
+        }
+        return graph.Vertex(data = p)
     }
 
 }
