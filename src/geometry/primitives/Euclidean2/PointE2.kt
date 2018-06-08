@@ -17,17 +17,24 @@ class PointE2(val x: Double, val y: Double) {
     operator fun plus(v: VectorE2) = PointE2(x + v.x, y + v.y)
     operator fun minus(p: PointE2) = VectorE2(x - p.x, y - p.y)
 
-    /**
-     * Compute the square of the distance from this to p.
-     */
+    // Square distance to various geometric objects
+
     fun distSqTo(p: PointE2): Double {
         val dx = p.x - x
         val dy = p.y - y
         return dx*dx + dy*dy
     }
 
-    /**
-     * Distance from this to point p.
-     */
+    fun distSqTo(s: SegmentE2): Double {
+        return distSqTo(s.closestPointE2To(this))
+    }
+
     fun distTo(p: PointE2) = Math.sqrt(distSqTo(p))
+    fun distTo(s: SegmentE2) = Math.sqrt(distSqTo(s))
+
+    // TODO There has to be a nice analytical way to do this without evaluating the center and radius
+    fun distTo(d: DiskE2): Double {
+        return distTo(d.center) - d.radius
+    }
+
 }

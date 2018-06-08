@@ -313,6 +313,13 @@ open class SphericalSketch : PApplet() {
         popMatrix()
     }
 
+    fun drawSegmentE2(seg: SegmentE2) {
+        pushMatrix()
+        translate(0.0f, 0.0f, 1.0f)
+        line(seg.source.x.toFloat(), seg.source.y.toFloat(), seg.target.x.toFloat(), seg.target.y.toFloat())
+        popMatrix()
+    }
+
     fun drawCircleArcOP2(arc: CircleArcOP2) {
 
         pushMatrix()
@@ -446,7 +453,6 @@ open class SphericalSketch : PApplet() {
         }
 
     }
-
 
     fun drawCircleArcS2(arc: CircleArcS2) {
 
@@ -667,6 +673,14 @@ open class SphericalSketch : PApplet() {
                                 noFill()
                             }
                             drawDiskE2(it)
+                        }
+                        is SegmentE2 -> {
+                            if (style != null) style.set(this)
+                            else {
+                                stroke(0.0f, 0.0f, 255.0f)
+                                noFill()
+                            }
+                            drawSegmentE2(it)
                         }
                         is LineOP2 -> {
                             if (style != null) style.set(this)
