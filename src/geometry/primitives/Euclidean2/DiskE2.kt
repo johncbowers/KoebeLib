@@ -55,4 +55,12 @@ class DiskE2(val a: Double, val b: Double, val c: Double, val d: Double) {
     val center: PointE2 by lazy { val inv2A = 0.5 / a;PointE2(-b * inv2A, -c * inv2A) }
     val radiusSq: Double by lazy { (b*b + c*c - 4 * d * a) / (4 * a * a) }
     val radius: Double by lazy { Math.sqrt(radiusSq)}
+
+    fun translateBy(t: VectorE2): DiskE2 =
+            DiskE2(
+                    a = a,
+                    b = b - 2 * a * t.x,
+                    c = c - 2 * a * t.y,
+                    d = d - b * t.x - c * t.y + a * (t.x * t.x + t.y * t.y)
+            )
 }
