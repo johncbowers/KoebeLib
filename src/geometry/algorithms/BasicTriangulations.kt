@@ -3,7 +3,6 @@ package geometry.algorithms
 import geometry.ds.dcel.DCEL;
 import geometry.primitives.Euclidean2.*;
 import geometry.primitives.Euclidean3.VectorE3
-import com.sun.javafx.geom.Vec2d
 
 
 /**
