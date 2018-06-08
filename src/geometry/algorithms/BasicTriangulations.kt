@@ -2,6 +2,9 @@ package geometry.algorithms
 
 import geometry.ds.dcel.DCEL;
 import geometry.primitives.Euclidean2.*;
+import geometry.primitives.Euclidean3.VectorE3
+import com.sun.javafx.geom.Vec2d
+
 
 /**
  * Created by John Bowers on 5/15/17.
@@ -114,16 +117,152 @@ import geometry.primitives.Euclidean2.*;
 
 /**
  * Generates a unit size penny packing of circles in E2.
- * @param nRows The number of triangle rows. Must be greater than or equal to 1.
- * @param nCols The number of triangle columns. Must be greater than or equal to 1.
+ *
+ * @param nRows The number of triangle rows. Must be greater than 0.
+ * @param nCols The number of triangle columns. Must be greater than 1.
+ * @param x0 The x-coordinate for the index-(0,0) disk
+ * @param y0 The y-coordinate for the index-(0,0) disk
+ * @param radius The radius of each penny
  */
-fun genPennyPacking(nRows: Int, nCols: Int): DCEL<DiskE2, Unit, Unit> {
-    val packing = DCEL<DiskE2, Unit, Unit>()
+fun genPennyPacking(nRows: Int, nCols: Int, x0: Double = 0.0, y0: Double = 0.0, radius: Double = 0.5): DCEL<DiskE2, Unit, Unit> {
+
+    return genHexGrid<DiskE2>(
+            nRows,
+            nCols,
+            {i, j -> DiskE2(PointE2(x0 + if ((j % 2) == 0) i * 2 * radius else radius + i * 2 * radius, y0 + radius * Math.sqrt(3.0) * j), radius)}
+    )
+
+}
+
+fun <VertexData> genHexGrid(nRows: Int, nCols: Int, vData: (Int, Int) -> VertexData ): DCEL<VertexData, Unit, Unit> {
+    val packing = DCEL<VertexData, Unit, Unit>()
 
     // Bad inputs get a blank DCEL
-    if (nRows <= 0 || nCols <= 0) return packing
+    if (nRows <= 0 || nCols <= 1) return packing
 
-    var v = packing.Vertex(data = DiskE2(PointE2(1.0,0.0), PointE2(0.0,1.0), PointE2(-1.0,0.0)))
+    // Create the first edge
+    val v0 = packing.Vertex(data = vData(0, 0))
+    val v1 = packing.Vertex(data = vData(1, 0))
+    val e01 = packing.Edge(data = Unit)
+    val dart01 = packing.Dart(edge = e01, origin = v0, face = packing.outerFace)
+    packing.Dart(edge = e01, origin = v1, face = packing.outerFace, twin = dart01, next = dart01, prev = dart01)
+
+    // Extend the edge out nCols - 2 times
+    var lastDart = dart01
+    for (i in 2..nCols-1) {
+        val v = packing.Vertex(data = vData(i, 0))
+        val e = packing.Edge(data = Unit)
+        val dartR = packing.Dart(edge = e, origin = lastDart.dest, face = packing.outerFace, prev = lastDart)
+        packing.Dart(edge = e, origin = v, face = packing.outerFace, twin = dartR, prev = dartR, next = lastDart.twin)
+        lastDart = dartR
+    }
+
+    // Add each of the remaining rows
+
+    var lastRowStart : DCEL<VertexData, Unit, Unit>.Dart?  = dart01 // Start of the last row of darts on which we will add triangles
+
+    for (j in 1..nRows-1) {
+
+        val u = packing.Vertex(data = vData(0, j))
+        val e = packing.Edge(data = Unit)
+        val dartU = packing.Dart(edge = e, origin = lastRowStart?.origin, face = packing.outerFace, prev = lastRowStart?.prev)
+        val dartD = packing.Dart(edge = e, origin = u, face = packing.outerFace, twin = dartU, prev = dartU, next = lastRowStart)
+
+        var consDart = dartD
+
+        for (i in 1..nCols-1) {
+
+            val w = packing.Vertex(data = vData(i, j))
+
+            // Create the two faces
+            val f0 = packing.Face(data = Unit)
+            val f1 = packing.Face(data = Unit)
+
+            // Create the three edges
+            val e0 = packing.Edge(data = Unit)
+            val e1 = packing.Edge(data = Unit)
+            val e2 = packing.Edge(data = Unit)
+
+            // Store references to the base of the first triangle and its next, will be used to tie up prev/next refs
+            val base0 = consDart.next
+            val base1 = base0?.next
+            val consPrev = consDart.prev
+
+            if ((j % 2) == 0) {
+
+                val d0U = packing.Dart( edge = e0, origin = base0?.origin, face = f0, prev = consDart )
+                val d1L = packing.Dart( edge = e1, origin = w, face = f0, prev = d0U, next = consDart )
+                consDart.face = f0
+
+                val d0D = packing.Dart( edge = e0, origin = w, face = f1, twin = d0U, next = base0)
+                val d2U = packing.Dart( edge = e2, origin = base1?.origin, face = f1, prev = base0, next = d0D)
+                base0?.face = f1
+
+                val d1R = packing.Dart( edge = e1, origin = consDart.origin, face = packing.outerFace, twin = d1L, prev = consPrev)
+                val d2D = packing.Dart( edge = e2, origin = w, face = packing.outerFace, twin = d2U, prev = d1R, next = base1)
+
+                consDart = d2D
+
+            } else {
+
+
+                // Create the darts, you will need to draw a picture if you want to follow this.
+                val d0U = packing.Dart( edge = e0, origin = base0?.dest, face = f0, prev = base0, next = consDart )
+
+                // Since we've closed the first face, set the corresponding dart's faces correctly
+                consDart.face = f0
+                base0?.face = f0
+
+                // Create the remaining darts.
+                val d0D = packing.Dart( edge = e0, origin = consDart.origin, face = f1, twin = d0U )
+                val d1U = packing.Dart( edge = e1, origin = d0U.origin, face = f1, prev = d0D )
+                val d2L = packing.Dart( edge = e2, origin = w, face = f1, prev = d1U, next = d0D )
+                val d1D = packing.Dart( edge = e1, origin = w, face = packing.outerFace, twin = d1U, next = base1 )
+                packing.Dart( edge = e2, origin = consDart.origin, face = packing.outerFace, twin = d2L, prev = consPrev, next = d1D )
+
+                // Prepare for next iteration
+                consDart = d1D
+            }
+        }
+
+        lastRowStart = dartU.next
+    }
 
     return packing
+}
+
+
+fun <EdgeData, FaceData> isPointE2InsideFace(p: PointE2, face: DCEL<PointE2, EdgeData, FaceData>.Face): Boolean {
+    // TODO move these somewhere that makes sense
+    fun signedSegmentAngleE2(p: PointE2, s: SegmentE2): Double {
+        val U = VectorE3(s.source.x - p.x, s.source.y - p.y, 0.0)
+        val V = VectorE3(s.target.x - p.x, s.target.y - p.y, 0.0)
+        return Math.atan2(U.cross(V).z, U.dot(V))
+    }
+
+    return Math.round(face.darts().map {
+        val u = it.origin?.data
+        val v = it.dest?.data
+        if (u != null && v != null) signedSegmentAngleE2(p, SegmentE2(u, v)) else 0.0
+    }.sum()) != 0L
+}
+
+fun <EdgeData, FaceData> diskE2IntersectsFace(d: DiskE2, face: DCEL<PointE2, EdgeData, FaceData>.Face): Boolean {
+
+    val center_is_in = isPointE2InsideFace(d.center, face)
+
+    val intersects_side = face.darts().map {
+        val u = it.origin?.data
+        val v = it.dest?.data
+        if (u != null && v != null) d.intersects(SegmentE2(u, v)) else false
+    }.reduce { acc, b -> acc || b }
+
+    // Its possible that the entire polygon is on the interior of the disk, which we can discover just by checking
+    // whether any vertex is in the disk.
+    val contains_a_vertex = face.darts().map {
+        val u = it.origin?.data
+        if (u != null) d.contains(u) else false
+    }.reduce { acc, b -> acc || b }
+
+    return center_is_in || intersects_side || contains_a_vertex
 }

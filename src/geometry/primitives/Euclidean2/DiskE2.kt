@@ -56,6 +56,10 @@ class DiskE2(val a: Double, val b: Double, val c: Double, val d: Double) {
     val radiusSq: Double by lazy { (b*b + c*c - 4 * d * a) / (4 * a * a) }
     val radius: Double by lazy { Math.sqrt(radiusSq)}
 
+    fun intersects(s: SegmentE2): Boolean = s.closestPointE2To(center).distSqTo(center) < radiusSq
+
+    fun contains(p: PointE2): Boolean = relativeOrientationOf(p) == DiskOrientation.INSIDE
+
     fun translateBy(t: VectorE2): DiskE2 =
             DiskE2(
                     a = a,
