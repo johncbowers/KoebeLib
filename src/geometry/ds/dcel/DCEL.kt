@@ -8,7 +8,7 @@ import geometry.ds.dcel.DCEL.Face
 /**
  * Created by John C. Bowers on 5/13/17.
  */
-class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
+open class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null) {
 
     val verts = mutableListOf<Vertex>()
     val darts = mutableListOf<Dart>()

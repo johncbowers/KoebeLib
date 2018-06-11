@@ -265,3 +265,12 @@ fun <EdgeData, FaceData> diskE2IntersectsFace(d: DiskE2, face: DCEL<PointE2, Edg
 
     return center_is_in || intersects_side || contains_a_vertex
 }
+
+fun <EdgeData, FaceData> cookieCutterPennyPacking(vertices: ArrayList<PointE2>, radius: Double): DCEL<DiskE2, Unit, Unit> {
+
+    val polygon = PolygonE2(vertices)
+
+
+
+    return DCEL<DiskE2, Unit, Unit>()
+}
