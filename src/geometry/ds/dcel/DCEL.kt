@@ -266,6 +266,42 @@ open class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null)
         fun split(vData: VertexData, eData: EdgeData) {
             aDart?.split(vData, eData)
         }
+
+//  Turns out this is not so easy
+//        The problem is that the operation can disconnect the graph in which case a face is no longer simple,
+//          which is not allowed in our structure. Leaving it here for now but will need to rethink later.
+//        fun remove() {
+//
+//            val dart0 = aDart
+//            val dart1 = aDart?.twin
+//
+//            if (dart0 == null) throw MalformedDCELException("Edge.aDart is null")
+//            if (dart1 == null) throw MalformedDCELException("Edge.aDart.twin is null")
+//
+//            val a = dart0.prev
+//            val b = dart1.next
+//            val c = dart1.prev
+//            val d = dart0.next
+//
+//            if (a == null || b == null || c == null || d == null) {
+//                throw MalformedDCELException("DCEL contains null next/prev references.")
+//            }
+//
+//
+//            val f = if (dart0.face == outerFace) { faces.remove(dart1.face); outerFace }
+//                    else { faces.remove(dart0.face); dart1.face }
+//
+//            f?.aDart = a
+//
+//            a.makeNext(b)
+//            c.makeNext(d)
+//
+//            a.cycle().forEach { it.face = f }
+//
+//            darts.remove(dart0)
+//            darts.remove(dart1)
+//            edges.remove(this)
+//        }
     }
 
     inner class Face(var aDart: Dart? = null, var data: FaceData) {
@@ -284,6 +320,13 @@ open class DCEL<VertexData, EdgeData, FaceData>(outerFaceData: FaceData? = null)
                 return retDart.cycle()
             else
                 throw MalformedDCELException("Face.aDart is null")
+        }
+
+        fun vertices(): List<Vertex> {
+            val darts = darts()
+            val vertices = darts.mapNotNull { it.origin }
+            if (darts.size != vertices.size) throw MalformedDCELException("A dart incident to this face has a null origin.")
+            return vertices
         }
     }
 }

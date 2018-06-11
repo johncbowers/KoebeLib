@@ -22,3 +22,8 @@ class PolygonE2(): DCEL<PointE2, SegmentE2, Unit>() {
 
     }
 }
+
+typealias PolygonE2_Vertex = DCEL<PointE2, SegmentE2, Unit>.Vertex
+typealias PolygonE2_Dart = DCEL<PointE2, SegmentE2, Unit>.Dart
+typealias PolygonE2_Edge = DCEL<PointE2, SegmentE2, Unit>.Edge
+typealias PolygonE2_Face = DCEL<PointE2, SegmentE2, Unit>.Face

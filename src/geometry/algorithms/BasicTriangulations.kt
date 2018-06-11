@@ -3,6 +3,7 @@ package geometry.algorithms
 import geometry.ds.dcel.DCEL;
 import geometry.primitives.Euclidean2.*;
 import geometry.primitives.Euclidean3.VectorE3
+import geometry.ds.dcel.MalformedDCELException
 
 
 /**
@@ -270,7 +271,102 @@ fun <EdgeData, FaceData> cookieCutterPennyPacking(vertices: ArrayList<PointE2>, 
 
     val polygon = PolygonE2(vertices)
 
+    // 1. Get the bounding box of the polygon
+    val bbox = BBoxE2(vertices)
 
+    // Figure out the number of circle rows and columns necessary to cover the polygon
+    val nCols = Math.round(bbox.width / (2.0 * radius)).toInt() + 1
+    val nRows = Math.round(bbox.height / (radius * Math.sqrt(3.0))).toInt() + 2
 
-    return DCEL<DiskE2, Unit, Unit>()
+    // Generate an initial penny packing covering the polygon
+    val initialPacking = genPennyPacking(nRows, nCols, bbox.minX - radius * 0.5, bbox.minY - radius * 0.5, radius)
+
+    // Mark all vertices that intersect the polygon.
+    val polygonIntersects = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Vertex, Boolean>()
+    initialPacking.verts.forEach {
+        polygonIntersects[it] = diskE2IntersectsFace(it.data, polygon.mainFace)
+    }
+
+    // Create a DCEL for the final packing
+    val finalPacking = DCEL<DiskE2, Unit, Unit>()
+
+    // Create copies of every vertex, dart, edge, and face within the cookie cutter
+    val oldToNewV = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Vertex, DCEL<DiskE2, Unit, Unit>.Vertex>()
+    val oldToNewD = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Dart, DCEL<DiskE2, Unit, Unit>.Dart>()
+    val oldToNewE = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Edge, DCEL<DiskE2, Unit, Unit>.Edge>()
+    val oldToNewF = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Face, DCEL<DiskE2, Unit, Unit>.Face>()
+
+    val newToOldV = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Vertex, DCEL<DiskE2, Unit, Unit>.Vertex>()
+    val newToOldD = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Dart, DCEL<DiskE2, Unit, Unit>.Dart>()
+    val newToOldE = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Edge, DCEL<DiskE2, Unit, Unit>.Edge>()
+    val newToOldF = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Face, DCEL<DiskE2, Unit, Unit>.Face>()
+
+    (initialPacking.verts.filter { polygonIntersects[it] == true }).forEach {
+        val v = finalPacking.Vertex(data = it.data)
+        oldToNewV[it] = v
+        newToOldV[v] = it
+    }
+
+    (initialPacking.darts.filter {
+        polygonIntersects[it.origin] == true && polygonIntersects[it.dest] == true
+    }).forEach {
+        val d = finalPacking.Dart()
+        oldToNewD[it] = d
+        newToOldD[d] = it
+    }
+
+    (initialPacking.edges.filter {
+        polygonIntersects[it.aDart?.origin] == true && polygonIntersects[it.aDart?.dest] == true
+    }).forEach {
+        val d = finalPacking.Edge(data = it.data)
+        oldToNewE[it] = d
+        newToOldE[d] = it
+    }
+
+    (initialPacking.faces.filter {
+        it.vertices().mapNotNull { polygonIntersects[it] }.reduce { acc, boolVal -> acc && boolVal }
+    }).forEach {
+        val f = finalPacking.Face(data = it.data)
+        oldToNewF[it] = f
+        newToOldF[f] = it
+    }
+
+    finalPacking.darts.forEach {
+        it.origin = oldToNewV[newToOldD[it]?.origin]
+        it.face = oldToNewF[newToOldD[it]?.face]
+        it.edge = oldToNewE[newToOldD[it]?.edge]
+
+        it.next = oldToNewD[newToOldD[it]?.next]
+        it.prev = oldToNewD[newToOldD[it]?.prev]
+        it.twin = oldToNewD[newToOldD[it]?.twin]
+
+        it?.origin?.aDart = it
+        it?.edge?.aDart = it
+        it?.face?.aDart = it
+    }
+
+    // Finally we have to recompute the boundary.
+    // TODO This code only works if the boundary is simply connected. I assume it will produce some sort of infinite loop or badly formed DCEL otherwise.
+    val boundaryDarts = finalPacking.darts.filter { it.next == null }
+    System.out.println("The number of boundary darts is ${boundaryDarts.size}")
+
+    tailrec fun prevBdryDartInRotation(dart: DCEL<DiskE2, Unit, Unit>.Dart): DCEL<DiskE2, Unit, Unit>.Dart {
+        val nextDart = dart?.next?.twin
+        if (nextDart == null) throw MalformedDCELException("Cookie cutter failed.")
+        if (nextDart.next == null) return nextDart
+        else return prevBdryDartInRotation(nextDart)
+    }
+//TODO Continue from here
+//    val startDart = boundaryDarts[0].twin
+//    if (startDart != null) {
+//        var currDart: DCEL<DiskE2, Unit, Unit>.Dart = startDart
+//        do {
+//            val prev_dart = prevBdryDartInRotation(currDart)
+//            prev_dart.makeNext(currDart)
+//            currDart = prev_dart
+//        } while (startDart != currDart)
+//    } else {
+//        throw MalformedDCELException("")
+//    }
+    return finalPacking
 }
