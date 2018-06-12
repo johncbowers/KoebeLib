@@ -38,6 +38,9 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
     val pi : PythonInterpreter
     val _ich = IncrementalConvexHullAlgorithms()
 
+    var lastDirectory : String? = null
+    var lastFile : String? = null
+
     init {
         // Build the GUI:
 
@@ -92,11 +95,20 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
 
         openButton.addActionListener {
             evt ->
-            val fc = JFileChooser()
-            val returnVal = fc.showOpenDialog(this)
+            val fd = FileDialog(this, "Open a python script", FileDialog.LOAD)
 
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                val file = fc.getSelectedFile()
+            lastDirectory?.let { fd.directory = it }
+            fd.file = lastFile?.toString() ?: "*.py"
+
+            fd.setVisible(true)
+
+            if (fd.directory != null && fd.file != null) {
+
+                lastDirectory = fd.directory
+                lastFile = fd.file
+
+                val file = File(fd.directory, fd.file)
+
                 try {
                     val inReader = FileReader(file)
                     try {
@@ -124,11 +136,21 @@ class JythonFrame(val sketch : SphericalSketch) : JFrame() {
 
         saveButton.addActionListener {
             evt ->
-            val fc = JFileChooser()
-            val returnVal = fc.showSaveDialog(this)
+            val fd = FileDialog(this, "Save python script", FileDialog.SAVE)
 
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                val file = fc.getSelectedFile()
+            lastDirectory?.let { fd.directory = it }
+            fd.file = lastFile?.toString() ?: "*.py"
+
+            fd.setVisible(true)
+
+
+            if (fd.directory != null && fd.file != null) {
+
+                lastDirectory = fd.directory
+                lastFile = fd.file
+
+                val file = File(fd.directory, fd.file)
+
                 try {
                     val outWriter = FileWriter(file)
                     try {

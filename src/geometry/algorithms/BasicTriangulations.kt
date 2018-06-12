@@ -2,6 +2,9 @@ package geometry.algorithms
 
 import geometry.ds.dcel.DCEL;
 import geometry.primitives.Euclidean2.*;
+import geometry.primitives.Euclidean3.VectorE3
+import geometry.ds.dcel.MalformedDCELException
+
 
 /**
  * Created by John Bowers on 5/15/17.
@@ -110,4 +113,291 @@ import geometry.primitives.Euclidean2.*;
 //    val dart32 = tri.Dart(edge = edge23, origin = v3, face = tri.outerFace, twin = dart23, prev = dart13, next = dart21)
 //
 //    return tri
+//}
+
+/**
+ * Generates a unit size penny packing of circles in E2.
+ *
+ * @param nRows The number of triangle rows. Must be greater than 0.
+ * @param nCols The number of triangle columns. Must be greater than 1.
+ * @param x0 The x-coordinate for the index-(0,0) disk
+ * @param y0 The y-coordinate for the index-(0,0) disk
+ * @param radius The radius of each penny
+ */
+fun genPennyPacking(nRows: Int, nCols: Int, x0: Double = 0.0, y0: Double = 0.0, radius: Double = 0.5): DCEL<DiskE2, Unit, Unit> {
+
+    return genHexGrid<DiskE2>(
+            nRows,
+            nCols,
+            {i, j -> DiskE2(PointE2(x0 + if ((j % 2) == 0) i * 2 * radius else radius + i * 2 * radius, y0 + radius * Math.sqrt(3.0) * j), radius)}
+    )
+
+}
+
+fun <VertexData> genHexGrid(nRows: Int, nCols: Int, vData: (Int, Int) -> VertexData ): DCEL<VertexData, Unit, Unit> {
+    val packing = DCEL<VertexData, Unit, Unit>()
+
+    // Bad inputs get a blank DCEL
+    if (nRows <= 0 || nCols <= 1) return packing
+
+    // Create the first edge
+    val v0 = packing.Vertex(data = vData(0, 0))
+    val v1 = packing.Vertex(data = vData(1, 0))
+    val e01 = packing.Edge(data = Unit)
+    val dart01 = packing.Dart(edge = e01, origin = v0, face = packing.outerFace)
+    packing.Dart(edge = e01, origin = v1, face = packing.outerFace, twin = dart01, next = dart01, prev = dart01)
+
+    // Extend the edge out nCols - 2 times
+    var lastDart = dart01
+    for (i in 2..nCols-1) {
+        val v = packing.Vertex(data = vData(i, 0))
+        val e = packing.Edge(data = Unit)
+        val dartR = packing.Dart(edge = e, origin = lastDart.dest, face = packing.outerFace, prev = lastDart)
+        packing.Dart(edge = e, origin = v, face = packing.outerFace, twin = dartR, prev = dartR, next = lastDart.twin)
+        lastDart = dartR
+    }
+
+    // Add each of the remaining rows
+
+    var lastRowStart : DCEL<VertexData, Unit, Unit>.Dart?  = dart01 // Start of the last row of darts on which we will add triangles
+
+    for (j in 1..nRows-1) {
+
+        val u = packing.Vertex(data = vData(0, j))
+        val e = packing.Edge(data = Unit)
+        val dartU = packing.Dart(edge = e, origin = lastRowStart?.origin, face = packing.outerFace, prev = lastRowStart?.prev)
+        val dartD = packing.Dart(edge = e, origin = u, face = packing.outerFace, twin = dartU, prev = dartU, next = lastRowStart)
+
+        var consDart = dartD
+
+        for (i in 1..nCols-1) {
+
+            val w = packing.Vertex(data = vData(i, j))
+
+            // Create the two faces
+            val f0 = packing.Face(data = Unit)
+            val f1 = packing.Face(data = Unit)
+
+            // Create the three edges
+            val e0 = packing.Edge(data = Unit)
+            val e1 = packing.Edge(data = Unit)
+            val e2 = packing.Edge(data = Unit)
+
+            // Store references to the base of the first triangle and its next, will be used to tie up prev/next refs
+            val base0 = consDart.next
+            val base1 = base0?.next
+            val consPrev = consDart.prev
+
+            if ((j % 2) == 0) {
+
+                val d0U = packing.Dart( edge = e0, origin = base0?.origin, face = f0, prev = consDart )
+                val d1L = packing.Dart( edge = e1, origin = w, face = f0, prev = d0U, next = consDart )
+                consDart.face = f0
+
+                val d0D = packing.Dart( edge = e0, origin = w, face = f1, twin = d0U, next = base0)
+                val d2U = packing.Dart( edge = e2, origin = base1?.origin, face = f1, prev = base0, next = d0D)
+                base0?.face = f1
+
+                val d1R = packing.Dart( edge = e1, origin = consDart.origin, face = packing.outerFace, twin = d1L, prev = consPrev)
+                val d2D = packing.Dart( edge = e2, origin = w, face = packing.outerFace, twin = d2U, prev = d1R, next = base1)
+
+                consDart = d2D
+
+            } else {
+
+
+                // Create the darts, you will need to draw a picture if you want to follow this.
+                val d0U = packing.Dart( edge = e0, origin = base0?.dest, face = f0, prev = base0, next = consDart )
+
+                // Since we've closed the first face, set the corresponding dart's faces correctly
+                consDart.face = f0
+                base0?.face = f0
+
+                // Create the remaining darts.
+                val d0D = packing.Dart( edge = e0, origin = consDart.origin, face = f1, twin = d0U )
+                val d1U = packing.Dart( edge = e1, origin = d0U.origin, face = f1, prev = d0D )
+                val d2L = packing.Dart( edge = e2, origin = w, face = f1, prev = d1U, next = d0D )
+                val d1D = packing.Dart( edge = e1, origin = w, face = packing.outerFace, twin = d1U, next = base1 )
+                packing.Dart( edge = e2, origin = consDart.origin, face = packing.outerFace, twin = d2L, prev = consPrev, next = d1D )
+
+                // Prepare for next iteration
+                consDart = d1D
+            }
+        }
+
+        lastRowStart = dartU.next
+    }
+
+    return packing
+}
+
+
+fun <EdgeData, FaceData> isPointE2InsideFace(p: PointE2, face: DCEL<PointE2, EdgeData, FaceData>.Face): Boolean {
+    // TODO move these somewhere that makes sense
+    fun signedSegmentAngleE2(p: PointE2, s: SegmentE2): Double {
+        val U = VectorE3(s.source.x - p.x, s.source.y - p.y, 0.0)
+        val V = VectorE3(s.target.x - p.x, s.target.y - p.y, 0.0)
+        return Math.atan2(U.cross(V).z, U.dot(V))
+    }
+
+    return Math.round(face.darts().map {
+        val u = it.origin?.data
+        val v = it.dest?.data
+        if (u != null && v != null) signedSegmentAngleE2(p, SegmentE2(u, v)) else 0.0
+    }.sum()) != 0L
+}
+
+fun <EdgeData, FaceData> diskE2IntersectsFace(d: DiskE2, face: DCEL<PointE2, EdgeData, FaceData>.Face): Boolean {
+
+    val center_is_in = isPointE2InsideFace(d.center, face)
+
+    val intersects_side = face.darts().map {
+        val u = it.origin?.data
+        val v = it.dest?.data
+        if (u != null && v != null) d.intersects(SegmentE2(u, v)) else false
+    }.reduce { acc, b -> acc || b }
+
+    // Its possible that the entire polygon is on the interior of the disk, which we can discover just by checking
+    // whether any vertex is in the disk.
+    val contains_a_vertex = face.darts().map {
+        val u = it.origin?.data
+        if (u != null) d.contains(u) else false
+    }.reduce { acc, b -> acc || b }
+
+    return center_is_in || intersects_side || contains_a_vertex
+}
+
+fun <EdgeData, FaceData> cookieCutterPennyPacking(vertices: ArrayList<PointE2>, radius: Double): DCEL<DiskE2, Unit, Unit> {
+
+    val polygon = PolygonE2(vertices)
+
+    // 1. Get the bounding box of the polygon
+    val bbox = BBoxE2(vertices)
+
+    // Figure out the number of circle rows and columns necessary to cover the polygon
+    val nCols = Math.round(bbox.width / (2.0 * radius)).toInt() + 1
+    val nRows = Math.round(bbox.height / (radius * Math.sqrt(3.0))).toInt() + 2
+
+    // Generate an initial penny packing covering the polygon
+    val initialPacking = genPennyPacking(nRows, nCols, bbox.minX - radius * 0.5, bbox.minY - radius * 0.5, radius)
+
+    // Mark all vertices that intersect the polygon.
+    val polygonIntersects = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Vertex, Boolean>()
+    initialPacking.verts.forEach {
+        polygonIntersects[it] = diskE2IntersectsFace(it.data, polygon.mainFace)
+    }
+
+    // Create a DCEL for the final packing
+    val finalPacking = DCEL<DiskE2, Unit, Unit>()
+
+    // Create copies of every vertex, dart, edge, and face within the cookie cutter
+    val oldToNewV = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Vertex, DCEL<DiskE2, Unit, Unit>.Vertex>()
+    val oldToNewD = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Dart, DCEL<DiskE2, Unit, Unit>.Dart>()
+    val oldToNewE = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Edge, DCEL<DiskE2, Unit, Unit>.Edge>()
+    val oldToNewF = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Face, DCEL<DiskE2, Unit, Unit>.Face>()
+
+    val newToOldV = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Vertex, DCEL<DiskE2, Unit, Unit>.Vertex>()
+    val newToOldD = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Dart, DCEL<DiskE2, Unit, Unit>.Dart>()
+    val newToOldE = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Edge, DCEL<DiskE2, Unit, Unit>.Edge>()
+    val newToOldF = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Face, DCEL<DiskE2, Unit, Unit>.Face>()
+
+    (initialPacking.verts.filter { polygonIntersects[it] == true }).forEach {
+        val v = finalPacking.Vertex(data = it.data)
+        oldToNewV[it] = v
+        newToOldV[v] = it
+    }
+
+    (initialPacking.darts.filter {
+        polygonIntersects[it.origin] == true && polygonIntersects[it.dest] == true
+    }).forEach {
+        val d = finalPacking.Dart()
+        oldToNewD[it] = d
+        newToOldD[d] = it
+    }
+
+    (initialPacking.edges.filter {
+        polygonIntersects[it.aDart?.origin] == true && polygonIntersects[it.aDart?.dest] == true
+    }).forEach {
+        val d = finalPacking.Edge(data = it.data)
+        oldToNewE[it] = d
+        newToOldE[d] = it
+    }
+
+    (initialPacking.faces.filter {
+        it.vertices().mapNotNull { polygonIntersects[it] }.reduce { acc, boolVal -> acc && boolVal }
+    }).forEach {
+        val f = finalPacking.Face(data = it.data)
+        oldToNewF[it] = f
+        newToOldF[f] = it
+    }
+
+    finalPacking.darts.forEach {
+        it.origin = oldToNewV[newToOldD[it]?.origin]
+        it.face = oldToNewF[newToOldD[it]?.face]
+        it.edge = oldToNewE[newToOldD[it]?.edge]
+
+        it.next = oldToNewD[newToOldD[it]?.next]
+        it.prev = oldToNewD[newToOldD[it]?.prev]
+        it.twin = oldToNewD[newToOldD[it]?.twin]
+
+        it?.origin?.aDart = it
+        it?.edge?.aDart = it
+        it?.face?.aDart = it
+    }
+
+    // Finally we have to recompute the boundary.
+    // TODO This code only works if the boundary is simply connected. I assume it will produce some sort of infinite loop or badly formed DCEL otherwise.
+    val boundaryDarts = finalPacking.darts.filter { it.next == null }
+
+    fun prevOnBdry(dart: DCEL<DiskE2, Unit, Unit>.Dart): DCEL<DiskE2, Unit, Unit>.Dart {
+        var loopDart = dart
+        var i = 0
+        while (loopDart.twin?.next != null) {
+            loopDart = loopDart?.twin?.next ?: throw MalformedDCELException("")
+            if (i >= finalPacking.darts.size) throw MalformedDCELException("")
+            i++
+        }
+        return loopDart.twin ?: throw MalformedDCELException("")
+    }
+
+    boundaryDarts.forEach { it.makePrev(prevOnBdry(it)) }
+
+    return finalPacking
+}
+
+
+fun <VertexData> makeSphere(
+        graph: DCEL<VertexData, Unit, Unit>,
+        newVertexData: VertexData) {
+
+    val newVert = graph.Vertex( data = newVertexData)
+
+    val bdryDarts = graph.darts.filter { it.face == graph.outerFace }
+    val bdCycle = bdryDarts[0].cycle()
+
+    // Create each triangle
+    bdCycle.forEach {
+        val tri = graph.Face( data = Unit, aDart = it )
+        val dnDart = graph.Dart( origin = it.twin?.origin, prev = it, face = tri )
+        graph.Dart( origin = newVert, prev = dnDart, next = it, face = tri )
+    }
+
+    // Create the edges and tie up the twins
+    for (i in 0..(bdCycle.size - 1)) {
+        val n = bdCycle[i].next
+        val p = bdCycle[(i+1) % bdCycle.size].prev
+        n?.makeTwin(p)
+        val e = graph.Edge( data = Unit, aDart = n)
+        n?.edge = e
+        p?.edge = e
+    }
+}
+
+//
+//fun <VertexData, EdgeData, FaceData> isInterior(
+//        vert : DCEL<VertexData, EdgeData, FaceData>.Vertex,
+//        dcel : DCEL<VertexData, EdgeData, FaceData>) : Boolean {
+//    vert.inDarts().forEach { if (it.face == dcel.outerFace) return false }
+//    vert.outDarts().forEach { if (it.face == dcel.outerFace) return false }
+//    return true
 //}

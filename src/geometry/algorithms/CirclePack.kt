@@ -2,6 +2,8 @@ package geometry.algorithms
 
 import geometry.ds.dcel.*
 import geometry.primitives.Spherical2.DiskS2
+import geometry.primitives.Euclidean2.DiskE2
+import geometry.primitives.Euclidean2.PointE2
 import geometry.primitives.Euclidean3.*
 import geometry.primitives.Spherical2.PointS2
 import komplex.KData
@@ -43,10 +45,11 @@ import geometry.primitives.inner_product31
 
 class CirclePack() {
 
-    /* Functions for computing a Circle Packing  */
+    /* Functions for computing a Circle Packing on S2  */
     fun pack( convHull: ConvexHull<DiskS2>): PackData {
         return pack(convHull, 1000)
     }
+
     fun pack( convHull: ConvexHull<DiskS2>, iterations: Int): PackData {
 
         // Find the max degree vertex and swap it to last index:
@@ -134,6 +137,101 @@ class CirclePack() {
         }
 
         return packing
+    }
+
+    /* Functions for computing a Circle Packing on S2  */
+    fun packDiskH2( diskComplex: DCEL<DiskE2, Unit, Unit>): List<DiskS2> {
+        return packDiskH2(diskComplex, 1000)
+    }
+
+    fun packDiskH2( diskComplex: DCEL<DiskE2, Unit, Unit>, iterations: Int): List<DiskS2> {
+
+        // Find the max degree vertex and swap it to last index:
+        var maxDegree = diskComplex.verts[diskComplex.verts.size-1].edges().size
+        var maxDegreeIdx = diskComplex.verts.size - 1
+        diskComplex.verts.map { v -> v.edges().size }.forEachIndexed {
+            idx, degree ->
+            if (degree > maxDegree) {
+                maxDegree = degree
+                maxDegreeIdx = idx
+            }
+        }
+        val tmp = diskComplex.verts[maxDegreeIdx]
+        diskComplex.verts[maxDegreeIdx] = diskComplex.verts[diskComplex.verts.size - 1]
+        diskComplex.verts[diskComplex.verts.size - 1] = tmp
+
+        var packing = PackData(null)  //packData is class that holds the packing information, combinatorics, etc..
+
+        packing.alloc_pack_space(diskComplex.verts.size, true)
+        packing.status = true
+
+        // Create a map from a vertex to an index
+        var vtoi = mutableMapOf<DCEL<DiskE2, Unit, Unit>.Vertex, Int> ()
+        for ( i in 0..diskComplex.verts.lastIndex ) {
+            vtoi[diskComplex.verts[i]] = i+1
+        }
+
+        // Set nodeCount equal to number of vertices
+        packing.nodeCount = diskComplex.verts.size
+
+        // Set rData (array containing radii)
+        for ( i in 0 .. diskComplex.verts.lastIndex )
+            packing.rData[i+1].rad = 1.0
+
+
+        // Set kData (the array with combinatoric information, in particular, the flower: the counterclockwise list
+        // of neighbors to each vertex
+        packing.kData = arrayOfNulls<KData>(diskComplex.verts.size+1)
+
+        for (i in 0..diskComplex.verts.lastIndex) {
+
+            val v = diskComplex.verts[i]
+            val inDarts = v.inDarts()
+
+            packing.kData[i+1] = KData()
+            packing.kData[i+1].num = inDarts.size
+            packing.kData[i+1].bdryFlag = 0
+
+            packing.kData[i+1].flower = IntArray(inDarts.size+1)
+
+            for (j in 0..inDarts.lastIndex) {
+                val other = inDarts[j].origin
+
+                packing.kData[i+1].flower[j] = vtoi[other] as Int
+            }
+            // add the first vertex again to indiciate a cycle
+            packing.kData[i+1].flower[inDarts.size] = vtoi[inDarts[0].origin] as Int
+        }
+
+        // Spherical Geometry
+        packing.hes = 1
+
+
+        // After inputting data, must call
+        packing.setCombinatorics()
+        packing.setGamma(packing.nodeCount)
+
+        // Determine how many iterations N you want in the radius computation, then call repack_call
+        // new centers and radii should be stored in packing
+        //packing.repack_call(1000,false,false);
+        this.repack_call(packing, iterations, false)
+
+        val disks = mutableListOf<DiskS2>()
+        for (i in 1..diskComplex.verts.size) {
+            val rData = packing.rData[i]
+            val center = rData.center
+            val rad = rData.rad
+            val theta = center.x
+            val phi = center.y
+            val radScale = Math.cos(rad)
+            val a = radScale*Math.cos(theta)* Math.sin(phi)
+            val b = radScale*Math.sin(theta) * Math.sin(phi)
+            val c = radScale*Math.cos(phi)
+            disks.add(DiskS2(a, b, c, -(a*a + b*b + c*c)))
+            //diskComplex.verts[i-1].data = DiskE2(PointE2(rData.center.x, rData.center.y), rData.rad)
+        }
+
+        return disks
     }
 
     /**
