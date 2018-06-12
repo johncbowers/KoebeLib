@@ -348,25 +348,56 @@ fun <EdgeData, FaceData> cookieCutterPennyPacking(vertices: ArrayList<PointE2>, 
     // Finally we have to recompute the boundary.
     // TODO This code only works if the boundary is simply connected. I assume it will produce some sort of infinite loop or badly formed DCEL otherwise.
     val boundaryDarts = finalPacking.darts.filter { it.next == null }
-    System.out.println("The number of boundary darts is ${boundaryDarts.size}")
 
-    tailrec fun prevBdryDartInRotation(dart: DCEL<DiskE2, Unit, Unit>.Dart): DCEL<DiskE2, Unit, Unit>.Dart {
-        val nextDart = dart?.next?.twin
-        if (nextDart == null) throw MalformedDCELException("Cookie cutter failed.")
-        if (nextDart.next == null) return nextDart
-        else return prevBdryDartInRotation(nextDart)
+    fun prevOnBdry(dart: DCEL<DiskE2, Unit, Unit>.Dart): DCEL<DiskE2, Unit, Unit>.Dart {
+        var loopDart = dart
+        var i = 0
+        while (loopDart.twin?.next != null) {
+            loopDart = loopDart?.twin?.next ?: throw MalformedDCELException("")
+            if (i >= finalPacking.darts.size) throw MalformedDCELException("")
+            i++
+        }
+        return loopDart.twin ?: throw MalformedDCELException("")
     }
-//TODO Continue from here
-//    val startDart = boundaryDarts[0].twin
-//    if (startDart != null) {
-//        var currDart: DCEL<DiskE2, Unit, Unit>.Dart = startDart
-//        do {
-//            val prev_dart = prevBdryDartInRotation(currDart)
-//            prev_dart.makeNext(currDart)
-//            currDart = prev_dart
-//        } while (startDart != currDart)
-//    } else {
-//        throw MalformedDCELException("")
-//    }
+
+    boundaryDarts.forEach { it.makePrev(prevOnBdry(it)) }
+
     return finalPacking
 }
+
+
+fun <VertexData> makeSphere(
+        graph: DCEL<VertexData, Unit, Unit>,
+        newVertexData: VertexData) {
+
+    val newVert = graph.Vertex( data = newVertexData)
+
+    val bdryDarts = graph.darts.filter { it.face == graph.outerFace }
+    val bdCycle = bdryDarts[0].cycle()
+
+    // Create each triangle
+    bdCycle.forEach {
+        val tri = graph.Face( data = Unit, aDart = it )
+        val dnDart = graph.Dart( origin = it.twin?.origin, prev = it, face = tri )
+        graph.Dart( origin = newVert, prev = dnDart, next = it, face = tri )
+    }
+
+    // Create the edges and tie up the twins
+    for (i in 0..(bdCycle.size - 1)) {
+        val n = bdCycle[i].next
+        val p = bdCycle[(i+1) % bdCycle.size].prev
+        n?.makeTwin(p)
+        val e = graph.Edge( data = Unit, aDart = n)
+        n?.edge = e
+        p?.edge = e
+    }
+}
+
+//
+//fun <VertexData, EdgeData, FaceData> isInterior(
+//        vert : DCEL<VertexData, EdgeData, FaceData>.Vertex,
+//        dcel : DCEL<VertexData, EdgeData, FaceData>) : Boolean {
+//    vert.inDarts().forEach { if (it.face == dcel.outerFace) return false }
+//    vert.outDarts().forEach { if (it.face == dcel.outerFace) return false }
+//    return true
+//}
