@@ -1,10 +1,7 @@
 package geometry.primitives.OrientedProjective2
 
+import geometry.primitives.*
 import geometry.primitives.Euclidean2.PointE2
-import geometry.primitives.Orientation
-import geometry.primitives.determinant
-import geometry.primitives.inner_product
-import geometry.primitives.isZero
 
 /**
  * Created by johnbowers on 6/13/17.
@@ -16,26 +13,34 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     constructor (p1: PointOP2, p2: PointOP2, p3: PointOP2): this(
             a = + determinant(
-                    (p1.hx / p1.hw), (p1.hy / p1.hw), (1.0),
-                    (p2.hx / p2.hw), (p2.hy / p2.hw), (1.0),
-                    (p3.hx / p3.hw), (p3.hy / p3.hw), (1.0)
+                    p1.hx, p1.hy, p1.hw,
+                    p2.hx, p2.hy, p2.hw,
+                    p3.hx, p3.hy, p3.hw
             ),
             b = - determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy) / (p1.hw * p1.hw), (p1.hy / p1.hw), (1.0),
-                    (p2.hx * p2.hx + p2.hy * p2.hy) / (p2.hw * p2.hw), (p2.hy / p2.hw), (1.0),
-                    (p3.hx * p3.hx + p3.hy * p3.hy) / (p3.hw * p3.hw), (p3.hy / p3.hw), (1.0)
+                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hy, p1.hw,
+                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hy, p2.hw,
+                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hy, p3.hw
             ),
             c = + determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy) / (p1.hw * p1.hw), (p1.hx / p1.hw), (1.0),
-                    (p2.hx * p2.hx + p2.hy * p2.hy) / (p2.hw * p2.hw), (p2.hx / p2.hw), (1.0),
-                    (p3.hx * p3.hx + p3.hy * p3.hy) / (p3.hw * p3.hw), (p3.hx / p3.hw), (1.0)
+                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hx, p1.hw,
+                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hx, p2.hw,
+                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hx, p3.hw
             ),
             d = - determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy) / (p1.hw * p1.hw), (p1.hx / p1.hw), (p1.hy / p1.hw),
-                    (p2.hx * p2.hx + p2.hy * p2.hy) / (p2.hw * p2.hw), (p2.hx / p2.hw), (p2.hy / p2.hw),
-                    (p3.hx * p3.hx + p3.hy * p3.hy) / (p3.hw * p3.hw), (p3.hx / p3.hw), (p3.hy / p3.hw)
+                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hx, p1.hy,
+                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hx, p2.hy,
+                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hx, p3.hy
             )
     )
+
+    constructor (center: PointOP2, radius: Double) :
+            this (
+                    a = center.hw * center.hw,
+                    b = -2.0 * center.hx * center.hw,
+                    c = -2.0 * center.hy * center.hw,
+                    d = center.hx * center.hx + center.hy * center.hy - radius * radius * center.hw * center.hw
+            )
 
     /**
      * Returns Orientation.ZERO if p is on the boundary of the disk, Orientation.POSITIVE if it is on the positive side
@@ -142,4 +147,30 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     }
 
+    private fun funkyInnerProduct(disk1: DiskOP2, disk2: DiskOP2) = disk1.b*disk2.b + disk1.c*disk2.c - 2*disk2.a*disk1.d - 2*disk1.a*disk2.d
+
+    fun inversiveDistTo(disk: DiskOP2) : Double {
+        val ip12 = funkyInnerProduct(this, disk)
+        val ip11 = funkyInnerProduct(this, this)
+        val ip22 = funkyInnerProduct(disk, disk)
+        return -ip12 / (Math.sqrt(ip11) * Math.sqrt(ip22))
+    }
+
+    fun invertThrough(disk: DiskOP2): DiskOP2 {
+
+        val fact =
+                funkyInnerProduct(this, disk) /
+                        funkyInnerProduct(disk, disk)
+        return DiskOP2(
+                a - 2 * fact * disk.a,
+                b - 2 * fact * disk.b,
+                c - 2 * fact * disk.c,
+                d - 2 * fact * disk.d
+        )
+    }
+
+    fun inversiveNormalize(): DiskOP2 {
+        val scale = 1.0 / inversiveDistTo(this)
+        return DiskOP2(a * scale, b * scale, c * scale, d * scale)
+    }
 }
