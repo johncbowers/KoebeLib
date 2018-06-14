@@ -84,6 +84,68 @@ fun calculateAvgPosition(darts : List<DCEL<PointE2, Unit, Unit>.Dart>) : PointE2
     return retPoint
 }
 
+class Triangulation<VertexData, EdgeData, FaceData> () {
+
+    init {
+
+    }
+
+    fun triangulateDCEL (graph : DCEL<Unit, Unit, String>) {
+
+        //print("Start: ")
+
+        val len = graph.faces.size
+        //println(len)
+        for (k in 0..len-1) {
+
+            //println(graph.faces[k].darts().size)
+            triangulateFace(graph, graph.faces[k])
+
+        }
+
+        for (k in 0..len-1) {
+            graph.faces.removeAt(0)
+        }
+    }
+
+    fun triangulateFace (graph : DCEL<Unit, Unit, String>, face : DCEL<Unit, Unit, String>.Face) {
+
+        val faceVertex : DCEL<Unit, Unit, String>.Vertex
+        val faceCenter : Unit
+        var faceNew : DCEL<Unit, Unit, String>.Face
+        var lonelyDart : DCEL<Unit, Unit, String>.Dart?
+        var dart1 : DCEL<Unit, Unit, String>.Dart?
+        var dart2 : DCEL<Unit, Unit, String>.Dart
+
+        val darts = face.darts()
+        //println(darts.size)
+
+        faceCenter = Unit
+        faceVertex = graph.Vertex(data = faceCenter)
+
+        dart1 = null
+        lonelyDart = null
+        for (k in 0..darts.size-1) {
+            faceNew = graph.Face(data = "Side")
+            dart2 = graph.Dart(origin = faceVertex, face = faceNew)
+            dart2.makeTwin(dart1)
+            dart1 = graph.Dart(origin = darts[k].dest, face = faceNew)
+            if (k == 0) {
+                lonelyDart = dart2
+                faceNew.aDart = darts[0]
+            } else if (k == darts.size-1) {
+                dart1.makeTwin(lonelyDart)
+            }
+
+            dart1.makeNext(dart2)
+            dart1.makePrev(darts[k])
+
+            dart2.makeNext(darts[k])
+            darts[k].face = faceNew
+        }
+    }
+}
+
 class Spherifier<VertexData, EdgeData, FaceData> {
 
     init {

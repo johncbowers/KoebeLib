@@ -4,6 +4,8 @@ import org.antlr.runtime.ANTLRInputStream
 import org.antlr.runtime.ANTLRStringStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
+import tilings.algorithms.DCELTransform
+import tilings.algorithms.Triangulation
 import tilings.language.grammar.EscherBaseListener
 import tilings.language.grammar.EscherLexer
 import tilings.language.grammar.EscherParser
@@ -11,11 +13,11 @@ import java.io.InputStream
 
 class MyEscherListener () : EscherBaseListener() {
 
-    val program : EscherProgram
+    val program : EscherProgramNew
     var currSubdivision : String
 
     init {
-        program = EscherProgram()
+        program = EscherProgramNew()
         currSubdivision = ""
     }
 
@@ -23,7 +25,7 @@ class MyEscherListener () : EscherBaseListener() {
         super.enterTileDefinition(ctx)
 
         //println (ctx!!.text)
-        if (!program.makeProtoTile(ctx!!.ID().text, ctx.NUMBER().text.toInt())) {
+        if (!program.defineProtoTile(ctx!!.ID().text, ctx.NUMBER().text.toInt())) {
             println("Error: TileType " + ctx.ID().text + " already exists.")
             return
         }
@@ -40,7 +42,7 @@ class MyEscherListener () : EscherBaseListener() {
         }
 
         currSubdivision = ctx.ID().text
-        program.makeSubdivision(ctx.ID().text)
+        program.defineSubdivision(ctx.ID().text)
 
         println()
     }
@@ -84,16 +86,21 @@ class MyEscherListener () : EscherBaseListener() {
         super.enterChildAssignment(ctx)
 
         if (!program.protoTiles.containsKey(ctx!!.ID(1).text)) {
-            println("Error: Cannot create child. TileType " + ctx!!.ID(0).text + " does not exist")
+            println("Error: Cannot create child. TileType " + ctx!!.ID(1).text + " does not exist")
             return
         }
 
         val vertices = ArrayList<String>()
-        for (k in 1..ctx!!.ID().size-1) {
-            vertices.add(ctx!!.ID(k).text)
+        for (node in ctx!!.node()) {
+            if (node.NUMBER() == null) {
+                vertices.add(node.ID().text)
+            }
+            else {
+                vertices.add(node.NUMBER().text)
+            }
         }
 
-        program.addChild(currSubdivision, ctx!!.ID(0).text, vertices)
+        program.addChild(currSubdivision, ctx!!.ID(1).text, vertices)
 
         println()
     }
@@ -127,7 +134,7 @@ fun main(args: Array<String>) {
             "\n" +
             "\n" +
             "\n" +
-            "tile( chair , 3 );"
+            "tile( chair , 1 );"
 
     val lexer = EscherLexer(org.antlr.v4.runtime.ANTLRInputStream(file))
     val tokens = CommonTokenStream(lexer)
@@ -138,5 +145,14 @@ fun main(args: Array<String>) {
     val listener = MyEscherListener()
     walker.walk(listener, fileContext)
 
+    val graph = listener.program.mainGraph
+    val triangulation = Triangulation<Unit, Unit, String>()
+    val dt = DCELTransform<Unit, Unit, String>()
+
+    triangulation.triangulateDCEL(graph)
+
+    val combinatorics = dt.toSphericalRepresentation(graph)
+
     println()
+
 }

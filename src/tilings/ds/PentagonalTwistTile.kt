@@ -85,6 +85,7 @@ class PentagonalTwistTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (
             outerDarts[k].makePrev(outerDarts[(k + 1) % twistSize])
         }
 
+
         graph.faces[0].aDart = innerDarts[0]
 
     }
@@ -207,10 +208,10 @@ class PentagonalTwistTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (
             midPoint = PointE2((darts[k].origin!!.data.x + darts[(k+1) % len].origin!!.data.x) / 2.0,
                     (darts[k].origin!!.data.y + darts[(k+1) % len].origin!!.data.y) / 2.0)
 
-            newVerts.add(graph.Vertex(data = PointE2((darts[k].origin!!.data.x + midPoint.x) / 2.0,
+            newVerts.add(findVertex(PointE2((darts[k].origin!!.data.x + midPoint.x) / 2.0,
                     (darts[k].origin!!.data.y + midPoint.y) / 2.0)))
 
-            newVerts.add(graph.Vertex(data = PointE2((midPoint.x + darts[(k+1) % len].origin!!.data.x) / 2.0,
+            newVerts.add(findVertex(PointE2((midPoint.x + darts[(k+1) % len].origin!!.data.x) / 2.0,
                     (midPoint.y + darts[(k+1) % len].origin!!.data.y) / 2.0)))
 
             newDarts.add(graph.Dart(origin = darts[k].origin))
@@ -234,6 +235,11 @@ class PentagonalTwistTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (
 
             graph.darts.remove(darts[k])
 
+        }
+
+        for (k in 0..outerDarts.size-1) {
+            outerDarts[k].makePrev(outerDarts[(k+1) % (outerDarts.size)])
+            //outerDarts[(k + outerDarts.size-) % (outerDarts.size-1)].makePrev(outerDarts[(k+1) % (outerDarts.size-1)])
         }
 
         // Face 0
@@ -323,5 +329,14 @@ class PentagonalTwistTile (s : ArrayList<PointE2>) : Tile<PointE2, Unit, Unit> (
         innerDarts[8].makePrev(newDarts[13])
 
 
+    }
+
+    private fun findVertex (p: PointE2) : DCEL<PointE2, Unit, Unit>.Vertex {
+        for (vert in graph.verts) {
+            if (vert.data.distTo(p) == 0.0) {
+                return vert
+            }
+        }
+        return graph.Vertex(data = p)
     }
 }
