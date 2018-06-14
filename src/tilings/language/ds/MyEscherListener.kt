@@ -149,7 +149,7 @@ fun main(args: Array<String>) {
     val triangulation = Triangulation<Unit, Unit, String>()
     val dt = DCELTransform<Unit, Unit, String>()
 
-    triangulation.triangulateDCEL(graph)
+    //triangulation.triangulateDCEL(graph)
 
     val combinatorics = dt.toSphericalRepresentation(graph)
 

@@ -12,7 +12,7 @@ class LanguageDriver (num : Int) {
     val listener : MyEscherListener
 
     init {
-        val file = "TILETYPE chair{8};\n" +
+        /*val file = "TILETYPE chair{8};\n" +
                 "SUBDIVISION chair \n" +
                 "\t{\n" +
                 "\t VERTEX a = split(chair.v[0], chair.v[1], 2);\n" +
@@ -37,7 +37,7 @@ class LanguageDriver (num : Int) {
                 "\n" +
                 "\n" +
                 "\n" +
-                "tile( chair , " + num + " );"
+                "tile( chair , " + num + " );"*/
 
         /*val file = "TILETYPE pent {5};\n" +
                 "SUBDIVISION pent\n" +
@@ -58,7 +58,7 @@ class LanguageDriver (num : Int) {
                 "    };\n" +
                 "tile( pent , " + num + " );"*/
 
-        /*val file = "TILETYPE rect {4};\n" +
+        val file = "TILETYPE rect {4};\n" +
                 "TILETYPE tri {3};\n" +
                 "SUBDIVISION rect\n" +
                 "    {\n" +
@@ -70,12 +70,12 @@ class LanguageDriver (num : Int) {
                 "        VERTEX f;\n" +
                 "        \n" +
                 "        CHILD c1 = rect(rect.v[0], a, e, d);\n" +
-                "        CHILD c2 = rect(a, rect.v[1], b, f);\n" +
+                "        CHILD c2 = rect(b, f, a, rect.v[1]);\n" +
                 "        CHILD c3 = rect(rect.v[2], c, f, b);\n" +
-                "        CHILD c4 = rect(c, rect.v[3], d, e);\n" +
+                "        CHILD c4 = rect(d, e, c, rect.v[3]);\n" +
                 "        \n" +
-                "        CHILD c5 = tri(a, f, e);\n" +
-                "        CHILD c6 = tri(c, e, f);\n" +
+                "        CHILD c5 = tri(e, f, c);\n" +
+                "        CHILD c6 = tri(f, e, a);\n" +
                 "        \n" +
                 "        \n" +
                 "        \n" +
@@ -88,13 +88,13 @@ class LanguageDriver (num : Int) {
                 "        VERTEX c = split(tri.v[2], tri.v[0], 2);\n" +
                 "        \n" +
                 "        CHILD c1 = tri(tri.v[0], a, c);\n" +
-                "        CHILD c2 = tri(tri.v[1], c, a);\n" +
+                "        CHILD c2 = tri(tri.v[1], b, a);\n" +
                 "        CHILD c3 = tri(tri.v[2], c, b);\n" +
                 "        CHILD c4 = tri(a, b, c);\n" +
                 "        \n" +
                 "    };\n" +
                 "    \n" +
-                "tile( rect , " + num + " );"*/
+                "tile( rect , " + num + " );"
 
         val lexer = EscherLexer(ANTLRInputStream(file))
         val tokens = CommonTokenStream(lexer)
