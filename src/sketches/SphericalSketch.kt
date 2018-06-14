@@ -554,6 +554,8 @@ open class SphericalSketch : PApplet() {
     fun drawDCEL(ch: DCEL<*,*,*>) {
 
 //        println("DRAWING DCEL")
+        pushStyle()
+        strokeWeight(0.025f)
         ch.faces.forEach {
             face ->
 //            println("\tFACE")
@@ -584,6 +586,7 @@ open class SphericalSketch : PApplet() {
             endShape()
 //            println("\tENDFACE")
         }
+        popStyle()
 //        println("DONE")
     }
 
@@ -630,7 +633,11 @@ open class SphericalSketch : PApplet() {
         noStroke()
         lights()
 
-        if (viewSettings.showSphere) sphere(1.0f)
+        if (viewSettings.showSphere) {
+            sphereDetail(200)
+            sphere(1.0f)
+            sphereDetail(30)
+        }
 
         // Draw the points
         synchronized(constructionLock, {
