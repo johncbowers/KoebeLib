@@ -90,7 +90,7 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
 
     }
 
-    fun triangulateDCEL (graph : DCEL<Unit, Unit, String>) {
+    fun triangulateDCEL (graph : DCEL<Unit, Unit, Unit>) {
 
         //print("Start: ")
 
@@ -108,14 +108,14 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
         }
     }
 
-    fun triangulateFace (graph : DCEL<Unit, Unit, String>, face : DCEL<Unit, Unit, String>.Face) {
+    fun triangulateFace (graph : DCEL<Unit, Unit, Unit>, face : DCEL<Unit, Unit, Unit>.Face) {
 
-        val faceVertex : DCEL<Unit, Unit, String>.Vertex
+        val faceVertex : DCEL<Unit, Unit, Unit>.Vertex
         val faceCenter : Unit
-        var faceNew : DCEL<Unit, Unit, String>.Face
-        var lonelyDart : DCEL<Unit, Unit, String>.Dart?
-        var dart1 : DCEL<Unit, Unit, String>.Dart?
-        var dart2 : DCEL<Unit, Unit, String>.Dart
+        var faceNew : DCEL<Unit, Unit, Unit>.Face
+        var lonelyDart : DCEL<Unit, Unit, Unit>.Dart?
+        var dart1 : DCEL<Unit, Unit, Unit>.Dart?
+        var dart2 : DCEL<Unit, Unit, Unit>.Dart
 
         val darts = face.darts()
         //println(darts.size)
@@ -126,7 +126,7 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
         dart1 = null
         lonelyDart = null
         for (k in 0..darts.size-1) {
-            faceNew = graph.Face(data = "Side")
+            faceNew = graph.Face(data = Unit)
             dart2 = graph.Dart(origin = faceVertex, face = faceNew)
             dart2.makeTwin(dart1)
             dart1 = graph.Dart(origin = darts[k].dest, face = faceNew)

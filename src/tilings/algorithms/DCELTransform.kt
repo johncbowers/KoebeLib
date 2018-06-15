@@ -381,14 +381,16 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         return kens
     }*/
 
-    fun toSphericalRepresentation (graph: DCEL<Unit, Unit, String>) : DCEL<DiskS2, Unit, Unit> {
+    fun toSphericalRepresentation (graph: DCEL<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>)
+            : DCEL<DiskS2, Unit, Unit> {
         //TODO
 
         val triangulation = Triangulation<VertexData, EdgeData, FaceData>()
-        val tileFactory = TileFactory<Unit, Unit, String>()
-        triangulation.triangulateDCEL(graph)
+        val tileFactory = TileFactory<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>()
         val unitGraph = tileFactory.copyUnitTile(graph)
-        makeSphere(unitGraph)
+        triangulation.triangulateDCEL(unitGraph)
+
+        this.makeSphere(unitGraph)
         toDiskDCEL(unitGraph, combinatorics)
 
         val cp = CirclePack()

@@ -24,6 +24,7 @@ They are all managed with Gradle and do not need to be retreived manually.
 - jogl-all-main 2.3.2 - need native libraries - [link](http://jogamp.org/wiki/index.php/Release_2.3.2)
 - gluegen-rt-main 2.3.2 - need native libraries - [link](http://jogamp.org/wiki/index.php/Release_2.3.2)
 - processing-core 3.3.6 - [link](https://processing.org/download/)
+- antlr4 4.7.1 - [link](https://www.antlr.org/download.html)
 
 I have also included an ArcBall class that was converted to Kotlin and lightly modified. The 
 original can be found [here](https://github.com/RandomEtc/processing-arcball/).  

@@ -1,17 +1,19 @@
 package tilings.language.ds
 
 import geometry.ds.dcel.DCEL
+import tilings.ds.EdgeData
+import tilings.ds.FaceData
+import tilings.ds.VertexData
 import tilings.language.algorithms.Subdivider
 import tilings.language.algorithms.TileFactory
 
 class EscherProgramNew () {
 
-    val protoTiles : MutableMap<String, DCEL<Unit, Unit, String>>
+    val protoTiles : MutableMap<String, DCEL<VertexData, EdgeData, FaceData>>
     val subdivisions : MutableMap<String, Subdivision>
-    val tileFactory : TileFactory<Unit, Unit, String>
-    var mainGraph : DCEL<Unit, Unit, String>
+    val tileFactory : TileFactory<VertexData, EdgeData, FaceData>
+    var mainGraph : DCEL<VertexData, EdgeData, FaceData>
 
-    //val destinations : MutableMap<DCEL<Unit, Unit, String>.Dart, DCEL<Unit, Unit, String>.Vertex>
 
     init {
         protoTiles = mutableMapOf()
