@@ -242,4 +242,7 @@ class DiskS2(val a: Double, val b: Double, val c: Double, val d: Double) {
             )
         }
     }
+
+    fun toDiskOP2() : DiskOP2 = DiskOP2((a - d) * 0.5, c, b, -(a + d) * 0.5)
+
 }

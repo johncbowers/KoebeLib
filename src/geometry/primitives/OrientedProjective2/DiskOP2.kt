@@ -2,6 +2,7 @@ package geometry.primitives.OrientedProjective2
 
 import geometry.primitives.*
 import geometry.primitives.Euclidean2.PointE2
+import geometry.primitives.Spherical2.DiskS2
 
 /**
  * Created by johnbowers on 6/13/17.
@@ -173,4 +174,7 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
         val scale = 1.0 / inversiveDistTo(this)
         return DiskOP2(a * scale, b * scale, c * scale, d * scale)
     }
+
+    fun toDiskS2(): DiskS2 = DiskS2(a - d, c, b, -(a + d))
 }
+
