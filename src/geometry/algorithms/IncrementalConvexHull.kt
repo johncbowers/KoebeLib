@@ -122,7 +122,7 @@ class IncrementalConvexHullAlgorithms() {
 
     }
 
-    internal fun convexHullE3toConvexHullDiskS2(inHull: ConvexHull<PointE3>): ConvexHull<DiskS2> {
+    fun convexHullE3toConvexHullDiskS2(inHull: ConvexHull<PointE3>): ConvexHull<DiskS2> {
 
         val newHull = DCEL<DiskS2, Unit, Unit>()
 

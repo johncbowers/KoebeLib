@@ -14,24 +14,24 @@ class DiskOP2(val a: Double, val b: Double, val c: Double, val d: Double) {
 
     constructor (p1: PointOP2, p2: PointOP2, p3: PointOP2): this(
             a = + determinant(
-                    p1.hx, p1.hy, p1.hw,
-                    p2.hx, p2.hy, p2.hw,
-                    p3.hx, p3.hy, p3.hw
+                    p1.hx * p1.hw, p1.hy * p1.hw, p1.hw * p1.hw,
+                    p2.hx * p2.hw, p2.hy * p2.hw, p2.hw * p2.hw,
+                    p3.hx * p3.hw, p3.hy * p3.hw, p3.hw * p3.hw
             ),
             b = - determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hy, p1.hw,
-                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hy, p2.hw,
-                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hy, p3.hw
+                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hy * p1.hw, p1.hw * p1.hw,
+                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hy * p2.hw, p2.hw * p2.hw,
+                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hy * p3.hw, p3.hw * p3.hw
             ),
             c = + determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hx, p1.hw,
-                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hx, p2.hw,
-                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hx, p3.hw
+                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hx * p1.hw, p1.hw * p1.hw,
+                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hx * p2.hw, p2.hw * p2.hw,
+                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hx * p3.hw, p3.hw * p3.hw
             ),
             d = - determinant(
-                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hx, p1.hy,
-                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hx, p2.hy,
-                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hx, p3.hy
+                    (p1.hx * p1.hx + p1.hy * p1.hy), p1.hx * p1.hw, p1.hy * p1.hw,
+                    (p2.hx * p2.hx + p2.hy * p2.hy), p2.hx * p2.hw, p2.hy * p2.hw,
+                    (p3.hx * p3.hx + p3.hy * p3.hy), p3.hx * p3.hw, p3.hy * p3.hw
             )
     )
 
