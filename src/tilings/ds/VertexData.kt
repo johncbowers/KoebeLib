@@ -2,7 +2,9 @@ package tilings.ds
 
 class VertexData () {
 
-    init {
+    var level : Int
 
+    init {
+        level = 0
     }
 }

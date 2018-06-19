@@ -3,6 +3,7 @@ package tilings.language.algorithms
 import geometry.ds.dcel.DCEL
 import tilings.ds.EdgeData
 import tilings.ds.FaceData
+import tilings.ds.TreeNode
 import tilings.ds.VertexData
 import tilings.language.ds.EscherProgramNew
 import tilings.language.ds.Subdivision
@@ -12,6 +13,7 @@ class Subdivider (program: EscherProgramNew, graph : DCEL<VertexData, EdgeData, 
     val program : EscherProgramNew
     val graph : DCEL<VertexData, EdgeData, FaceData>
     val iter : Int
+    var currentIteration : Int
 
     val splitMap : MutableMap<Pair<DCEL<VertexData, EdgeData, FaceData>.Vertex, DCEL<VertexData, EdgeData, FaceData>.Vertex>,
             ArrayList<DCEL<VertexData, EdgeData, FaceData>.Vertex>>
@@ -23,6 +25,7 @@ class Subdivider (program: EscherProgramNew, graph : DCEL<VertexData, EdgeData, 
         this.program = program
         this.graph = graph
         this.iter = iter
+        currentIteration = 0
 
         splitMap = mutableMapOf()
         destination = mutableMapOf()
@@ -35,6 +38,7 @@ class Subdivider (program: EscherProgramNew, graph : DCEL<VertexData, EdgeData, 
         initialDestinations()
 
         for (i in 1..iter) {
+            currentIteration = i
             val size = graph.faces.size
             for (k in 0..size - 1) {
                 subdivideFace(graph.faces[k])
@@ -66,6 +70,7 @@ class Subdivider (program: EscherProgramNew, graph : DCEL<VertexData, EdgeData, 
 
         for (k in 2..split.third) {
             splitVerts.add(graph.Vertex(data = VertexData()))
+            splitVerts[splitVerts.lastIndex].data.level = currentIteration
         }
 
         splitMap.put(Pair(source, goal), splitVerts)
@@ -209,12 +214,15 @@ class Subdivider (program: EscherProgramNew, graph : DCEL<VertexData, EdgeData, 
         for (k in subdivision.splitVerts..subdivision.vertices.size-1) {
             //println (k)
             newVerts.add(graph.Vertex(data = VertexData()))
+            newVerts[newVerts.lastIndex].data.level = currentIteration
         }
 
         //Adding Faces
         for (child in subdivision.children) {
             childFaces.add(graph.Face(data = FaceData()))
-            childFaces[childFaces.size-1].data.tileType = child.first
+            childFaces[childFaces.lastIndex].data.tileType = child.first
+            childFaces[childFaces.lastIndex].data.node = TreeNode(childFaces[childFaces.lastIndex], face.data.node)
+            face.data.node!!.children.add(childFaces[childFaces.lastIndex].data.node!!)
         }
         makeChild(subdivision, childFaces, darts, newVerts)
 

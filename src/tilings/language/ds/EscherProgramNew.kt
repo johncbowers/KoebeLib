@@ -3,6 +3,7 @@ package tilings.language.ds
 import geometry.ds.dcel.DCEL
 import tilings.ds.EdgeData
 import tilings.ds.FaceData
+import tilings.ds.TreeNode
 import tilings.ds.VertexData
 import tilings.language.algorithms.Subdivider
 import tilings.language.algorithms.TileFactory
@@ -12,6 +13,7 @@ class EscherProgramNew () {
     val protoTiles : MutableMap<String, DCEL<VertexData, EdgeData, FaceData>>
     val subdivisions : MutableMap<String, Subdivision>
     val tileFactory : TileFactory<VertexData, EdgeData, FaceData>
+    val graphs : MutableMap<String, DCEL<VertexData, EdgeData, FaceData>>
     var mainGraph : DCEL<VertexData, EdgeData, FaceData>
 
 
@@ -19,6 +21,7 @@ class EscherProgramNew () {
         protoTiles = mutableMapOf()
         subdivisions = mutableMapOf()
         tileFactory = TileFactory()
+        graphs = mutableMapOf()
         mainGraph = DCEL()
 
         //destinations = mutableMapOf()
@@ -55,9 +58,20 @@ class EscherProgramNew () {
 
     fun subdivide (proto : String, iter : Int) {
         var tile = tileFactory.copyProtoTile(protoTiles[proto]!!)
+        tile.faces[0].data.node = TreeNode(tile.faces[0], null)
         val subdivider = Subdivider(this, tile, iter)
         subdivider.start()
         mainGraph = subdivider.graph
+    }
+
+
+    //TODO Implement these methods
+    fun collar () {
+
+    }
+
+    fun superTile () {
+
     }
 
 }
