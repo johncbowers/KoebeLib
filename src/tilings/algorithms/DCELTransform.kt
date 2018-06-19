@@ -7,6 +7,7 @@ import geometry.primitives.Spherical2.DiskS2
 import packing.PackData
 import geometry.algorithms.CirclePack
 import geometry.algorithms.IncrementalConvexHullAlgorithms
+import geometry.ds.dcel.DCELH
 import tilings.ds.ChairTile
 import tilings.ds.PentagonalTwistTile
 import tilings.language.algorithms.TileFactory
@@ -272,33 +273,33 @@ fun isInterior(vert : DCEL<PointE2, Unit, Unit>.Vertex, dcel : DCEL<PointE2, Uni
 class DCELTransform<VertexData, EdgeData, FaceData> () {
 
     var packing : PackData
-    var combinatorics : DCEL<DiskS2, Unit, Unit>
+    var combinatorics : DCELH<DiskS2, Unit, Unit>
 
     init {
         packing = PackData(null)
-        combinatorics = DCEL<DiskS2, Unit, Unit>()
+        combinatorics = DCELH<DiskS2, Unit, Unit>()
     }
 
-    fun findCombinatorics () : DCEL<DiskS2, Unit, Unit> {
+    fun findCombinatorics () : DCELH<DiskS2, Unit, Unit> {
         return  combinatorics
     }
 
 
-    fun makeSphere(graph: DCEL<Unit, Unit, Unit>) {
+    fun makeSphere(graph: DCELH<Unit, Unit, Unit>) {
         val newVert = graph.Vertex( data = Unit)
         graph.verts.removeAt(graph.verts.lastIndex)
-        val newFaces = ArrayList<DCEL<Unit, Unit, Unit>.Face>()
-        val bdryVerts = ArrayList<DCEL<Unit, Unit, Unit>.Vertex>()
-        val bdryDarts = ArrayList<DCEL<Unit, Unit, Unit>.Dart>()
-        val newDarts = ArrayList<DCEL<Unit, Unit, Unit>.Dart>()
-        var vtoi = mutableMapOf<DCEL<Unit, Unit, Unit>.Vertex, Int>()
+        val newFaces = ArrayList<DCELH<Unit, Unit, Unit>.Face>()
+        val bdryVerts = ArrayList<DCELH<Unit, Unit, Unit>.Vertex>()
+        val bdryDarts = ArrayList<DCELH<Unit, Unit, Unit>.Dart>()
+        val newDarts = ArrayList<DCELH<Unit, Unit, Unit>.Dart>()
+        var vtoi = mutableMapOf<DCELH<Unit, Unit, Unit>.Vertex, Int>()
         for ( i in 0..graph.verts.lastIndex ) {
             vtoi[graph.verts[i]] = i+1
         }
 
         println ("Finding Bdry Darts")
         for (dart in graph.darts) {
-            if (dart.face == graph.outerFace) {
+            if (dart.face == graph.holes[0]) {
                 bdryDarts.add(dart)
             }
         }
@@ -321,8 +322,8 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
 
         graph.verts.add(newVert)
 
-        var nextDart : DCEL<Unit, Unit, Unit>.Dart
-        var prevDart : DCEL<Unit, Unit, Unit>.Dart
+        var nextDart : DCELH<Unit, Unit, Unit>.Dart
+        var prevDart : DCELH<Unit, Unit, Unit>.Dart
         nextDart = bdryDarts[0] // Placeholder values
         prevDart = bdryDarts[0]
         var count = 0
@@ -381,8 +382,8 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         return kens
     }*/
 
-    fun toSphericalRepresentation (graph: DCEL<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>)
-            : DCEL<DiskS2, Unit, Unit> {
+    fun toSphericalRepresentation (graph: DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>)
+            : DCELH<DiskS2, Unit, Unit> {
         //TODO
 
         val triangulation = Triangulation<VertexData, EdgeData, FaceData>()
@@ -396,13 +397,13 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         val cp = CirclePack()
 
         //cp.pack(hull)
-        packing = cp.pack(combinatorics)
+        //packing = cp.pack(combinatorics)
 
         return  combinatorics
     }
 
 
-    fun toDiskDCEL (graph : DCEL<Unit, Unit, Unit>, comb : DCEL<DiskS2, Unit, Unit>) {
+    fun toDiskDCEL (graph : DCELH<Unit, Unit, Unit>, comb : DCELH<DiskS2, Unit, Unit>) {
 
         // Set Vertices
         for (k in 0..graph.verts.size-1) {
@@ -419,9 +420,9 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         for (k in 0..graph.darts.size-1) {
 
 
-            if (graph.darts[k].face == graph.outerFace) {
+            if (graph.darts[k].face == graph.holes[0]) {
                 comb.Dart(origin = comb.verts[graph.verts.indexOf(graph.darts[k].origin)],
-                        face = /*comb.faces[0]*/comb.outerFace)
+                        face = /*comb.faces[0]*/comb.holes[0])
             } else {
                 comb.Dart(origin = comb.verts[graph.verts.indexOf(graph.darts[k].origin)],
                         face = comb.faces[graph.faces.indexOf(graph.darts[k].face)])
@@ -445,7 +446,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
 
     }
 
-    fun test (num : Int) : DCEL<DiskS2, Unit, Unit> {
+    /*fun test (num : Int) : DCEL<DiskS2, Unit, Unit> {
 
         val points = ArrayList<PointE2>()
 
@@ -485,7 +486,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         println("Finishing Sphere")
 
         println("Starting Comb")
-        combinatorics = DCEL<DiskS2, Unit, Unit>()
+        combinatorics = DCELH<DiskS2, Unit, Unit>()
         getCombinatorics(graph, combinatorics)
         println("Finishing Comb")
 
@@ -495,7 +496,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
             combinatorics.Edge(data = Unit)
         }
 
-        val darts = ArrayList<DCEL<DiskS2, Unit, Unit>.Dart>()
+        val darts = ArrayList<DCELH<DiskS2, Unit, Unit>.Dart>()
         var i = 0
         //combinatorics.Face(data = Unit)
         for (dart in combinatorics.darts) {
@@ -519,7 +520,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         //cp.pack(hull)
         packing = cp.pack(combinatorics)
         return  combinatorics
-    }
+    }*/
 
 
     /*private fun isInterior(vert : DCEL<VertexData, EdgeData, FaceData>.Vertex, dcel : DCEL<VertexData, EdgeData, FaceData>) : Boolean {
@@ -542,7 +543,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         return true
     }*/
 
-    fun isInterior(vert : DCEL<Unit, Unit, Unit>.Vertex, dcel : DCEL<Unit, Unit, Unit>) : Boolean {
+    fun isInterior(vert : DCELH<Unit, Unit, Unit>.Vertex, dcel : DCELH<Unit, Unit, Unit>) : Boolean {
 
         //println ("Starting In Darts")
         var inDarts = vert.inDarts()
@@ -551,7 +552,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
 
         //println ("Starting In Darts")
         for (dart in inDarts) {
-            if (dart.face == dcel.outerFace) {
+            if (dart.face == dcel.holes[0]) {
                 return false
             }
         }
@@ -559,7 +560,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
 
         //println ("Starting Out Darts")
         for (dart in outDarts) {
-            if (dart.face == dcel.outerFace) {
+            if (dart.face == dcel.holes[0]) {
                 return false
             }
         }
@@ -606,7 +607,7 @@ fun main (passedArgs : Array<String>) {
     //triangulateDCEL(graph)
     val transformer = DCELTransform<PointE2, Unit, Unit>()
     //transformer.oursToKens(graph)
-    transformer.test(1)
+    //transformer.test(1)
     println()
     //test()
 }

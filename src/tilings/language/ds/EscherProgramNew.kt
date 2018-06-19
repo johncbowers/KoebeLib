@@ -1,6 +1,7 @@
 package tilings.language.ds
 
 import geometry.ds.dcel.DCEL
+import geometry.ds.dcel.DCELH
 import tilings.ds.EdgeData
 import tilings.ds.FaceData
 import tilings.ds.TreeNode
@@ -10,11 +11,11 @@ import tilings.language.algorithms.TileFactory
 
 class EscherProgramNew () {
 
-    val protoTiles : MutableMap<String, DCEL<VertexData, EdgeData, FaceData>>
+    val protoTiles : MutableMap<String, DCELH<VertexData, EdgeData, FaceData>>
     val subdivisions : MutableMap<String, Subdivision>
     val tileFactory : TileFactory<VertexData, EdgeData, FaceData>
-    val graphs : MutableMap<String, DCEL<VertexData, EdgeData, FaceData>>
-    var mainGraph : DCEL<VertexData, EdgeData, FaceData>
+    val graphs : MutableMap<String, DCELH<VertexData, EdgeData, FaceData>>
+    var mainGraph : DCELH<VertexData, EdgeData, FaceData>
 
 
     init {
@@ -22,7 +23,7 @@ class EscherProgramNew () {
         subdivisions = mutableMapOf()
         tileFactory = TileFactory()
         graphs = mutableMapOf()
-        mainGraph = DCEL()
+        mainGraph = DCELH()
 
         //destinations = mutableMapOf()
     }
