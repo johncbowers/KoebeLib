@@ -25,10 +25,18 @@ class MyEscherListener () : EscherBaseListener() {
         super.enterTileDefinition(ctx)
 
         //println (ctx!!.text)
-        if (!program.defineProtoTile(ctx!!.ID().text, ctx.NUMBER().text.toInt())) {
+        /*if (!program.defineProtoTile(ctx!!.ID().text, ctx.NUMBER().text.toInt())) {
             println("Error: TileType " + ctx.ID().text + " already exists.")
             return
+        }*/
+
+        val vertList = mutableListOf<Int>()
+        for (vertices in ctx!!.NUMBER()) {
+            vertList.add(vertices.text.toInt())
         }
+
+        program.defineProtoTile(ctx.ID().text, vertList)
+
 
         println()
     }
@@ -90,15 +98,19 @@ class MyEscherListener () : EscherBaseListener() {
             return
         }
 
-        val vertices = ArrayList<String>()
-        for (node in ctx!!.node()) {
-            if (node.NUMBER() == null) {
-                vertices.add(node.ID().text)
-            }
-            else {
-                vertices.add(node.NUMBER().text)
+        val vertices = ArrayList<ArrayList<String>>()
+        for (group in ctx.childList()) {
+            vertices.add(arrayListOf())
+            for (node in group.node()) {
+                if (node.NUMBER() == null) {
+                    vertices[vertices.lastIndex].add(node.ID().text)
+                }
+                else {
+                    vertices[vertices.lastIndex].add(node.NUMBER().text)
+                }
             }
         }
+
 
         program.addChild(currSubdivision, ctx!!.ID(1).text, vertices)
 
@@ -112,24 +124,24 @@ fun main(args: Array<String>) {
     val file = "TILETYPE chair{8};\n" +
             "SUBDIVISION chair \n" +
             "\t{\n" +
-            "\t VERTEX a = split(chair.v[0], chair.v[1], 2);\n" +
-            "\t VERTEX b = split(chair.v[1], chair.v[2], 2);\n" +
-            "\t VERTEX c = split(chair.v[2], chair.v[3], 2);\n" +
-            "\t VERTEX d = split(chair.v[3], chair.v[4], 2);\n" +
-            "\t VERTEX e = split(chair.v[4], chair.v[5], 2);\n" +
-            "\t VERTEX f = split(chair.v[5], chair.v[6], 2);\n" +
-            "\t VERTEX g = split(chair.v[6], chair.v[7], 2);\n" +
-            "\t VERTEX h = split(chair.v[7], chair.v[0], 2);\n" +
+            "\t VERTEX a = split(chair.vertex[0], chair.vertex[1], 2);\n" +
+            "\t VERTEX b = split(chair.vertex[1], chair.vertex[2], 2);\n" +
+            "\t VERTEX c = split(chair.vertex[2], chair.vertex[3], 2);\n" +
+            "\t VERTEX d = split(chair.vertex[3], chair.vertex[4], 2);\n" +
+            "\t VERTEX e = split(chair.vertex[4], chair.vertex[5], 2);\n" +
+            "\t VERTEX f = split(chair.vertex[5], chair.vertex[6], 2);\n" +
+            "\t VERTEX g = split(chair.vertex[6], chair.vertex[7], 2);\n" +
+            "\t VERTEX h = split(chair.vertex[7], chair.vertex[0], 2);\n" +
             "\t VERTEX i;\n" +
             "\t VERTEX j;\n" +
             "\t VERTEX k;\n" +
             "\t VERTEX l;\n" +
             "\t VERTEX m;\n" +
             "\n" +
-            "\t CHILD c1 = chair(chair.v[0], a, chair.v[1], j, i, m, chair.v[7], h);\n" +
-            "\t CHILD c2 = chair(chair.v[2], c, chair.v[3], d, k, j, chair.v[1], b);\n" +
-            "\t CHILD c3 = chair(i, j, k, d, chair.v[4], e, l, m);\n" +
-            "\t CHILD c4 = chair(chair.v[6], g, chair.v[7], m, l, e, chair.v[5], f);\n" +
+            "\t CHILD c1 = chair([chair.vertex[0], a, chair.vertex[1], j, i, m, chair.vertex[7], h]);\n" +
+            "\t CHILD c2 = chair([chair.vertex[2], c, chair.vertex[3], d, k, j, chair.vertex[1], b]);\n" +
+            "\t CHILD c3 = chair([i, j, k, d, chair.vertex[4], e, l, m]);\n" +
+            "\t CHILD c4 = chair([chair.vertex[6], g, chair.vertex[7], m, l, e, chair.vertex[5], f]);\n" +
             "\t};\n" +
             "\n" +
             "\n" +

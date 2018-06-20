@@ -42,7 +42,9 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
             currentIteration = i
             val size = graph.faces.size
             for (k in 0..size - 1) {
-                subdivideFace(graph.faces[k])
+                if (!graph.holes.contains(graph.faces[k])) {
+                    subdivideFace(graph.faces[k])
+                }
             }
             pairLonelyDarts()
             removeOldDarts()
@@ -107,7 +109,7 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
         for (j  in 0..subdivision.children.size-1) {
 
             // Group child vertices
-            for (vert in subdivision.children[j].second) {
+            for (vert in subdivision.children[j].second[0]) {
                 if (vert.toIntOrNull() != null && vert.toInt() >= 0 ) {
                     childVerts.add(findVertex(vert.toInt(), oldDarts[0].face!!))
                 }

@@ -169,6 +169,36 @@ public interface EscherListener extends ParseTreeListener {
 	 */
 	void exitChildAssignment(EscherParser.ChildAssignmentContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link EscherParser#graphAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void enterGraphAssignment(EscherParser.GraphAssignmentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EscherParser#graphAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void exitGraphAssignment(EscherParser.GraphAssignmentContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EscherParser#graphDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterGraphDeclaration(EscherParser.GraphDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EscherParser#graphDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitGraphDeclaration(EscherParser.GraphDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EscherParser#childList}.
+	 * @param ctx the parse tree
+	 */
+	void enterChildList(EscherParser.ChildListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EscherParser#childList}.
+	 * @param ctx the parse tree
+	 */
+	void exitChildList(EscherParser.ChildListContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link EscherParser#node}.
 	 * @param ctx the parse tree
 	 */
@@ -178,4 +208,14 @@ public interface EscherListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitNode(EscherParser.NodeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EscherParser#face}.
+	 * @param ctx the parse tree
+	 */
+	void enterFace(EscherParser.FaceContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EscherParser#face}.
+	 * @param ctx the parse tree
+	 */
+	void exitFace(EscherParser.FaceContext ctx);
 }

@@ -10,7 +10,7 @@ subline         : expression END ;
 phrase          : definition | expression ;
 
 definition            : tileDefinition | subdivisionDefinition ;
-tileDefinition        : TILETYPE ID '{' NUMBER '}' ;
+tileDefinition        : TILETYPE ID '{' NUMBER (',' NUMBER)* '}' ;
 subdivisionDefinition : SUBDIVISION ID '{' subline+ '}' ;
 
 expression      : function | assignment ;
@@ -22,9 +22,14 @@ connectFunction : CONNECT '(' node ',' node ')' ;
 assignment          : vertexAssignment | edgeAssignment | childAssignment ;
 vertexAssignment    : VERTEX ID (',' ID)* ('=' (splitFunction | node))? ;
 edgeAssignment      : EDGE ID (('=' connectFunction) | ( '(' node ',' node ')')) ;
-childAssignment     : CHILD ID '=' ID '(' node (',' node)* ')' ;
+childAssignment     : CHILD ID '=' ID '(' childList+ ')' ;
+graphAssignment     : GRAPH ID '=' graphDeclaration ;
 
-node                : ID ('.' 'v' '[' NUMBER ']')? ;
+graphDeclaration    : tileFunction ;
+
+childList           : '[' node (',' node)* ']' ;
+node                : ID ('.' 'vertex' '[' NUMBER ']')? ;
+face                : ID ('.' 'face' '[' NUMBER ']')? ;
 
  /*
   * Lexer Rules
@@ -33,6 +38,7 @@ node                : ID ('.' 'v' '[' NUMBER ']')? ;
 fragment LETTER : ('a'..'z' | 'A'..'Z')+ ;
 fragment DIGIT  : '0'..'9' ;
 
+GRAPH           : 'GRAPH' ;
 CHILD           : 'CHILD' ;
 SUBDIVISION     : 'SUBDIVISION' ;
 TILETYPE        : 'TILETYPE' ;

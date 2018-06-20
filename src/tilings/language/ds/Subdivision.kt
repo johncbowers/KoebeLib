@@ -5,7 +5,7 @@ class Subdivision () {
     val splits : ArrayList<Triple<Int, Int, Int>>
     var splitVerts : Int
     val vertices : ArrayList<String>
-    val children : ArrayList<Pair<String, ArrayList<String>>>
+    val children : ArrayList<Pair<String, ArrayList<ArrayList<String>>>>
 
     init {
         splits = ArrayList()
@@ -23,7 +23,7 @@ class Subdivision () {
         vertices.add(name)
     }
 
-    fun addChild (tileType : String, vertices : ArrayList<String>) {
+    fun addChild (tileType : String, vertices : ArrayList<ArrayList<String>>) {
         children.add(Pair(tileType, vertices))
     }
 }

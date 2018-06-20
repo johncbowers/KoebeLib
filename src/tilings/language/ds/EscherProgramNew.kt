@@ -28,7 +28,7 @@ class EscherProgramNew () {
         //destinations = mutableMapOf()
     }
 
-    fun addChild (subName: String, childType : String, vertices : ArrayList<String> ) {
+    fun addChild (subName: String, childType : String, vertices : ArrayList<ArrayList<String>> ) {
         subdivisions[subName]?.addChild(childType, vertices)
     }
 
@@ -40,7 +40,7 @@ class EscherProgramNew () {
         subdivisions[subName]?.addVertex(vertexName)
     }
 
-    fun defineProtoTile (name : String, numVerts : Int) : Boolean {
+    fun defineProtoTile (name : String, numVerts : MutableList<Int>) : Boolean {
         val tile = tileFactory.defineProtoTile(name, numVerts)
 
         if (protoTiles.containsKey(name)) {
@@ -59,7 +59,7 @@ class EscherProgramNew () {
 
     fun subdivide (proto : String, iter : Int) {
         var tile = tileFactory.copyProtoTile(protoTiles[proto]!!)
-        tile.faces[0].data.node = TreeNode(tile.faces[0], null)
+        tile.faces[1].data.node = TreeNode(tile.faces[1], null)
         val subdivider = Subdivider(this, tile, iter)
         subdivider.start()
         mainGraph = subdivider.graph

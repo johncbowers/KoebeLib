@@ -277,7 +277,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
 
     init {
         packing = PackData(null)
-        combinatorics = DCELH<DiskS2, Unit, Unit>()
+        combinatorics = DCELH<DiskS2, Unit, Unit>(Unit)
     }
 
     fun findCombinatorics () : DCELH<DiskS2, Unit, Unit> {
@@ -344,11 +344,15 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
                 if (count == 2) {
                     count = 0
                     nextDart.makeNext(prevDart)
+                    bdryDart.face = newFaces[0]
+                    nextDart.face = newFaces[0]
+                    prevDart.face = newFaces[0]
                     newFaces[0].aDart = bdryDart
                     newFaces.removeAt(0)
                 }
             }
         }
+        //println("Faces Left: " + newFaces.size)
 
 
     }
@@ -422,7 +426,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
 
             if (graph.darts[k].face == graph.holes[0]) {
                 comb.Dart(origin = comb.verts[graph.verts.indexOf(graph.darts[k].origin)],
-                        face = /*comb.faces[0]*/comb.holes[0])
+                        face = comb.holes[0])
             } else {
                 comb.Dart(origin = comb.verts[graph.verts.indexOf(graph.darts[k].origin)],
                         face = comb.faces[graph.faces.indexOf(graph.darts[k].face)])

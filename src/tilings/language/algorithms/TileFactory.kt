@@ -23,6 +23,9 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
         // Set Faces
         for (k in 0..proto.faces.size-1) {
             copy.Face( data = Unit )
+            if (proto.holes.contains(proto.faces[k])) {
+                copy.holes.add(copy.faces[k])
+            }
         }
 
         // Set Half Edges
@@ -51,6 +54,17 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
             copy.faces[k].aDart = copy.darts[proto.darts.indexOf(proto.faces[k].aDart)]
         }
 
+
+        //Add hole faces to the holes list
+        for (k in 0..proto.faces.lastIndex) {
+
+            // Add hole darts to faces
+            if (proto.faces[k].holeDarts.size > 0) {
+                for (dart in proto.faces[k].holeDarts) {
+                    copy.faces[k].holeDarts.add(copy.darts[proto.darts.indexOf(dart)])
+                }
+            }
+        }
 
         return copy
     }
@@ -68,6 +82,9 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
         for (k in 0..proto.faces.size-1) {
             copy.Face( data = FaceData() )
             copy.faces[k].data.tileType = proto.faces[k].data.tileType
+            if (proto.holes.contains(proto.faces[k])) {
+                copy.holes.add(copy.faces[k])
+            }
         }
 
         // Set Half Edges
@@ -97,13 +114,25 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
         }
 
 
+        //Add hole faces to the holes list
+        for (k in 0..proto.faces.lastIndex) {
+
+            // Add hole darts to faces
+            if (proto.faces[k].holeDarts.size > 0) {
+                for (dart in proto.faces[k].holeDarts) {
+                    copy.faces[k].holeDarts.add(copy.darts[proto.darts.indexOf(dart)])
+                }
+            }
+        }
+
+
         return copy
     }
 
-    fun defineProtoTile (name : String, numVerts : Int)
+    fun defineProtoTile (name : String, numVerts : MutableList<Int>)
             : Pair<String, DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>> {
 
-        val proto = DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>()
+        val proto = DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>(FaceData())
         val verts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Vertex>()
         val darts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Dart>()
         val face = proto.Face(data = FaceData())
@@ -111,7 +140,7 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
 
 
         //Inner Darts
-        for (k in 0..numVerts-1) {
+        for (k in 0..numVerts[0]-1) {
             verts.add(proto.Vertex(data = VertexData()))
             if (k > 0) {
                 darts.add(proto.Dart(origin = verts[verts.size-2], face = face))
@@ -121,20 +150,54 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
         darts.add(proto.Dart(origin = verts[verts.size-1], face = face))
 
         //Outer Darts
-        for (k in 0..numVerts-1) {
-            //destinations.put(darts[k], verts[(k+1) % numVerts]) // setting inner dart destinations
-            darts[k].makeNext(darts[(k+1) % numVerts])
+        for (k in 0..numVerts[0]-1) {
+            darts[k].makeNext(darts[(k+1) % numVerts[0]])
             darts.add(proto.Dart(origin = verts[k], face = proto.holes[0]))
-            //destinations.put(darts[darts.size-1], verts[(numVerts - 1 + k) % numVerts])
             darts[k].makeTwin(darts[darts.size-1])
             if (k > 0) {
                 darts[darts.size-2].makePrev(darts[darts.size-1])
             }
         }
-        darts[darts.size-1].makePrev(darts[numVerts])
+        darts[darts.size-1].makePrev(darts[numVerts[0]])
 
         //Anchor
         face.aDart = darts[0]
+
+        //Add Holes -------------------------------------------------------
+        val holeVerts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Vertex>()
+        val holeDarts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Dart>()
+        var holeFace : DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Face
+        for (k in 1..numVerts.lastIndex) {
+            holeFace = proto.Face( data = FaceData())
+            //Inner Darts
+            for (j in 0..numVerts[k]-1) {
+                holeVerts.add(proto.Vertex( data = VertexData() ))
+                if (j > 0) {
+                    holeDarts.add(proto.Dart(origin = holeVerts[holeVerts.size-2], face = face))
+                }
+            }
+            holeDarts.add(proto.Dart(origin = holeVerts[holeVerts.size-1], face = face))
+
+            //Outer Darts
+            for (j in 0..numVerts[k]-1) {
+                holeDarts[j].makeNext(darts[(j+1) % numVerts[k]])
+                holeDarts.add(proto.Dart(origin = holeVerts[j], face = proto.holes[k]))
+                holeDarts[j].makeTwin(holeDarts[holeDarts.size-1])
+                if (j > 0) {
+                    holeDarts[holeDarts.size-2].makePrev(holeDarts[holeDarts.size-1])
+                }
+            }
+            holeDarts[holeDarts.size-1].makePrev(holeDarts[numVerts[k]])
+
+            //Anchor
+            proto.holes.add(holeFace)
+            face.holeDarts.add(holeDarts[0])
+            holeFace.aDart = holeDarts[0]
+
+            holeVerts.clear()
+            holeDarts.clear()
+
+        }
 
         return Pair(name, proto)
     }

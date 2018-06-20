@@ -209,6 +209,42 @@ public class EscherBaseListener implements EscherListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterGraphAssignment(EscherParser.GraphAssignmentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGraphAssignment(EscherParser.GraphAssignmentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGraphDeclaration(EscherParser.GraphDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGraphDeclaration(EscherParser.GraphDeclarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterChildList(EscherParser.ChildListContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitChildList(EscherParser.ChildListContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterNode(EscherParser.NodeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -216,6 +252,18 @@ public class EscherBaseListener implements EscherListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitNode(EscherParser.NodeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFace(EscherParser.FaceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFace(EscherParser.FaceContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

@@ -100,7 +100,9 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
         for (k in 0..len-1) {
 
             //println(graph.faces[k].darts().size)
-            triangulateFace(graph, graph.faces[k])
+            if (graph.faces[k] != graph.holes[0]) {
+                triangulateFace(graph, graph.faces[k])
+            }
 
         }
 
