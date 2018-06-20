@@ -1,6 +1,7 @@
 package tilings.algorithms
 
 import geometry.ds.dcel.DCEL
+import geometry.ds.dcel.DCELH
 import geometry.primitives.Euclidean2.PointE2
 
 fun triangulateDCEL (graph : DCEL<PointE2, Unit, Unit>) {
@@ -90,7 +91,7 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
 
     }
 
-    fun triangulateDCEL (graph : DCEL<Unit, Unit, Unit>) {
+    fun triangulateDCEL (graph : DCELH<Unit, Unit, Unit>) {
 
         //print("Start: ")
 
@@ -108,16 +109,16 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
         }
     }
 
-    fun triangulateFace (graph : DCEL<Unit, Unit, Unit>, face : DCEL<Unit, Unit, Unit>.Face) {
+    fun triangulateFace (graph : DCELH<Unit, Unit, Unit>, face : DCELH<Unit, Unit, Unit>.Face) {
 
-        val faceVertex : DCEL<Unit, Unit, Unit>.Vertex
+        val faceVertex : DCELH<Unit, Unit, Unit>.Vertex
         val faceCenter : Unit
-        var faceNew : DCEL<Unit, Unit, Unit>.Face
-        var lonelyDart : DCEL<Unit, Unit, Unit>.Dart?
-        var dart1 : DCEL<Unit, Unit, Unit>.Dart?
-        var dart2 : DCEL<Unit, Unit, Unit>.Dart
+        var faceNew : DCELH<Unit, Unit, Unit>.Face
+        var lonelyDart : DCELH<Unit, Unit, Unit>.Dart?
+        var dart1 : DCELH<Unit, Unit, Unit>.Dart?
+        var dart2 : DCELH<Unit, Unit, Unit>.Dart
 
-        val darts = face.darts()
+        val darts = face.darts()[0]
         //println(darts.size)
 
         faceCenter = Unit

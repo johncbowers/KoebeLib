@@ -12,7 +12,7 @@ class LanguageDriver (num : Int) {
     val listener : MyEscherListener
 
     init {
-        /*val file = "TILETYPE chair{8};\n" +
+        val file = "TILETYPE chair{8};\n" +
                 "SUBDIVISION chair \n" +
                 "\t{\n" +
                 "\t VERTEX a = split(chair.v[0], chair.v[1], 2);\n" +
@@ -37,7 +37,7 @@ class LanguageDriver (num : Int) {
                 "\n" +
                 "\n" +
                 "\n" +
-                "tile( chair , " + num + " );"*/
+                "tile( chair , " + num + " );"
 
         /*val file = "TILETYPE pent {5};\n" +
                 "SUBDIVISION pent\n" +
@@ -58,7 +58,7 @@ class LanguageDriver (num : Int) {
                 "    };\n" +
                 "tile( pent , " + num + " );"*/
 
-        val file = "TILETYPE rect {4};\n" +
+        /*val file = "TILETYPE rect {4};\n" +
                 "TILETYPE tri {3};\n" +
                 "SUBDIVISION rect\n" +
                 "    {\n" +
@@ -94,7 +94,7 @@ class LanguageDriver (num : Int) {
                 "        \n" +
                 "    };\n" +
                 "    \n" +
-                "tile( rect , " + num + " );"
+                "tile( rect , " + num + " );"*/
 
         val lexer = EscherLexer(ANTLRInputStream(file))
         val tokens = CommonTokenStream(lexer)
