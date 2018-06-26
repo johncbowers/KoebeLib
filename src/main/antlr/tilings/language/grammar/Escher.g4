@@ -1,5 +1,9 @@
 grammar Escher ;
 
+@header {
+    package tilings.language.grammar;
+}
+
 /*
  * Parser Rules
  */

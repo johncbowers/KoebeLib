@@ -2,6 +2,7 @@ plugins {
     id 'com.google.osdetector' version '1.4.0'
     id 'org.jetbrains.kotlin.jvm' version '1.2.10'
     id 'application'
+    id 'antlr'
 }
 
 // Set the main class for application and jar building
@@ -20,7 +21,6 @@ dependencies {
 
     // KoebeLib dependencies
     compile files('lib/jar/cpcore.jar')
-    compile 'org.antlr:antlr4:4.7.1'
     compile 'org.python:jython-standalone:2.7.0'
     compile 'com.fifesoft:rsyntaxtextarea:2.6.1'
     compile 'org.jogamp.jogl:jogl-all-main:2.3.2'
@@ -28,6 +28,9 @@ dependencies {
     compile ('org.processing:core:3.3.6') {
         transitive = false
     }
+
+    // Antlr dependency
+    antlr 'org.antlr:antlr4:4.7.1'
 }
 
 task chkLib {
@@ -75,6 +78,7 @@ get_win.onlyIf { !cpcore.exists() }
 
 // Can't compile without cpcore.jar
 compileKotlin.dependsOn(get)
+compileKotlin.dependsOn(generateGrammarSource)
 
 // Build jar with main class defined earlier
 // Bundle all dependencies in the jar
