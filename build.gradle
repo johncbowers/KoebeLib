@@ -9,11 +9,6 @@ plugins {
 //    defined with -Pmain=<class> in build command
 mainClassName = project.findProperty('main') ?: gradle.ext.defaultClassName
 
-// Set default source path
-sourceSets {
-    main.kotlin.srcDirs += 'src/'
-}
-
 // Use maven central repository for dependencies
 repositories {
     mavenCentral()
