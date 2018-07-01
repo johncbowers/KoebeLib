@@ -2,3 +2,10 @@ rootProject.name='koebelib'
 
 // Define the default main class for the build
 gradle.ext.defaultClassName = 'sketches.SphericalSketchKt'
+
+// Define the main classes that will have run tasks generated
+gradle.ext.drivers = [
+    "SphericalSketch": "sketches.SphericalSketchKt",
+    "ConstructionSketch": "sketches.ConstructionSketchKt",
+    "TileView": "tilings.applications.TileViewKt"
+]

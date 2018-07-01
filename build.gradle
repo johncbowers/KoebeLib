@@ -1,14 +1,13 @@
 plugins {
     id 'com.google.osdetector' version '1.4.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.2.10'
-    id 'application'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.50'
     id 'antlr'
 }
 
 // Set the main class for application and jar building
-//  - set in settings.gradle or 
+//  - set in settings.gradle or
 //    defined with -Pmain=<class> in build command
-mainClassName = project.findProperty('main') ?: gradle.ext.defaultClassName
+ext.mainClassName = project.findProperty('main') ?: gradle.ext.defaultClassName
 
 // Use maven central repository for dependencies
 repositories {
@@ -33,36 +32,28 @@ dependencies {
     antlr 'org.antlr:antlr4:4.7.1'
 }
 
+// Ensures that the lib/jar folder exists for downloading cpcore.jar
 task chkLib {
-    group 'KoebeLib'
-    description 'Ensure that the jar directory exists'
-
     doLast {
         def f = new File('lib/jar/')
         if (!f.exists()) { f.mkdirs() }
     }
 }
 
+// Downloads cpcore.jar on Linux systems
 task get_nix(type:Exec, dependsOn:chkLib) {
-    group 'KoebeLib'
-    description 'Downloads CirclePack and extracts cpcore.jar; *nix'
-
     workingDir 'lib/jar/'
     commandLine '../getCirclePack.sh'
 }
 
+// Downloads cpcore.jar on Windows systems
 task get_win(type:Exec, dependsOn:chkLib) {
-    group 'KoebeLib'
-    description 'Downloads CirclePack and extracts cpcore.jar; Windows'
-
     workingDir 'lib/jar/'
     commandLine 'powershell', '-ExecutionPolicy', 'RemoteSigned', '-c', '../getCirclePack.ps1'
 }
 
+// Detects operating system and downloads cpcore.jar
 task get {
-    group 'KoebeLib'
-    description 'Detect OS for downloading CirclePack'
-
     if (osdetector.os == 'windows') {
         dependsOn get_win
     }
@@ -78,23 +69,26 @@ get_win.onlyIf { !cpcore.exists() }
 
 // Can't compile without cpcore.jar
 compileKotlin.dependsOn(get)
+// Can't compile without Antlr grammar generated files
 compileKotlin.dependsOn(generateGrammarSource)
 
-// Build jar with main class defined earlier
-// Bundle all dependencies in the jar
+// Build a fat jar with main class defined earlier
 jar {
     manifest {
-        attributes 'Main-Class' : project['mainClassName']
+        attributes 'Main-Class' : project.mainClassName
     }
 
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
-task run(type: JavaExec, dependsOn: jar, overwrite: true) {
-   description 'Runs this project as a JVM application'
-   group 'application'
+// Dynamically build run configurations for configured classes
+gradle.ext.drivers.each { name, className ->
+    task "run$name" (type: JavaExec, dependsOn: jar, overwrite: true) {
+        description "Runs the ${name}.kt main class"
+        group "KoebeLib"
 
-   main project['mainClassName']
-   classpath fileTree("$jar.destinationDir")
+        main "$className"
+        classpath fileTree("$jar.destinationDir")
+    }
 }
 
