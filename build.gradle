@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     // Kotlin standard library
-    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.50'
 
     // KoebeLib dependencies
     compile files('lib/jar/cpcore.jar')
