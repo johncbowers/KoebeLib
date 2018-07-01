@@ -5,7 +5,8 @@ gradle.ext.defaultClassName = 'sketches.SphericalSketchKt'
 
 // Define the main classes that will have run tasks generated
 gradle.ext.drivers = [
+//  <Class File Name>: <Fully Qualified Class Name>,
     "SphericalSketch": "sketches.SphericalSketchKt",
     "ConstructionSketch": "sketches.ConstructionSketchKt",
-    "TileView": "tilings.applications.TileViewKt"
+    "TileView": "tilings.applications.TileViewKt",
 ]
