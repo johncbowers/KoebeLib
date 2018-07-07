@@ -342,6 +342,305 @@ class CirclePack() {
 
 }
 
+class CirclePackH() {
+
+    /* Functions for computing a Circle Packing on S2  */
+    fun pack( convHull: DCELH<DiskS2, Unit, Unit>): PackData {
+        return pack(convHull, 1000)
+    }
+
+    fun pack( convHull: DCELH<DiskS2, Unit, Unit>, iterations: Int): PackData {
+
+        // Find the max degree vertex and swap it to last index:
+        var maxDegree = convHull.verts[convHull.verts.size-1].edges().size
+        var maxDegreeIdx = convHull.verts.size - 1
+        convHull.verts.map { v -> v.edges().size }.forEachIndexed {
+            idx, degree ->
+            if (degree > maxDegree) {
+                maxDegree = degree
+                maxDegreeIdx = idx
+            }
+        }
+        val tmp = convHull.verts[maxDegreeIdx]
+        convHull.verts[maxDegreeIdx] = convHull.verts[convHull.verts.size - 1]
+        convHull.verts[convHull.verts.size - 1] = tmp
+
+        var packing = PackData(null)  //packData is class that holds the packing information, combinatorics, etc..
+
+        packing.alloc_pack_space(convHull.verts.size, true)
+        packing.status = true
+
+        // Create a map from a vertex to an index
+        var vtoi = mutableMapOf<DCELH<DiskS2, Unit, Unit>.Vertex, Int> ()
+        for ( i in 0..convHull.verts.lastIndex ) {
+            vtoi[convHull.verts[i]] = i+1
+        }
+
+        // Set nodeCount equal to number of vertices
+        packing.nodeCount = convHull.verts.size
+
+        // Set rData (array containing radii)
+        for ( i in 0 .. convHull.verts.lastIndex )
+            packing.rData[i+1].rad = 1.0
+
+
+        // Set kData (the array with combinatoric information, in particular, the flower: the counterclockwise list
+        // of neighbors to each vertex
+        packing.kData = arrayOfNulls<KData>(convHull.verts.size+1)
+
+        for (i in 0..convHull.verts.lastIndex) {
+
+            val v = convHull.verts[i]
+            val inDarts = v.inDarts()
+
+            packing.kData[i+1] = KData()
+            packing.kData[i+1].num = inDarts.size
+            packing.kData[i+1].bdryFlag = 0
+
+            packing.kData[i+1].flower = IntArray(inDarts.size+1)
+
+            for (j in 0..inDarts.lastIndex) {
+                val other = inDarts[j].origin
+
+                packing.kData[i+1].flower[j] = vtoi[other] as Int
+            }
+            // add the first vertex again to indiciate a cycle
+            packing.kData[i+1].flower[inDarts.size] = vtoi[inDarts[0].origin] as Int
+        }
+
+        // Spherical Geometry
+        packing.hes = 1
+
+
+        // After inputting data, must call
+        packing.setCombinatorics()
+        packing.setGamma(packing.nodeCount)
+
+        // Determine how many iterations N you want in the radius computation, then call repack_call
+        // new centers and radii should be stored in packing
+        //packing.repack_call(1000,false,false);
+        this.repack_call(packing, iterations, false)
+
+        for (i in 1..convHull.verts.size) {
+            val rData = packing.rData[i]
+            val center = rData.center
+            val rad = rData.rad
+            val theta = center.x
+            val phi = center.y
+            val radScale = Math.cos(rad)
+            val a = radScale*Math.cos(theta)* Math.sin(phi)
+            val b = radScale*Math.sin(theta) * Math.sin(phi)
+            val c = radScale*Math.cos(phi)
+            val disk = DiskS2(a, b, c, -(a*a + b*b + c*c))
+            convHull.verts[i-1].data = disk
+        }
+
+        return packing
+    }
+
+    /* Functions for computing a Circle Packing on S2  */
+    fun packDiskH2( diskComplex: DCELH<DiskE2, Unit, Unit>): List<DiskS2> {
+        return packDiskH2(diskComplex, 1000)
+    }
+
+    fun packDiskH2( diskComplex: DCELH<DiskE2, Unit, Unit>, iterations: Int): List<DiskS2> {
+
+        // Find the max degree vertex and swap it to last index:
+        var maxDegree = diskComplex.verts[diskComplex.verts.size-1].edges().size
+        var maxDegreeIdx = diskComplex.verts.size - 1
+        diskComplex.verts.map { v -> v.edges().size }.forEachIndexed {
+            idx, degree ->
+            if (degree > maxDegree) {
+                maxDegree = degree
+                maxDegreeIdx = idx
+            }
+        }
+        val tmp = diskComplex.verts[maxDegreeIdx]
+        diskComplex.verts[maxDegreeIdx] = diskComplex.verts[diskComplex.verts.size - 1]
+        diskComplex.verts[diskComplex.verts.size - 1] = tmp
+
+        var packing = PackData(null)  //packData is class that holds the packing information, combinatorics, etc..
+
+        packing.alloc_pack_space(diskComplex.verts.size, true)
+        packing.status = true
+
+        // Create a map from a vertex to an index
+        var vtoi = mutableMapOf<DCELH<DiskE2, Unit, Unit>.Vertex, Int> ()
+        for ( i in 0..diskComplex.verts.lastIndex ) {
+            vtoi[diskComplex.verts[i]] = i+1
+        }
+
+        // Set nodeCount equal to number of vertices
+        packing.nodeCount = diskComplex.verts.size
+
+        // Set rData (array containing radii)
+        for ( i in 0 .. diskComplex.verts.lastIndex )
+            packing.rData[i+1].rad = 1.0
+
+
+        // Set kData (the array with combinatoric information, in particular, the flower: the counterclockwise list
+        // of neighbors to each vertex
+        packing.kData = arrayOfNulls<KData>(diskComplex.verts.size+1)
+
+        for (i in 0..diskComplex.verts.lastIndex) {
+
+            val v = diskComplex.verts[i]
+            val inDarts = v.inDarts()
+
+            packing.kData[i+1] = KData()
+            packing.kData[i+1].num = inDarts.size
+            packing.kData[i+1].bdryFlag = 0
+
+            packing.kData[i+1].flower = IntArray(inDarts.size+1)
+
+            for (j in 0..inDarts.lastIndex) {
+                val other = inDarts[j].origin
+
+                packing.kData[i+1].flower[j] = vtoi[other] as Int
+            }
+            // add the first vertex again to indiciate a cycle
+            packing.kData[i+1].flower[inDarts.size] = vtoi[inDarts[0].origin] as Int
+        }
+
+        // Spherical Geometry
+        packing.hes = 1
+
+
+        // After inputting data, must call
+        packing.setCombinatorics()
+        packing.setGamma(packing.nodeCount)
+
+        // Determine how many iterations N you want in the radius computation, then call repack_call
+        // new centers and radii should be stored in packing
+        //packing.repack_call(1000,false,false);
+        this.repack_call(packing, iterations, false)
+
+        val disks = mutableListOf<DiskS2>()
+        for (i in 1..diskComplex.verts.size) {
+            val rData = packing.rData[i]
+            val center = rData.center
+            val rad = rData.rad
+            val theta = center.x
+            val phi = center.y
+            val radScale = Math.cos(rad)
+            val a = radScale*Math.cos(theta)* Math.sin(phi)
+            val b = radScale*Math.sin(theta) * Math.sin(phi)
+            val c = radScale*Math.cos(phi)
+            disks.add(DiskS2(a, b, c, -(a*a + b*b + c*c)))
+            //diskComplex.verts[i-1].data = DiskE2(PointE2(rData.center.x, rData.center.y), rData.rad)
+        }
+
+        return disks
+    }
+
+    /**
+     * Function to create a circle pack using the gradient
+     */
+    fun gradientPackOnePass(convHull: DCELH<DiskS2, Unit, Unit>, delta:Double) {
+        for (v in convHull.verts) {
+            var a = v.data.a
+            var b = v.data.b
+            var c = v.data.c
+            var d = v.data.d
+            var updateA = 0.0
+            var updateB = 0.0
+            var updateC = 0.0
+            var updateD = 0.0
+            val normC1 = norm31(a,b,c,d);
+            for (ver in v.neighbors()) {
+                val a2 = ver.data.a
+                val b2 = ver.data.b
+                val c2 = ver.data.c
+                val d2 = ver.data.d
+                val normC2 = norm31(a2, b2, c2, d2);
+                val dotProduct = inner_product31(a,b,c,d,a2,b2,c2,d2);
+                val inverDist = v.data.inversiveDistTo(ver.data)
+
+                val invDenom = 1.0 / (normC1 * normC2 * normC2 * normC2)
+                var deltaA = - ((a * normC2*normC2) - (a2 * dotProduct)) * invDenom
+                var deltaB = - ((b * normC2*normC2) - (b2 * dotProduct)) * invDenom
+                var deltaC = - ((c * normC2*normC2) - (c2 * dotProduct)) * invDenom
+                var deltaD = + ((d * normC2*normC2) - (d2 * dotProduct)) * invDenom
+
+                val scale = (1.0 - inverDist)
+
+                deltaA *= scale
+                deltaB *= scale
+                deltaC *= scale
+                deltaD *= scale
+
+                updateA += deltaA
+                updateB += deltaB
+                updateC += deltaC
+                updateD += deltaD
+
+                // Original Code (update is above)
+//                updateA += (1-(a/(normC1*normC2) - (a2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist
+//                updateB += (1-(b/(normC1*normC2) - (b2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+//                updateC += (1-(c/(normC1*normC2) - (c2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+//                updateD += (1-(-d/(normC1*normC2) + (d2*(dotProduct))/(normC1*(Math.pow(normC2,3.0)))))*inverDist;
+            }
+//            println("updateA: " + updateA * delta)
+//            println("updateB: " + updateB * delta)
+//            println("updateC: " + updateC * delta)
+//            println("updateD: " + updateD * delta)
+            val newDisk = DiskS2(a + delta*updateA, b + delta*updateB, c + delta*updateC, d + delta*updateD)
+            v.data = newDisk.normalize()
+        }
+    }
+
+
+    /**
+     * Function to create a circle pack using the gradient
+     */
+    fun gradientEdgePackOnePass(convHull: DCELH<DiskS2, Unit, Unit>, delta:Double) {
+        for (d in convHull.darts) {
+            val v = d.origin
+            val ver = d.dest
+            if (v != null && ver != null) {
+                val a = v.data.a
+                val b = v.data.b
+                val c = v.data.c
+                val d = v.data.d
+
+                val a2 = ver.data.a
+                val b2 = ver.data.b
+                val c2 = ver.data.c
+                val d2 = ver.data.d
+
+                val normC1 = norm31(a,b,c,d);
+                val normC2 = norm31(a2, b2, c2, d2);
+                val dotProduct = inner_product31(a,b,c,d,a2,b2,c2,d2);
+                val inverDist = v.data.inversiveDistTo(ver.data)
+
+                val invDenom = 1.0 / (normC1 * normC2 * normC2 * normC2)
+
+                var deltaA = - ((a * normC2*normC2) - (2.0 * a2 * dotProduct)) * invDenom
+                var deltaB = - ((b * normC2*normC2) - (2.0 * b2 * dotProduct)) * invDenom
+                var deltaC = - ((c * normC2*normC2) - (2.0 * c2 * dotProduct)) * invDenom
+                var deltaD = + ((d * normC2*normC2) - (2.0 * d2 * dotProduct)) * invDenom
+
+                val scale = (1.0 - inverDist)// / Math.sqrt(deltaA*deltaA + deltaB*deltaB + deltaC*deltaC + deltaD*deltaD)
+                deltaA *= scale
+                deltaB *= scale
+                deltaC *= scale
+                deltaD *= scale
+
+                val newDisk = DiskS2(a + delta*deltaA, b + delta*deltaB, c + delta*deltaC, d + delta*deltaD)
+                v.data = newDisk.normalize()
+            }
+        }
+    }
+
+    // This comes from Ken Stephenson's CirclePack, but we needed to edit without actually editing:
+    fun repack_call(packing: PackData, passes: Int, useC: Boolean): Int {
+
+        val sphpack = SphPacker(packing, useC)
+        return  sphpack.maxPack(packing.nodeCount, passes)
+    }
+
+}
+
 class SphPacker : RePacker {
 
     // Constructors

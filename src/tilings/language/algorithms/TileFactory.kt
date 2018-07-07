@@ -101,6 +101,7 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
 
         }
 
+
         for (k in 0..proto.darts.size-1) {
             copy.darts[k].makeTwin(copy.darts[proto.darts.indexOf(proto.darts[k].twin)])
             copy.darts[k].makeNext(copy.darts[proto.darts.indexOf(proto.darts[k].next)])
@@ -153,22 +154,23 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
         for (k in 0..numVerts[0]-1) {
             darts[k].makeNext(darts[(k+1) % numVerts[0]])
             darts.add(proto.Dart(origin = verts[k], face = proto.holes[0]))
-            darts[k].makeTwin(darts[darts.size-1])
+            darts[(numVerts[0] + k - 1) % numVerts[0]].makeTwin(darts[darts.size-1])
             if (k > 0) {
-                darts[darts.size-2].makePrev(darts[darts.size-1])
+                darts[darts.size-2].makeNext(darts[darts.size-1])
             }
         }
-        darts[darts.size-1].makePrev(darts[numVerts[0]])
+        darts[darts.size-1].makeNext(darts[numVerts[0]])
 
-        //Anchor
-        face.aDart = darts[0]
+        /*//Anchor
+        face.aDart = darts[0]*/
 
         //Add Holes -------------------------------------------------------
         val holeVerts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Vertex>()
         val holeDarts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Dart>()
         var holeFace : DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Face
         for (k in 1..numVerts.lastIndex) {
-            holeFace = proto.Face( data = FaceData())
+            holeFace = proto.Face( data = FaceData() )
+            proto.holes.add(holeFace)
             //Inner Darts
             for (j in 0..numVerts[k]-1) {
                 holeVerts.add(proto.Vertex( data = VertexData() ))
@@ -180,9 +182,9 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
 
             //Outer Darts
             for (j in 0..numVerts[k]-1) {
-                holeDarts[j].makeNext(darts[(j+1) % numVerts[k]])
+                holeDarts[j].makeNext(holeDarts[(j+1) % numVerts[k]])
                 holeDarts.add(proto.Dart(origin = holeVerts[j], face = proto.holes[k]))
-                holeDarts[j].makeTwin(holeDarts[holeDarts.size-1])
+                holeDarts[(numVerts[k] + j - 1) % numVerts[k]].makeTwin(holeDarts[holeDarts.size-1])
                 if (j > 0) {
                     holeDarts[holeDarts.size-2].makePrev(holeDarts[holeDarts.size-1])
                 }
@@ -190,14 +192,17 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
             holeDarts[holeDarts.size-1].makePrev(holeDarts[numVerts[k]])
 
             //Anchor
-            proto.holes.add(holeFace)
-            face.holeDarts.add(holeDarts[0])
-            holeFace.aDart = holeDarts[0]
+            holeFace.aDart = holeDarts[numVerts[k]]
+            face.holeDarts.add(holeFace!!.aDart!!.twin!!.next!!)
+
 
             holeVerts.clear()
             holeDarts.clear()
 
         }
+
+        //Anchor
+        face.aDart = darts[0]
 
         return Pair(name, proto)
     }
