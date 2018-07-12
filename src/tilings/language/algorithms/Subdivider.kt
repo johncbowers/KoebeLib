@@ -51,7 +51,7 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
             fixHoles()
             splitMap.clear()
         }
-        println()
+        //println()
     }
 
     private fun checkSplit (split : Triple<Int, Int, Int>, face : DCELH<VertexData, EdgeData, FaceData>.Face) :
@@ -190,7 +190,7 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
                 else {
                     childVerts.add(newVerts[subdivision.vertices.indexOf(vert)])
                 }
-                println()
+                //println()
             }
 
             // connect child vertices
@@ -222,7 +222,7 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
                     } else {*/
                     childVerts.add(newVerts[subdivision.vertices.indexOf(vert)])
                     //}
-                    println()
+                    //println()
                 }
 
                 // connect hole vertices on dart pointing to face
@@ -306,10 +306,10 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
         }
         println(lonlierDarts.size)
 
-        for (dart in lonlierDarts) {
+        /*for (dart in lonlierDarts) {
             if (graph.holes.contains(dart.face))
                 println (vertMap[dart.origin].toString() + " " + vertMap[destination[dart]])
-        }
+        }*/
 
 
         // Pair the lonelier darts and set their orderings

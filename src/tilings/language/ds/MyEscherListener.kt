@@ -16,6 +16,8 @@ import tilings.language.algorithms.TileFactory
 import tilings.language.grammar.EscherBaseListener
 import tilings.language.grammar.EscherLexer
 import tilings.language.grammar.EscherParser
+import java.io.BufferedWriter
+import java.io.FileWriter
 import java.io.InputStream
 
 class MyEscherListener () : EscherBaseListener() {
@@ -45,7 +47,7 @@ class MyEscherListener () : EscherBaseListener() {
         program.defineProtoTile(ctx.ID().text, vertList)
 
 
-        println()
+        //println()
     }
 
     override fun enterSubdivisionDefinition(ctx: EscherParser.SubdivisionDefinitionContext?) {
@@ -59,7 +61,7 @@ class MyEscherListener () : EscherBaseListener() {
         currSubdivision = ctx.ID().text
         program.defineSubdivision(ctx.ID().text)
 
-        println()
+        //println()
     }
 
     override fun enterSplitFunction(ctx: EscherParser.SplitFunctionContext?) {
@@ -68,7 +70,7 @@ class MyEscherListener () : EscherBaseListener() {
         program.addSplit(currSubdivision,ctx!!.node(0).NUMBER().text.toInt(), ctx!!.node(1).NUMBER().text.toInt(),
                 ctx!!.NUMBER().text.toInt())
 
-        println()
+        //println()
     }
 
     override fun enterVertexAssignment(ctx: EscherParser.VertexAssignmentContext?) {
@@ -79,7 +81,7 @@ class MyEscherListener () : EscherBaseListener() {
             program.addVertex(currSubdivision, ctx!!.ID(k).text)
         }
 
-        println()
+        //println()
 
     }
 
@@ -93,7 +95,7 @@ class MyEscherListener () : EscherBaseListener() {
 
         program.subdivide(ctx!!.ID().text, ctx!!.NUMBER().text.toInt())
 
-        println()
+        //println()
 
     }
 
@@ -121,14 +123,14 @@ class MyEscherListener () : EscherBaseListener() {
 
         program.addChild(currSubdivision, ctx!!.ID(1).text, vertices)
 
-        println()
+        //println()
     }
 
 }
 
 fun main(args: Array<String>) {
 
-    /*val file = "TILETYPE chair{8};\n" +
+    val file = "TILETYPE chair{8};\n" +
             "SUBDIVISION chair \n" +
             "\t{\n" +
             "\t VERTEX a = split(chair.vertex[0], chair.vertex[1], 2);\n" +
@@ -153,9 +155,28 @@ fun main(args: Array<String>) {
             "\n" +
             "\n" +
             "\n" +
-            "tile( chair , 1 );"*/
+            "tile( chair , 8 );"
 
-    val file = "TILETYPE sponge {4, 4};\n" +
+    /*val file = "TILETYPE pent {5};\n" +
+            "SUBDIVISION pent\n" +
+            "    {\n" +
+            "        VERTEX a, b = split(pent.vertex[0], pent.vertex[1], 3);\n" +
+            "        VERTEX c, d = split(pent.vertex[1], pent.vertex[2], 3);\n" +
+            "        VERTEX e, f = split(pent.vertex[2], pent.vertex[3], 3);\n" +
+            "        VERTEX g, h = split(pent.vertex[3], pent.vertex[4], 3);\n" +
+            "        VERTEX i, j = split(pent.vertex[4], pent.vertex[0], 3);\n" +
+            "        VERTEX k;\n" +
+            "        \n" +
+            "        CHILD c1 = pent([pent.vertex[0], a, b, k, j]);\n" +
+            "        CHILD c1 = pent([pent.vertex[1], c, d, k, b]);\n" +
+            "        CHILD c1 = pent([pent.vertex[2], e, f, k, d]);\n" +
+            "        CHILD c1 = pent([pent.vertex[3], g, h, k, f]);\n" +
+            "        CHILD c1 = pent([pent.vertex[4], i, j, k, h]);\n" +
+            "        \n" +
+            "    };\n" +
+            "tile( pent , 4 );"*/
+
+    /*val file = "TILETYPE sponge {4, 4};\n" +
             "SUBDIVISION sponge\n" +
             "    {\n" +
             "\n" +
@@ -177,7 +198,7 @@ fun main(args: Array<String>) {
             "\n" +
             "    };\n" +
             "\n" +
-            "tile(sponge, 1);"
+            "tile(sponge, 1);"*/
 
     val lexer = EscherLexer(org.antlr.v4.runtime.ANTLRInputStream(file))
     val tokens = CommonTokenStream(lexer)
@@ -195,10 +216,25 @@ fun main(args: Array<String>) {
     val cp = CirclePackH()
 
     val unitGraph = tileFact.copyUnitTile(graph)
+    println("Number Verts: " + unitGraph.verts.size)
 
     triangulation.triangulateDCEL(unitGraph)
 
     val combinatorics = dt.toSphericalRepresentation(graph)
+    cp.pack(combinatorics)
+    val planar = tileFact.copyDiskToPlane(combinatorics)
+
+    var writer = BufferedWriter(FileWriter("chair.verts"))
+    for (vertex in planar.verts) {
+        writer.write(vertex.data.x.toString() + "," + vertex.data.y.toString() + "\n")
+    }
+    writer.close()
+
+    writer = BufferedWriter(FileWriter("chair.edges"))
+    for (dart in planar.darts) {
+        writer.write(planar.verts.indexOf(dart.origin).toString() + "," + planar.verts.indexOf(dart.dest).toString() + "\n")
+    }
+    writer.close()
 
     println()
 

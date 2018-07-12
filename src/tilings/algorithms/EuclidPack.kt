@@ -66,7 +66,8 @@ class EuclidPack () {
 
                 packing.kData[i+1].flower[j] = vtoi[other] as Int
             }
-            // add the first vertex again to indiciate a cycle
+            //add the first vertex again to indiciate a cycle
+            //TODO This should only happen for interior vertices
             packing.kData[i+1].flower[inDarts.size] = vtoi[inDarts[0].origin] as Int
         }
 

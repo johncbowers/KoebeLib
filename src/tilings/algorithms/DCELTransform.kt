@@ -271,7 +271,7 @@ fun isInterior(vert : DCEL<PointE2, Unit, Unit>.Vertex, dcel : DCEL<PointE2, Uni
 }
 
 fun printGraph (graph : DCELH<Unit, Unit, Unit>) {
-    val vertMap = mutableMapOf<DCELH<Unit, Unit, Unit>.Vertex, Int>()
+    /*val vertMap = mutableMapOf<DCELH<Unit, Unit, Unit>.Vertex, Int>()
     for (k in 0..graph.verts.lastIndex) {
         vertMap.put(graph.verts[k], k)
     }
@@ -290,7 +290,7 @@ fun printGraph (graph : DCELH<Unit, Unit, Unit>) {
 
     for (dart in graph.darts) {
         println ("Dart: " + dartMap[dart] + " Origin: " + vertMap[dart.origin] + " Dest: " + vertMap[dart.dest])
-    }
+    }*/
 }
 
 class DCELTransform<VertexData, EdgeData, FaceData> () {
@@ -320,28 +320,27 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
             vtoi[graph.verts[i]] = i+1
         }
 
-        println ("Finding Bdry Darts")
+        //println ("Finding Bdry Darts")
         for (dart in graph.darts) {
             if (dart.face == graph.holes[0]) {
                 bdryDarts.add(dart)
             }
         }
-        println ("Done Finding Bdry Darts")
+        //println ("Done Finding Bdry Darts")
 
-        println ("Adding New Darts")
+        //println ("Adding New Darts")
         for (vert in graph.verts) {
             if (!isInterior(vert, graph)) {
-                println("WE HAVE A BDRY VERT")
+                //println("WE HAVE A BDRY VERT")
                 bdryVerts.add(vert)
                 newDarts.add(graph.Dart(origin = newVert))
                 newDarts.add(graph.Dart(origin = vert))
 
                 newDarts[newDarts.size-1].makeTwin(newDarts[newDarts.size-2])
 
-                newFaces.add(graph.Face(data = Unit))
             }
         }
-        println ("Done Adding New Darts")
+        //println ("Done Adding New Darts")
 
         graph.verts.add(newVert)
 
@@ -365,6 +364,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
                 }
 
                 if (count == 2) {
+                    newFaces.add(graph.Face(data = Unit))
                     count = 0
                     nextDart.makeNext(prevDart)
                     bdryDart.face = newFaces[0]
@@ -415,11 +415,11 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         val triangulation = Triangulation<VertexData, EdgeData, FaceData>()
         val tileFactory = TileFactory<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>()
 
-        for (dart in graph.darts) {
+        /*for (dart in graph.darts) {
             if (graph.darts.indexOf(dart.next) == -1) {
                 println ("Err0r: " + graph.darts.indexOf(dart))
             }
-        }
+        }*/
 
         val unitGraph = tileFactory.copyUnitTile(graph)
 
@@ -623,7 +623,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         }
 
         var a = out.toTypedArray()
-        println()
+        //println()
         return out.toTypedArray()
     }
 

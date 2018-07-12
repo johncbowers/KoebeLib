@@ -2,6 +2,8 @@ package tilings.language.algorithms
 
 import geometry.ds.dcel.DCEL
 import geometry.ds.dcel.DCELH
+import geometry.primitives.Euclidean2.PointE2
+import geometry.primitives.Spherical2.DiskS2
 import tilings.ds.EdgeData
 import tilings.ds.FaceData
 import tilings.ds.VertexData
@@ -57,6 +59,72 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
 
         //Add hole faces to the holes list
         for (k in 0..proto.faces.lastIndex) {
+
+            // Add hole darts to faces
+            if (proto.faces[k].holeDarts.size > 0) {
+                for (dart in proto.faces[k].holeDarts) {
+                    copy.faces[k].holeDarts.add(copy.darts[proto.darts.indexOf(dart)])
+                }
+            }
+        }
+
+        return copy
+    }
+
+    fun copyDiskToPlane (proto : DCELH<DiskS2, Unit, Unit>) : DCELH<PointE2, Unit, Unit> {
+        val copy = DCELH<PointE2, Unit, Unit>()
+
+        // TODO Convert from Disk2 to PointE2 at vertices by projecting the center of the disk (moved onto the sphere surface)
+        // Set Vertices
+        for (k in 0..proto.verts.size-1) {
+
+            var newDisk = proto.verts[k].data.sgProjectToOP2()
+            copy.Vertex( data = PointE2(newDisk.center.x, newDisk.center.y))
+            /*copy.Vertex( data = PointE2(2 * proto.verts[k].data.centerE3.x / (1 - proto.verts[k].data.centerE3.z),
+                    2 * proto.verts[k].data.centerE3.y / (1 - proto.verts[k].data.centerE3.z)) )*/
+        }
+
+        // Set Faces
+        for (k in 0..proto.faces.size-1) {
+            copy.Face( data = Unit )
+            if (proto.holes.contains(proto.faces[k])) {
+                copy.holes.add(copy.faces[k])
+            }
+        }
+
+        // Set Half Edges
+        for (k in 0..proto.darts.size-1) {
+
+
+            if (proto.darts[k].face == proto.holes[0]) {
+                copy.Dart(origin = copy.verts[proto.verts.indexOf(proto.darts[k].origin)],
+                        face = copy.holes[0])
+            } else {
+                copy.Dart(origin = copy.verts[proto.verts.indexOf(proto.darts[k].origin)],
+                        face = copy.faces[proto.faces.indexOf(proto.darts[k].face)])
+            }
+
+        }
+
+        for (k in 0..proto.darts.size-1) {
+            copy.darts[k].makeTwin(copy.darts[proto.darts.indexOf(proto.darts[k].twin)])
+            copy.darts[k].makeNext(copy.darts[proto.darts.indexOf(proto.darts[k].next)])
+            copy.darts[k].makePrev(copy.darts[proto.darts.indexOf(proto.darts[k].prev)])
+        }
+
+        // Set Anchor Points
+        // Set Faces
+        for (k in 0..proto.faces.size-2) {
+            if (proto.darts.indexOf(proto.faces[k].aDart) == -1) {
+                println("Face: " + proto.faces.indexOf(proto.faces[k]))
+
+            }
+            copy.faces[k].aDart = copy.darts[proto.darts.indexOf(proto.faces[k].aDart)]
+        }
+
+
+        //Add hole faces to the holes list
+        for (k in 0..proto.faces.lastIndex - 1) {
 
             // Add hole darts to faces
             if (proto.faces[k].holeDarts.size > 0) {
