@@ -130,7 +130,7 @@ class MyEscherListener () : EscherBaseListener() {
 
 fun main(args: Array<String>) {
 
-    val file = "TILETYPE chair{8};\n" +
+    /*val file = "TILETYPE chair{8};\n" +
             "SUBDIVISION chair \n" +
             "\t{\n" +
             "\t VERTEX a = split(chair.vertex[0], chair.vertex[1], 2);\n" +
@@ -155,7 +155,7 @@ fun main(args: Array<String>) {
             "\n" +
             "\n" +
             "\n" +
-            "tile( chair , 8 );"
+            "tile( chair , 8 );"*/
 
     /*val file = "TILETYPE pent {5};\n" +
             "SUBDIVISION pent\n" +
@@ -175,6 +175,44 @@ fun main(args: Array<String>) {
             "        \n" +
             "    };\n" +
             "tile( pent , 4 );"*/
+
+    val file = "TILETYPE rect {4};\n" +
+                "TILETYPE tri {3};\n" +
+                "SUBDIVISION rect\n" +
+                "    {\n" +
+                "        VERTEX a = split(rect.vertex[0], rect.vertex[1], 2);\n" +
+                "        VERTEX b = split(rect.vertex[1], rect.vertex[2], 2);\n" +
+                "        VERTEX c = split(rect.vertex[2], rect.vertex[3], 2);\n" +
+                "        VERTEX d = split(rect.vertex[3], rect.vertex[0], 2);\n" +
+                "        VERTEX e;\n" +
+                "        VERTEX f;\n" +
+                "        \n" +
+                "        CHILD c1 = rect([rect.vertex[0], a, e, d]);\n" +
+                "        CHILD c2 = rect([b, f, a, rect.vertex[1]]);\n" +
+                "        CHILD c3 = rect([rect.vertex[2], c, f, b]);\n" +
+                "        CHILD c4 = rect([d, e, c, rect.vertex[3]]);\n" +
+                "        \n" +
+                "        CHILD c5 = tri([e, f, c]);\n" +
+                "        CHILD c6 = tri([f, e, a]);\n" +
+                "        \n" +
+                "        \n" +
+                "        \n" +
+                "    };\n" +
+                "    \n" +
+                "SUBDIVISION tri\n" +
+                "    {\n" +
+                "        VERTEX a = split(tri.vertex[0], tri.vertex[1], 2);\n" +
+                "        VERTEX b = split(tri.vertex[1], tri.vertex[2], 2);\n" +
+                "        VERTEX c = split(tri.vertex[2], tri.vertex[0], 2);\n" +
+                "        \n" +
+                "        CHILD c1 = tri([tri.vertex[0], a, c]);\n" +
+                "        CHILD c2 = tri([tri.vertex[1], b, a]);\n" +
+                "        CHILD c3 = tri([tri.vertex[2], c, b]);\n" +
+                "        CHILD c4 = tri([a, b, c]);\n" +
+                "        \n" +
+                "    };\n" +
+                "    \n" +
+                "tile( rect , 6 );"
 
     /*val file = "TILETYPE sponge {4, 4};\n" +
             "SUBDIVISION sponge\n" +

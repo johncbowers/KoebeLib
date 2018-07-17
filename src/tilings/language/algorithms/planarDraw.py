@@ -2,10 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import collections as mc
 
-verts = np.loadtxt('chair.verts', dtype='float', delimiter=',')
-edges = np.loadtxt('chair.edges', dtype='int', delimiter=',')
+verts = np.loadtxt('../../../../verts', dtype='float', delimiter=',')
+edges = np.loadtxt('../../../../edges', dtype='int', delimiter=',')
+config = np.loadtxt('../../../../config', dtype='int')
 
-#edges = edges[(edges[:,0] < 12545) & (edges[:,1] < 12545)]
+edges = edges[(edges[:,0] < config) & (edges[:,1] < config)]
 
 data = []
 for x in range(0, edges.shape[0]):
@@ -16,3 +17,4 @@ fig, ax = plt.subplots()
 ax.add_collection(lc)
 ax.autoscale()
 fig.show()
+plt.show()
