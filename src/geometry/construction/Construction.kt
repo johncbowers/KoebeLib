@@ -45,6 +45,9 @@ class Construction {
     fun makeIntersectionPoint(disk1: INode<DiskS2>, disk2: INode<DiskS2>) {
             ConstructionNode<List<PointS2>>(this, listOf(disk1, disk2), TwoDisksIntersectionPoint(), null)
     }
+
+    fun makeCoaxialPointDisk(disk1: INode<DiskS2>, disk2: INode<DiskS2>, point: INode<PointS2>) =
+            ConstructionNode<DiskS2>(this, listOf(disk1, disk2, point), TwoDisksPointCoaxialCircle(), null)
 }
 
 
