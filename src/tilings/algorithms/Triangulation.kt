@@ -97,15 +97,17 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
 
         val len = graph.faces.size
         //println(len)
-        for (k in 0..len-1) {
+        for (k in 1..len-1) {
 
             //println(graph.faces[k].darts().size)
-            triangulateFace(graph, graph.faces[k])
+            if (graph.faces[k] != graph.holes[0]) {
+                triangulateFace(graph, graph.faces[k])
+            }
 
         }
 
-        for (k in 0..len-1) {
-            graph.faces.removeAt(0)
+        for (k in 1..len-1) {
+            graph.faces.removeAt(1)
         }
     }
 
@@ -118,7 +120,7 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
         var dart1 : DCELH<Unit, Unit, Unit>.Dart?
         var dart2 : DCELH<Unit, Unit, Unit>.Dart
 
-        val darts = face.darts()[0]
+        val darts = face.darts()
         //println(darts.size)
 
         faceCenter = Unit
@@ -126,23 +128,28 @@ class Triangulation<VertexData, EdgeData, FaceData> () {
 
         dart1 = null
         lonelyDart = null
-        for (k in 0..darts.size-1) {
-            faceNew = graph.Face(data = Unit)
-            dart2 = graph.Dart(origin = faceVertex, face = faceNew)
-            dart2.makeTwin(dart1)
-            dart1 = graph.Dart(origin = darts[k].dest, face = faceNew)
-            if (k == 0) {
-                lonelyDart = dart2
-                faceNew.aDart = darts[0]
-            } else if (k == darts.size-1) {
-                dart1.makeTwin(lonelyDart)
+        for (cycle in darts) {
+            dart1 = null
+            lonelyDart = null
+            for (k in 0..cycle.size - 1) {
+                faceNew = graph.Face(data = Unit)
+                dart2 = graph.Dart(origin = faceVertex, face = faceNew)
+                dart2.makeTwin(dart1)
+                dart1 = graph.Dart(origin = cycle[k].dest, face = faceNew)
+                if (k == 0) {
+                    lonelyDart = dart2
+                    //faceNew.aDart = cycle[0]
+                } else if (k == cycle.size - 1) {
+                    dart1.makeTwin(lonelyDart)
+                }
+
+                dart1.makeNext(dart2)
+                dart1.makePrev(cycle[k])
+
+                dart2.makeNext(cycle[k])
+                cycle[k].face = faceNew
+                faceNew.aDart = cycle[k]
             }
-
-            dart1.makeNext(dart2)
-            dart1.makePrev(darts[k])
-
-            dart2.makeNext(darts[k])
-            darts[k].face = faceNew
         }
     }
 }

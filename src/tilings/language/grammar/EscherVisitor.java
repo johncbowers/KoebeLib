@@ -108,9 +108,33 @@ public interface EscherVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitChildAssignment(EscherParser.ChildAssignmentContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link EscherParser#graphAssignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGraphAssignment(EscherParser.GraphAssignmentContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link EscherParser#graphDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGraphDeclaration(EscherParser.GraphDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link EscherParser#childList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitChildList(EscherParser.ChildListContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link EscherParser#node}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitNode(EscherParser.NodeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link EscherParser#face}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFace(EscherParser.FaceContext ctx);
 }
