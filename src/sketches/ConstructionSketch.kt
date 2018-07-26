@@ -104,6 +104,135 @@ class ArcballTool(val arcball: Arcball?) : MouseTool() {
     }
 }
 
+class IntersectionTool(val sketch : ConstructionSketch ) : MouseTool() {
+    var selectedDisks = mutableListOf<INode<DiskS2>>()
+
+    fun transform(mouseX: Int, mouseY: Int) : PointE3{
+        val gl = sketch.g
+        if (gl is PGraphicsOpenGL) {
+            var Minv = PMatrix3D(gl.projmodelview)
+            Minv.invert() //PVM inverted
+            var mousex = (2.0f * mouseX) / sketch.width - 1.0f
+            var mousey = 1.0f - (2.0f * mouseY) / sketch.height
+
+            var w1 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m33
+            var w2 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m32 + Minv.m33
+
+            var new1 = PointE3(
+                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m03) / w1).toDouble(),
+                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m13) / w1).toDouble(),
+                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m23) / w1).toDouble()
+            )
+
+            var new2 = PointE3(
+                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m02 + Minv.m03) / w2).toDouble(),
+                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m12 + Minv.m13) / w2).toDouble(),
+                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m22 + Minv.m23) / w2).toDouble()
+            )
+
+            var direction = (new2 - new1).normalize()
+
+            var l = PointE3.O - new1
+
+            var tca = l.dot(direction)
+            var d = (Math.sqrt(l.normSq() - tca * tca))//(200.0*zoom)
+            var thc = Math.sqrt(1 - d * d)
+            var t0 = tca - thc
+            var t1 = tca + thc
+            var inter = PointE3(0.0, 0.0, 0.0)
+            if (t0 > t1) {
+                inter = new1 + direction * t1
+                return inter
+            } else {
+                inter = new1 + direction * t0
+                return inter
+            }
+        }
+        return PointE3()
+    }
+
+    fun isIntersection(mouseX : Int, mouseY : Int, a : Double, b : Double, c : Double, d : Double) : Boolean {
+        val gl = sketch.g
+        if (gl is PGraphicsOpenGL) {
+            var Minv = PMatrix3D(gl.projmodelview)
+            Minv.invert() //PVM inverted
+            var mousex = (2.0f * mouseX) / sketch.width - 1.0f
+            var mousey = 1.0f - (2.0f * mouseY) / sketch.height
+
+            var w1 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m33
+            var w2 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m32 + Minv.m33
+
+            var new1 = PointE3(
+                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m03) / w1).toDouble(),
+                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m13) / w1).toDouble(),
+                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m23) / w1).toDouble()
+            )
+
+            var new2 = PointE3(
+                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m02 + Minv.m03) / w2).toDouble(),
+                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m12 + Minv.m13) / w2).toDouble(),
+                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m22 + Minv.m23) / w2).toDouble()
+            )
+
+            var direction = (new2 - new1).normalize()
+            var rayOrigin = VectorE3(new1.x, new1.y, new1.z)
+            var worldOrigin = VectorE3(0.0, 0.0, 0.0)
+            var normalVector = VectorE3(a, b, c)
+            var denom = direction.dot(normalVector)
+            var t = ((worldOrigin - rayOrigin).dot(normalVector)) / denom
+            return t >= 0
+        }
+
+        return false;
+    }
+
+    fun diskIntersection(disk1 : DiskS2, disk2 : DiskS2) : Boolean {
+        //TODO: calculate the intersection of two points
+        return false;
+    }
+
+    override fun mousePressed(mouseX: Int, mouseY: Int) {
+        super.mousePressed(mouseX, mouseY)
+        var cursor = transform(mouseX, mouseY)
+        //var selectedNode: Any? = null
+        if(cursor!= null) {
+            for(node in sketch.construction.nodes) {
+                var output = node.getOutput()
+                if (output is DiskS2) {
+                    var a = output.a
+                    var b = output.b
+                    var c = output.c
+                    var d = output.d
+                    if(isIntersection(mouseX, mouseY, a, b, c, d)) {
+                        if(!selectedDisks.contains(node)) {
+                            selectedDisks.add(node as INode<DiskS2>)
+                            break
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    override fun mouseReleased(mouseX: Int, mouseY: Int) {
+        super.mouseReleased(mouseX, mouseY)
+        if(selectedDisks.size >= 2) {
+            var obj1 = selectedDisks[0]
+            var obj2 = selectedDisks[1]
+            //if(diskIntersection(obj1.getOutput(), obj2.getOutput())) {
+                sketch.construction.makeIntersectionPoint(obj1, obj2)
+            //}
+        }
+    }
+    override fun mouseDragged(mouseX: Int, mouseY: Int) {
+    }
+    override fun mouseClicked(mouseX: Int, mouseY: Int) {
+
+    }
+    override fun mouseMoved(mouseX: Int, mouseY: Int) {
+        super.mouseMoved(mouseX, mouseY)
+    }
+}
 class SelectionTool(val sketch : ConstructionSketch) : MouseTool() {
     fun transform(mouseX: Int, mouseY: Int) : PointE3{
         val gl = sketch.g
@@ -184,6 +313,7 @@ class SelectionTool(val sketch : ConstructionSketch) : MouseTool() {
         return false;
     }
 
+
     //TODO: need to get minimum distance and then set node also add a feature to select multiple things
     override fun mouseClicked(mouseX: Int, mouseY: Int) {
         var cursor = transform(mouseX, mouseY)
@@ -235,7 +365,6 @@ class SelectionTool(val sketch : ConstructionSketch) : MouseTool() {
 open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
 
     var selectedNode : INode<*>? = null;
-    var selectedNodes = mutableListOf<INode<*>>()
 
     fun transform(mouseX: Int, mouseY: Int): PointE3 {
         val gl = sketch.g
@@ -331,6 +460,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
                 if(node != null) {
                     var output = node.getOutput()
                     if (output is PointS2) {
+                        //TODO: this needs to change so you get the closest one not the fist within a delta
                         if (Math.abs(cursor.x.toFloat() - output.x) <= .1
                                 && Math.abs(cursor.y.toFloat() - output.y) <= .1
                                 && Math.abs(cursor.z.toFloat() - output.z) <= .1) {
@@ -341,19 +471,65 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
                 }
             }
             if (drawNode) {
-                val node = sketch.construction.makePointS2(cursor.x, cursor.y, cursor.z)
+                sketch.construction.makePointS2(cursor.x, cursor.y, cursor.z)
             }
         }
 
     }
 
-    class CircleTool(sketch: ConstructionSketch) : PointEditorTool(sketch) {
+    class CircleTool(val sketch: ConstructionSketch) : MouseTool() {
+        var selectedNode : INode<*>? = null;
+        var selectedNodes = mutableListOf<INode<*>>()
+
+        fun transform(mouseX: Int, mouseY: Int): PointE3 {
+            val gl = sketch.g
+            if (gl is PGraphicsOpenGL) {
+                var Minv = PMatrix3D(gl.projmodelview)
+                Minv.invert() //PVM inverted
+                var mousex = (2.0f * mouseX) / sketch.width - 1.0f
+                var mousey = 1.0f - (2.0f * mouseY) / sketch.height
+
+                var w1 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m33
+                var w2 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m32 + Minv.m33
+
+                var new1 = PointE3(
+                        ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m03) / w1).toDouble(),
+                        ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m13) / w1).toDouble(),
+                        ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m23) / w1).toDouble()
+                )
+
+                var new2 = PointE3(
+                        ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m02 + Minv.m03) / w2).toDouble(),
+                        ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m12 + Minv.m13) / w2).toDouble(),
+                        ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m22 + Minv.m23) / w2).toDouble()
+                )
+
+                var direction = (new2 - new1).normalize()
+
+                var l = PointE3.O - new1
+
+                var tca = l.dot(direction)
+                var d = (Math.sqrt(l.normSq() - tca * tca))//(200.0*zoom)
+                var thc = Math.sqrt(1 - d * d)
+                var t0 = tca - thc
+                var t1 = tca + thc
+                var inter = PointE3(0.0, 0.0, 0.0)
+                if (t0 > t1) {
+                    inter = new1 + direction * t1
+                    return inter
+                } else {
+                    inter = new1 + direction * t0
+                    return inter
+                }
+            }
+            return PointE3()
+        }
+
 
         override fun mousePressed(mouseX: Int, mouseY: Int) {
             super.mousePressed(mouseX, mouseY)
             var cursor = transform(mouseX, mouseY)
             if (cursor != null) {
-
                 for (node in sketch.construction.nodes) {
                     if (node != null) {
                         var output = node.getOutput()
@@ -365,7 +541,10 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
 
                                 selectedNode = node
                                 node.style = Style(Color.noColor, Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()))
-                                break
+                                if(!selectedNodes.contains(selectedNode as INode<*>)) {
+                                    selectedNodes.add(selectedNode as INode<*>)
+                                    break
+                                }
                             }
                         }
 
@@ -373,7 +552,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
                 }
             }
             
-            selectedNodes.add(selectedNode as INode<*>)
+
         }
 
         override fun mouseMoved(mouseX: Int, mouseY: Int) {
@@ -395,6 +574,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
                     var node = sketch.construction.makeDiskS2( obj1 as INode<PointS2>,
                             obj2 as INode<PointS2>,
                             obj3 as INode<PointS2>)
+                    selectedNodes.removeAll({true})
 
                 }
             }
@@ -482,121 +662,14 @@ open class ConstructionSketch : SphericalSketch() {
 
                     val style = if (consStyles[it] is Style) consStyles[it] as Style else objectStyles[it]
 
-                    when (it) {
-                        is PointS2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                noStroke()
-                                fill(100.0f, 125.0f, 255.0f)
-                            }
-                            drawPointE3(it.directionE3.endPoint)
+                    if(it is List<*>) {
+                        it.forEach {
+                            obj -> drawGeometricObjects(obj, style)
                         }
-                        is PointE2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                noStroke()
-                                fill(100.0f, 125.0f, 255.0f)
-                            }
-                            drawPointE2(it)
-                        }
-                        is DiskOP2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                stroke(0.0f, 0.0f, 0.0f)
-                                noFill()
-                            }
-                            drawDiskOP2(it)
-                        }
-                        is LineOP2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                stroke(0.0f, 0.0f, 0.0f)
-                                noFill()
-                            }
-                            drawLineOP2(it)
-                        }
-                        is PointE3 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                noStroke()
-                                fill(100.0f, 125.0f, 255.0f)
-                            }
-                            drawPointE3(it)
-                        }
-                        is PointOP2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                noStroke()
-                                fill(100.0f, 125.0f, 255.0f)
-                            }
-                            drawPointOP2(it)
-                        }
-
-                        is PointOP3 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                noStroke()
-                                fill(100.0f, 125.0f, 255.0f)
-                            }
-                            if (!it.isIdeal()) drawPointE3(it.toPointE3())
-                        }
-                        is DiskS2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                stroke(0)
-                            }
-                            drawCircleS2(it)
-                        }
-                        is DiskE2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                stroke(0)
-                            }
-                            drawCircleE2(it)
-                        }
-                        is CircleArcOP2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                stroke(0.0f, 0.0f, 255.0f)
-                            }
-                            drawCircleArcOP2(it)
-                            if (style == null) {
-                                noStroke()
-                                fill(255.0f, 0.0f, 125.0f)
-                                drawPointOP2(it.source)
-                                drawPointOP2(it.target)
-                            }
-                        }
-                        is CircleArcS2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                stroke(0.0f, 0.0f, 255.0f)
-                            }
-                            drawCircleArcS2(it)
-                            if (style == null) {
-                                noStroke()
-                                fill(255.0f, 0.0f, 125.0f)
-                                drawPointE3(it.source.directionE3.endPoint)
-                                drawPointE3(it.target.directionE3.endPoint)
-                            }
-                        }
-                        is CPlaneS2 -> {
-                            if (style != null) style.set(this)
-                            else {
-                                stroke(255.0f, 0.0f, 0.0f)
-                            }
-                            drawCircleS2(it.dualDiskS2)
-                        }
-                        is DCEL<*, *, *> -> {
-                            if (style != null) style.set(this)
-                            else {
-                                stroke(0)
-                                fill(255.0f, 255.0f, 255.0f)
-                            }
-                            drawDCEL(it)
-                        }
-                        else -> {}
+                    } else {
+                        drawGeometricObjects(it, style)
                     }
+
                 }
             }
         })
@@ -672,6 +745,124 @@ open class ConstructionSketch : SphericalSketch() {
                 }
             }
             }
+        }
+    }
+
+    fun drawGeometricObjects(it : Any?, style: Style?) {
+        when (it) {
+            is PointS2 -> {
+                if (style != null) style.set(this)
+                else {
+                    noStroke()
+                    fill(100.0f, 125.0f, 255.0f)
+                }
+                drawPointE3(it.directionE3.endPoint)
+            }
+            is PointE2 -> {
+                if (style != null) style.set(this)
+                else {
+                    noStroke()
+                    fill(100.0f, 125.0f, 255.0f)
+                }
+                drawPointE2(it)
+            }
+            is DiskOP2 -> {
+                if (style != null) style.set(this)
+                else {
+                    stroke(0.0f, 0.0f, 0.0f)
+                    noFill()
+                }
+                drawDiskOP2(it)
+            }
+            is LineOP2 -> {
+                if (style != null) style.set(this)
+                else {
+                    stroke(0.0f, 0.0f, 0.0f)
+                    noFill()
+                }
+                drawLineOP2(it)
+            }
+            is PointE3 -> {
+                if (style != null) style.set(this)
+                else {
+                    noStroke()
+                    fill(100.0f, 125.0f, 255.0f)
+                }
+                drawPointE3(it)
+            }
+            is PointOP2 -> {
+                if (style != null) style.set(this)
+                else {
+                    noStroke()
+                    fill(100.0f, 125.0f, 255.0f)
+                }
+                drawPointOP2(it)
+            }
+
+            is PointOP3 -> {
+                if (style != null) style.set(this)
+                else {
+                    noStroke()
+                    fill(100.0f, 125.0f, 255.0f)
+                }
+                if (!it.isIdeal()) drawPointE3(it.toPointE3())
+            }
+            is DiskS2 -> {
+                if (style != null) style.set(this)
+                else {
+                    stroke(0)
+                }
+                drawCircleS2(it)
+            }
+            is DiskE2 -> {
+                if (style != null) style.set(this)
+                else {
+                    stroke(0)
+                }
+                drawCircleE2(it)
+            }
+            is CircleArcOP2 -> {
+                if (style != null) style.set(this)
+                else {
+                    stroke(0.0f, 0.0f, 255.0f)
+                }
+                drawCircleArcOP2(it)
+                if (style == null) {
+                    noStroke()
+                    fill(255.0f, 0.0f, 125.0f)
+                    drawPointOP2(it.source)
+                    drawPointOP2(it.target)
+                }
+            }
+            is CircleArcS2 -> {
+                if (style != null) style.set(this)
+                else {
+                    stroke(0.0f, 0.0f, 255.0f)
+                }
+                drawCircleArcS2(it)
+                if (style == null) {
+                    noStroke()
+                    fill(255.0f, 0.0f, 125.0f)
+                    drawPointE3(it.source.directionE3.endPoint)
+                    drawPointE3(it.target.directionE3.endPoint)
+                }
+            }
+            is CPlaneS2 -> {
+                if (style != null) style.set(this)
+                else {
+                    stroke(255.0f, 0.0f, 0.0f)
+                }
+                drawCircleS2(it.dualDiskS2)
+            }
+            is DCEL<*, *, *> -> {
+                if (style != null) style.set(this)
+                else {
+                    stroke(0)
+                    fill(255.0f, 255.0f, 255.0f)
+                }
+                drawDCEL(it)
+            }
+            else -> {}
         }
     }
 

@@ -2,6 +2,7 @@ package geometry.construction
 
 import geometry.primitives.Euclidean3.VectorE3
 import geometry.primitives.Spherical2.*
+import geometry.primitives.OrientedProjective3.LineOP3
 import java.awt.Point
 
 /**
@@ -61,46 +62,63 @@ class TwoPointsToCoaxialFamilyS2() : IAlgorithm<CoaxialFamilyS2> {
 
 class TwoDisksIntersectionPoint() : IAlgorithm<List<PointS2>> {
     override fun run(node: ConstructionNode<List<PointS2>>): List<PointS2> {
-        if (node.incoming.size != 2) {
+        if (node.incoming.size < 2) {
             throw InvalidConstructionParametersException("TwoDisksIntersectionPoint expects two DiskS2s. ${node.incoming.size} given.")
         }
 
         val disk1 = node.incoming[0].getOutput() as DiskS2
         val disk2 = node.incoming[1].getOutput() as DiskS2
 
-        val disk1Normal = VectorE3(disk1.a, disk1.b, disk1.c)
-        val disk2Normal = VectorE3(disk2.a, disk2.b, disk2.c)
-        val intersectionNormal = disk1Normal.cross(disk2Normal)
-        val point = pointOnPlanes(disk1, disk2)
-
-        val tValues = solveForTValues(intersectionNormal, point)
-
-        val point1 = PointS2(point.x + tValues[0]*intersectionNormal.x, point.y + tValues[0]*intersectionNormal.y,
-                             point.z + tValues[0]*intersectionNormal.z)
-
-
-        val point2 = PointS2(point.x + tValues[1]*intersectionNormal.x, point.y + tValues[1]*intersectionNormal.y,
-                point.z + tValues[1]*intersectionNormal.z)
-
-        var list = listOf<PointS2>(point1, point2)
-
-        return list
+        //disk1.dualPlaneOP3
+        //disk2.dualPlaneOP3
+        var isectPoints = LineOP3(disk1.dualPlaneOP3, disk2.dualPlaneOP3).getIntersectionWithUnit2Sphere().map {
+            p -> PointS2(p.toVectorE3())
+        }
+        return isectPoints
+//        val disk1Normal = VectorE3(disk1.a, disk1.b, disk1.c)
+//        System.out.println("disk1Norm " + disk1Normal.x + " " + disk1Normal.y  + " " + disk1Normal.z)
+//        val disk2Normal = VectorE3(disk2.a, disk2.b, disk2.c)
+//        System.out.println("disk2Norm " + disk2Normal.x + " " + disk2Normal.y  + " " + disk2Normal.z)
+//        val intersectionNormal = disk1Normal.cross(disk2Normal)
+//        System.out.println("intersectNorm " + intersectionNormal.x + " " + intersectionNormal.y + " " + intersectionNormal.z)
+//        val point = pointOnPlanes(disk1, disk2)
+//        System.out.println("point " + point.x + " " + point.y + " " + point.z)
+//
+//        val tValues = solveForTValues(intersectionNormal, point)
+//
+//        val point1 = PointS2(point.x + tValues[0]*intersectionNormal.x, point.y + tValues[0]*intersectionNormal.y,
+//                             point.z + tValues[0]*intersectionNormal.z)
+//
+//
+//        val point2 = PointS2(point.x + tValues[1]*intersectionNormal.x, point.y + tValues[1]*intersectionNormal.y,
+//                point.z + tValues[1]*intersectionNormal.z)
+//
+//        var list = listOf<PointS2>(point1, point2)
+//        return list
 
 
     }
 
     fun solveForTValues(intersectionNormal : VectorE3, point : PointS2) : MutableList<Double>{
         val bCoefficient = (2*point.x*intersectionNormal.x + 2*point.y*intersectionNormal.y + 2*point.z*intersectionNormal.z)
+        System.out.println("b " + bCoefficient)
         val aCoefficient = intersectionNormal.x*intersectionNormal.x + intersectionNormal.y*intersectionNormal.y +
                 intersectionNormal.z*intersectionNormal.z
+        System.out.println("a " + aCoefficient)
         val cCoefficient = point.x*point.x + point.y*point.y + point.z*point.z - 1
+        System.out.println("c " + cCoefficient)
         val denom = 2*aCoefficient
+        System.out.println("denom " + denom)
 
         var t1Numerator = -bCoefficient + Math.sqrt(Math.pow(bCoefficient,2.0) - 4*aCoefficient*cCoefficient)
+        System.out.println("t1Num " + t1Numerator )
         var t1 = t1Numerator/denom
+        System.out.println("t1 " + t1)
 
         var t2Numerator = -bCoefficient - Math.sqrt(Math.pow(bCoefficient,2.0) - 4*aCoefficient*cCoefficient)
+        System.out.println("t2Num " + t2Numerator )
         var t2 = t2Numerator/denom
+        System.out.println("t2 " + t2)
 
         var list = mutableListOf<Double>()
         list.add(t1)

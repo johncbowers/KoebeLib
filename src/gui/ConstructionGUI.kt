@@ -25,6 +25,7 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
     val pointButton : JButton
     val circleButton : JButton
     val selectionButton : JButton
+    val intersectButton : JButton
 
     init {
         // Build the GUI:
@@ -42,11 +43,13 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
         pointButton = JButton("point")
         circleButton = JButton("circle")
         selectionButton = JButton("Select")
+        intersectButton = JButton("Intersection")
 
         buttonFlowPanel.add(arcballButton)
         buttonFlowPanel.add(pointButton)
         buttonFlowPanel.add(circleButton)
         buttonFlowPanel.add(selectionButton)
+        buttonFlowPanel.add(intersectButton)
 
         buttonPanel.add(buttonFlowPanel, BorderLayout.WEST)
         this.contentPane.add(buttonPanel, BorderLayout.PAGE_START)
@@ -65,6 +68,10 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
 
         selectionButton.addActionListener {
             sketch.currentTool = SelectionTool(sketch)
+        }
+
+        intersectButton.addActionListener {
+            sketch.currentTool = IntersectionTool(sketch)
         }
     }
 
