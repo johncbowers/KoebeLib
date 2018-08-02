@@ -270,6 +270,29 @@ fun isInterior(vert : DCEL<PointE2, Unit, Unit>.Vertex, dcel : DCEL<PointE2, Uni
     return true
 }
 
+fun printGraph (graph : DCELH<Unit, Unit, Unit>) {
+    /*val vertMap = mutableMapOf<DCELH<Unit, Unit, Unit>.Vertex, Int>()
+    for (k in 0..graph.verts.lastIndex) {
+        vertMap.put(graph.verts[k], k)
+    }
+    val dartMap = mutableMapOf<DCELH<Unit, Unit, Unit>.Dart, Int>()
+    for (k in 0..graph.darts.lastIndex) {
+        dartMap.put(graph.darts[k], k)
+    }
+    val faceMap = mutableMapOf<DCELH<Unit, Unit, Unit>.Face, Int>()
+    for (k in 0..graph.faces.lastIndex) {
+        faceMap.put(graph.faces[k], k)
+    }
+    val holeMap = mutableMapOf<DCELH<Unit, Unit, Unit>.Face, Int>()
+    for (k in 0..graph.holes.lastIndex) {
+        holeMap.put(graph.holes[k], k)
+    }
+
+    for (dart in graph.darts) {
+        println ("Dart: " + dartMap[dart] + " Origin: " + vertMap[dart.origin] + " Dest: " + vertMap[dart.dest])
+    }*/
+}
+
 class DCELTransform<VertexData, EdgeData, FaceData> () {
 
     var packing : PackData
@@ -297,28 +320,27 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
             vtoi[graph.verts[i]] = i+1
         }
 
-        println ("Finding Bdry Darts")
+        //println ("Finding Bdry Darts")
         for (dart in graph.darts) {
             if (dart.face == graph.holes[0]) {
                 bdryDarts.add(dart)
             }
         }
-        println ("Done Finding Bdry Darts")
+        //println ("Done Finding Bdry Darts")
 
-        println ("Adding New Darts")
+        //println ("Adding New Darts")
         for (vert in graph.verts) {
             if (!isInterior(vert, graph)) {
-                println("WE HAVE A BDRY VERT")
+                //println("WE HAVE A BDRY VERT")
                 bdryVerts.add(vert)
                 newDarts.add(graph.Dart(origin = newVert))
                 newDarts.add(graph.Dart(origin = vert))
 
                 newDarts[newDarts.size-1].makeTwin(newDarts[newDarts.size-2])
 
-                newFaces.add(graph.Face(data = Unit))
             }
         }
-        println ("Done Adding New Darts")
+        //println ("Done Adding New Darts")
 
         graph.verts.add(newVert)
 
@@ -342,6 +364,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
                 }
 
                 if (count == 2) {
+                    newFaces.add(graph.Face(data = Unit))
                     count = 0
                     nextDart.makeNext(prevDart)
                     bdryDart.face = newFaces[0]
@@ -352,7 +375,6 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
                 }
             }
         }
-        //println("Faces Left: " + newFaces.size)
 
 
     }
@@ -392,7 +414,17 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
 
         val triangulation = Triangulation<VertexData, EdgeData, FaceData>()
         val tileFactory = TileFactory<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>()
+
+        /*for (dart in graph.darts) {
+            if (graph.darts.indexOf(dart.next) == -1) {
+                println ("Err0r: " + graph.darts.indexOf(dart))
+            }
+        }*/
+
         val unitGraph = tileFactory.copyUnitTile(graph)
+
+        printGraph(unitGraph)
+
         triangulation.triangulateDCEL(unitGraph)
 
         this.makeSphere(unitGraph)
@@ -419,6 +451,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
             comb.Face( data = Unit )
         }
 
+
         val edge = comb.Edge(data = Unit)
         // Set Half Edges
         for (k in 0..graph.darts.size-1) {
@@ -428,6 +461,11 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
                 comb.Dart(origin = comb.verts[graph.verts.indexOf(graph.darts[k].origin)],
                         face = comb.holes[0])
             } else {
+                if (graph.faces.indexOf(graph.darts[k].face) == -1) {
+                    println("Err0r: " + k)
+                    println()
+                }
+
                 comb.Dart(origin = comb.verts[graph.verts.indexOf(graph.darts[k].origin)],
                         face = comb.faces[graph.faces.indexOf(graph.darts[k].face)])
             }
@@ -550,16 +588,16 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
     fun isInterior(vert : DCELH<Unit, Unit, Unit>.Vertex, dcel : DCELH<Unit, Unit, Unit>) : Boolean {
 
         //println ("Starting In Darts")
-        var inDarts = vert.inDarts()
+        //var inDarts = vert.inDarts()
         //println ("Starting Out Darts")
         var outDarts = vert.outDarts()
 
         //println ("Starting In Darts")
-        for (dart in inDarts) {
+        /*for (dart in inDarts) {
             if (dart.face == dcel.holes[0]) {
                 return false
             }
-        }
+        }*/
         //println ("Done With End Darts")
 
         //println ("Starting Out Darts")
@@ -585,7 +623,7 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         }
 
         var a = out.toTypedArray()
-        println()
+        //println()
         return out.toTypedArray()
     }
 

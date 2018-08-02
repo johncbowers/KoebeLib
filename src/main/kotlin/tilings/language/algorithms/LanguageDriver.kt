@@ -96,6 +96,30 @@ class LanguageDriver (num : Int) {
                 "    \n" +
                 "tile( rect , " + num + " );"*/
 
+        /*val file = "TILETYPE sponge {4, 4};\n" +
+                "SUBDIVISION sponge\n" +
+                "    {\n" +
+                "\n" +
+                "        VERTEX a, b = split(sponge.vertex[0], sponge.vertex[1], 3);\n" +
+                "        VERTEX c, d = split(sponge.vertex[1], sponge.vertex[2], 3);\n" +
+                "        VERTEX e, f = split(sponge.vertex[2], sponge.vertex[3], 3);\n" +
+                "        VERTEX g, h = split(sponge.vertex[3], sponge.vertex[0], 3);\n" +
+                "        VERTEX i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z;\n" +
+                "        VERTEX aa, bb, cc, dd, ee, ff, gg, hh, ii, jj, kk, ll, mm, nn;\n" +
+                "\n" +
+                "        CHILD c1 = sponge([sponge.vertex[0], a, sponge.vertex[4], h] [i, l, k, j]);\n" +
+                "        CHILD c2 = sponge([a, b, sponge.vertex[7], sponge.vertex[4]] [m, p, o, n]);\n" +
+                "        CHILD c3 = sponge([b, sponge.vertex[1], c, sponge.vertex[7]] [q, t, s, r]);\n" +
+                "        CHILD c4 = sponge([sponge.vertex[7], c, d, sponge.vertex[6]] [u, x, w, v]);\n" +
+                "        CHILD c5 = sponge([sponge.vertex[6], d, sponge.vertex[2], e] [y, bb, aa, z]);\n" +
+                "        CHILD c6 = sponge([sponge.vertex[5], sponge.vertex[6], e, f] [cc, ff, ee, dd]);\n" +
+                "        CHILD c7 = sponge([g, sponge.vertex[5], f, sponge.vertex[3]] [gg, jj, ii, hh]);\n" +
+                "        CHILD c8 = sponge([h, sponge.vertex[4], sponge.vertex[5], g] [kk, nn, mm, ll]);\n" +
+                "\n" +
+                "    };\n" +
+                "\n" +
+                "tile( spong , \" + num + \" ););"*/
+
         val lexer = EscherLexer(ANTLRInputStream(file))
         val tokens = CommonTokenStream(lexer)
         val parser = EscherParser(tokens)

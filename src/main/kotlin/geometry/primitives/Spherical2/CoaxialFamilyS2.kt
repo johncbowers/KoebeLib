@@ -62,5 +62,29 @@ class CoaxialFamilyS2(
                 else LineOP3(source.dualPointOP3, target.dualPointOP3)
         line.getIntersectionWithUnit2Sphere().map { p -> PointS2(p.toVectorE3()) }
     }
+
+    fun diskThroughPointS2(pt: PointS2): DiskS2 {
+
+        val a1 = source.a
+        val b1 = source.b
+        val c1 = source.c
+        val d1 = source.d
+
+        val a2 = target.a
+        val b2 = target.b
+        val c2 = target.c
+        val d2 = target.d
+
+        val x = pt.directionE3.v.x
+        val y = pt.directionE3.v.y
+        val z = pt.directionE3.v.z
+
+        return DiskS2(
+                a2 * (d1 + b1 * y + c1 * z) - a1 * (d2 + b2 * y + c2 * z),
+                b2 * (d1 + a1 * x + c1 * z) - b1 * (d2 + a2 * x + c2 * z),
+                c2 * (d1 + a1 * x + b1 * y) - c1 * (d2 + a2 * x + b2 * y),
+                -a2 * d1 * x + d2 * (a1 * x + b1 * y + c1 * z) - d1 * (b2 * y + c2 * z)
+        )
+    }
 }
 
