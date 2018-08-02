@@ -9,4 +9,5 @@ gradle.ext.drivers = [
     "SphericalSketch": "sketches.SphericalSketchKt",
     "ConstructionSketch": "sketches.ConstructionSketchKt",
     "TileView": "tilings.applications.TileViewKt",
+    "TileSketch": "tilings.language.gui.TileSketchKt",
 ]
