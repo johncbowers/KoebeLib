@@ -186,16 +186,12 @@ class IntersectionTool(val sketch : ConstructionSketch ) : MouseTool() {
         return false;
     }
 
-    fun diskIntersection(disk1 : DiskS2, disk2 : DiskS2) : Boolean {
-        //TODO: calculate the intersection of two points
-        return false;
-    }
 
     override fun mousePressed(mouseX: Int, mouseY: Int) {
         super.mousePressed(mouseX, mouseY)
         var cursor = transform(mouseX, mouseY)
-        //var selectedNode: Any? = null
-        if(cursor!= null) {
+
+        if(cursor != null) {
             for(node in sketch.construction.nodes) {
                 var output = node.getOutput()
                 if (output is DiskS2) {
@@ -219,9 +215,7 @@ class IntersectionTool(val sketch : ConstructionSketch ) : MouseTool() {
         if(selectedDisks.size >= 2) {
             var obj1 = selectedDisks[0]
             var obj2 = selectedDisks[1]
-            //if(diskIntersection(obj1.getOutput(), obj2.getOutput())) {
-                sketch.construction.makeIntersectionPoint(obj1, obj2)
-            //}
+            sketch.construction.makeIntersectionPoint(obj1, obj2)
         }
     }
     override fun mouseDragged(mouseX: Int, mouseY: Int) {
@@ -314,10 +308,22 @@ class SelectionTool(val sketch : ConstructionSketch) : MouseTool() {
     }
 
 
-    //TODO: need to get minimum distance and then set node also add a feature to select multiple things
     override fun mouseClicked(mouseX: Int, mouseY: Int) {
+
+    }
+
+    override fun mouseMoved(mouseX: Int, mouseY: Int) {
+        super.mouseMoved(mouseX, mouseY)
+    }
+
+    override fun mouseDragged(mouseX: Int, mouseY: Int) {
+
+    }
+
+    //TODO: need to get minimum distance and then set node also add a feature to select multiple things
+    override fun mousePressed(mouseX: Int, mouseY: Int) {
         var cursor = transform(mouseX, mouseY)
-        //var selectedNode: Any? = null
+
         if(cursor!= null) {
             for(node in sketch.construction.nodes) {
                 var output = node.getOutput()
@@ -342,19 +348,6 @@ class SelectionTool(val sketch : ConstructionSketch) : MouseTool() {
                 }
             }
         }
-        //(selectedNode as INode<*>).style = Style()
-    }
-
-    override fun mouseMoved(mouseX: Int, mouseY: Int) {
-        super.mouseMoved(mouseX, mouseY)
-    }
-
-    override fun mouseDragged(mouseX: Int, mouseY: Int) {
-
-    }
-
-    override fun mousePressed(mouseX: Int, mouseY: Int) {
-        super.mousePressed(mouseX, mouseY)
     }
 
     override fun mouseReleased(mouseX: Int, mouseY: Int) {
@@ -423,7 +416,7 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
                 if (node != null) {
                     var output = node.getOutput()
                     if (output is PointS2) {
-                        //should change this so its the closet found point
+                        //TODO: should change this so its the closet found point
                         if (Math.abs(cursor.x.toFloat() - output.x) <= .1
                                 && Math.abs(cursor.y.toFloat() - output.y) <= .1
                                 && Math.abs(cursor.z.toFloat() - output.z) <= .1) {
@@ -547,12 +540,9 @@ open class PointEditorTool(val sketch: ConstructionSketch) : MouseTool() {
                                 }
                             }
                         }
-
                     }
                 }
             }
-            
-
         }
 
         override fun mouseMoved(mouseX: Int, mouseY: Int) {
@@ -675,39 +665,44 @@ open class CoaxialPointTool(val sketch: ConstructionSketch) : MouseTool() {
 
     override fun mousePressed(mouseX: Int, mouseY: Int) {
         super.mousePressed(mouseX, mouseY)
-        var cursor = transform(mouseX, mouseY)
+        val cursor = transform(mouseX, mouseY)
         if (cursor != null) {
-
+            var minDist = 100.0
             for (node in sketch.construction.nodes) {
                 if (node != null) {
-                    var output = node.getOutput()
-                    if (output is PointS2 && !selectedNodes.isEmpty()) {
-                        //TODO: should change this so its the closet found point
-                        if (Math.abs(cursor.x.toFloat() - output.x) <= .1
-                                && Math.abs(cursor.y.toFloat() - output.y) <= .1
-                                && Math.abs(cursor.z.toFloat() - output.z) <= .1) {
-
+                    val output = node.getOutput()
+                    if (output is PointS2) {
+                        val dist = Math.sqrt(Math.pow(output.x - cursor.x, 2.0) + Math.pow(output.y - cursor.y, 2.0)
+                                + Math.pow(output.z - cursor.z, 2.0))
+                        if (dist < minDist) {
+                            minDist = dist
                             selectedNode = node
-                            node.style = Style(Color(255.0.toFloat(), 0.0f, 0.0f), Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()))
-                            break
                         }
                     }
                     if (output is DiskS2) {
-                        var a = output.a
-                        var b = output.b
-                        var c = output.c
-                        var d = output.d
-                        if(isIntersection(mouseX, mouseY, a, b, c, d)) {selectedNode = node
-                            selectedNode = node
-                            node.style = Style(Color(200.0.toFloat(), 0.0f, 0.0f), Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()))
+                        val a = output.a
+                        val b = output.b
+                        val c = output.c
+                        val d = output.d
+                        if(isIntersection(mouseX, mouseY, a, b, c, d)) {
+                            val center = output.centerE3
+                            val radius = output.radiusE3
+                            val diskDist = Math.sqrt(Math.pow(center.x - cursor.x, 2.0) + Math.pow(center.y - cursor.y, 2.0)
+                                                     + Math.pow(center.z - cursor.z, 2.0)) - radius
+                            if (diskDist < minDist) {
+                                minDist = diskDist
+                                selectedNode = node
+                            }
                         }
                     }
-
                 }
             }
-        }
 
-        selectedNodes.add(selectedNode as INode<*>)
+            selectedNode?.style = Style(Color(200.0.toFloat(), 0.0f, 0.0f), Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()))
+            if(!selectedNodes.contains(selectedNode)) {
+                selectedNodes.add(selectedNode as INode<*>)
+            }
+        }
     }
 
     override fun mouseReleased(mouseX: Int, mouseY: Int) {
@@ -718,8 +713,8 @@ open class CoaxialPointTool(val sketch: ConstructionSketch) : MouseTool() {
             var obj3 = selectedNodes[2]
 
             @Suppress("UNCHECKED_CAST")
-            var node = sketch.construction.makeDiskS2( obj1 as INode<PointS2>,
-                    obj2 as INode<PointS2>,
+            var node = sketch.construction.makeCoaxialDisk( obj1 as INode<DiskS2>,
+                    obj2 as INode<DiskS2>,
                     obj3 as INode<PointS2>)
 
         }

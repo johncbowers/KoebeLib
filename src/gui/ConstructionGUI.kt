@@ -26,6 +26,7 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
     val circleButton : JButton
     val selectionButton : JButton
     val intersectButton : JButton
+    val disksPointCoaxialDisk: JButton
 
     init {
         // Build the GUI:
@@ -44,12 +45,14 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
         circleButton = JButton("circle")
         selectionButton = JButton("Select")
         intersectButton = JButton("Intersection")
+        disksPointCoaxialDisk = JButton("CoaxialFamilyDisk")
 
         buttonFlowPanel.add(arcballButton)
         buttonFlowPanel.add(pointButton)
         buttonFlowPanel.add(circleButton)
         buttonFlowPanel.add(selectionButton)
         buttonFlowPanel.add(intersectButton)
+        buttonFlowPanel.add(disksPointCoaxialDisk)
 
         buttonPanel.add(buttonFlowPanel, BorderLayout.WEST)
         this.contentPane.add(buttonPanel, BorderLayout.PAGE_START)
@@ -72,6 +75,10 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
 
         intersectButton.addActionListener {
             sketch.currentTool = IntersectionTool(sketch)
+        }
+
+        disksPointCoaxialDisk.addActionListener {
+            sketch.currentTool = CoaxialPointTool(sketch)
         }
     }
 
