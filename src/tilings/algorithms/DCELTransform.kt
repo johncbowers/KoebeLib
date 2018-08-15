@@ -408,12 +408,12 @@ class DCELTransform<VertexData, EdgeData, FaceData> () {
         return kens
     }*/
 
-    fun toSphericalRepresentation (graph: DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>)
+    fun toSphericalRepresentation (graph: DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>)
             : DCELH<DiskS2, Unit, Unit> {
         //TODO
 
         val triangulation = Triangulation<VertexData, EdgeData, FaceData>()
-        val tileFactory = TileFactory<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>()
+        val tileFactory = TileFactory<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>()
 
         /*for (dart in graph.darts) {
             if (graph.darts.indexOf(dart.next) == -1) {

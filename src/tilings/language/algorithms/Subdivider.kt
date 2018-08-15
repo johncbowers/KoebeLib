@@ -1,26 +1,29 @@
 package tilings.language.algorithms
 
-import geometry.ds.dcel.DCEL
 import geometry.ds.dcel.DCELH
-import tilings.ds.EdgeData
-import tilings.ds.FaceData
+import tilings.ds.TilingVertex
+import tilings.ds.TilingEdge
+import tilings.ds.TilingFace
 import tilings.ds.TreeNode
-import tilings.ds.VertexData
 import tilings.language.ds.EscherProgramNew
 import tilings.language.ds.Subdivision
 
-class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData, FaceData>, iter : Int) {
+typealias TVert = TilingVertex
+typealias TEdge = TilingEdge
+typealias TFace = TilingFace
+
+class Subdivider (program: EscherProgramNew, graph : DCELH<TVert, TEdge, TFace>, iter : Int) {
 
     val program : EscherProgramNew
-    val graph : DCELH<VertexData, EdgeData, FaceData>
+    val graph : DCELH<TVert, TEdge, TFace>
     val iter : Int
     var currentIteration : Int
 
-    val splitMap : MutableMap<Pair<DCELH<VertexData, EdgeData, FaceData>.Vertex, DCELH<VertexData, EdgeData, FaceData>.Vertex>,
-            ArrayList<DCELH<VertexData, EdgeData, FaceData>.Vertex>>
-    val destination : MutableMap<DCELH<VertexData, EdgeData, FaceData>.Dart, DCELH<VertexData, EdgeData, FaceData>.Vertex>
-    val lonelyDarts : ArrayList<DCELH<VertexData, EdgeData, FaceData>.Dart>
-    val oldFaces : ArrayList<DCELH<VertexData, EdgeData, FaceData>.Face>
+    val splitMap : MutableMap<Pair<DCELH<TVert, TEdge, TFace>.Vertex, DCELH<TVert, TEdge, TFace>.Vertex>,
+            ArrayList<DCELH<TVert, TEdge, TFace>.Vertex>>
+    val destination : MutableMap<DCELH<TVert, TEdge, TFace>.Dart, DCELH<TVert, TEdge, TFace>.Vertex>
+    val lonelyDarts : ArrayList<DCELH<TVert, TEdge, TFace>.Dart>
+    val oldFaces : ArrayList<DCELH<TVert, TEdge, TFace>.Face>
 
     init {
         this.program = program
@@ -54,12 +57,12 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
         //println()
     }
 
-    private fun checkSplit (split : Triple<Int, Int, Int>, face : DCELH<VertexData, EdgeData, FaceData>.Face) :
-        ArrayList<DCELH<VertexData, EdgeData, FaceData>.Vertex> {
+    private fun checkSplit (split : Triple<Int, Int, Int>, face : DCELH<TVert, TEdge, TFace>.Face) :
+        ArrayList<DCELH<TVert, TEdge, TFace>.Vertex> {
         val source = findVertex(split.first, face)
         val goal = findVertex(split.second, face)
 
-        val splitVerts = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Vertex>()
+        val splitVerts = ArrayList<DCELH<TVert, TEdge, TFace>.Vertex>()
 
         if (splitMap.containsKey(Pair(source, goal))) {
             return splitMap[Pair(source, goal)]!!
@@ -73,7 +76,7 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
 
 
         for (k in 2..split.third) {
-            splitVerts.add(graph.Vertex(data = VertexData()))
+            splitVerts.add(graph.Vertex(data = TVert()))
             splitVerts[splitVerts.lastIndex].data.level = currentIteration
         }
 
@@ -82,9 +85,9 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
 
     }
 
-    private fun findDart (orig : DCELH<VertexData, EdgeData, FaceData>.Vertex, startDart : DCELH<VertexData, EdgeData, FaceData>.Dart)
-            : DCELH<VertexData, EdgeData, FaceData>.Dart? {
-        val retOptions = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Dart>()
+    private fun findDart (orig : DCELH<TVert, TEdge, TFace>.Vertex, startDart : DCELH<TVert, TEdge, TFace>.Dart)
+            : DCELH<TVert, TEdge, TFace>.Dart? {
+        val retOptions = ArrayList<DCELH<TVert, TEdge, TFace>.Dart>()
         for (dart in graph.darts) {
             if (destination[dart] == orig) {
                 retOptions.add(dart)
@@ -104,8 +107,8 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
         return retOptions[0]
     }
 
-    private fun findVertex (idx : Int, face : DCELH<VertexData, EdgeData, FaceData>.Face)
-            : DCELH<VertexData, EdgeData, FaceData>.Vertex? {
+    private fun findVertex (idx : Int, face : DCELH<TVert, TEdge, TFace>.Face)
+            : DCELH<TVert, TEdge, TFace>.Vertex? {
 
         val darts = face.darts()
         var count = 0
@@ -125,7 +128,7 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
     }
 
     private fun fixHoles () {
-        val holeDarts = mutableMapOf<DCELH<VertexData, EdgeData, FaceData>.Face, ArrayList<DCELH<VertexData, EdgeData, FaceData>.Dart>>()
+        val holeDarts = mutableMapOf<DCELH<TVert, TEdge, TFace>.Face, ArrayList<DCELH<TVert, TEdge, TFace>.Dart>>()
 
         for (dart in graph.darts) {
             if (graph.holes.contains(dart.face) && dart.face != graph.holes[0]) {
@@ -161,19 +164,19 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
         }
     }
 
-    private fun makeChild (subdivision: Subdivision, childFace : ArrayList<DCELH<VertexData, EdgeData, FaceData>.Face>,
-                           oldDarts : List<DCELH<VertexData, EdgeData, FaceData>.Dart>,
-                           newVerts : ArrayList<DCELH<VertexData, EdgeData, FaceData>.Vertex>) {
-        var childVerts = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Vertex>()
-        var childDarts = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Dart>()
-        var holeFaces = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Face>()
-        val holeDarts = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Dart>()
-        var faceDart : DCELH<VertexData, EdgeData, FaceData>.Dart
+    private fun makeChild (subdivision: Subdivision, childFace : ArrayList<DCELH<TVert, TEdge, TFace>.Face>,
+                           oldDarts : List<DCELH<TVert, TEdge, TFace>.Dart>,
+                           newVerts : ArrayList<DCELH<TVert, TEdge, TFace>.Vertex>) {
+        var childVerts = ArrayList<DCELH<TVert, TEdge, TFace>.Vertex>()
+        var childDarts = ArrayList<DCELH<TVert, TEdge, TFace>.Dart>()
+        var holeFaces = ArrayList<DCELH<TVert, TEdge, TFace>.Face>()
+        val holeDarts = ArrayList<DCELH<TVert, TEdge, TFace>.Dart>()
+        var faceDart : DCELH<TVert, TEdge, TFace>.Dart
         for (j  in 0..subdivision.children.size-1) {
 
             if (subdivision.children[j].second.size > 1) {
                 for (k in 1..subdivision.children[j].second.lastIndex) {
-                    holeFaces.add(graph.Face(data = FaceData()))
+                    holeFaces.add(graph.Face(data = TFace()))
                     graph.holes.add(holeFaces[k-1])
                     //TODO add information to data
                 }
@@ -273,8 +276,8 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
 
     private fun pairLonelyDarts () {
 
-        val lonlierDarts = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Dart>()
-        val vertMap = mutableMapOf<DCELH<VertexData, EdgeData, FaceData>.Vertex, Int>()
+        val lonlierDarts = ArrayList<DCELH<TVert, TEdge, TFace>.Dart>()
+        val vertMap = mutableMapOf<DCELH<TVert, TEdge, TFace>.Vertex, Int>()
         var i = 0
         for (vert in graph.verts) {
             vertMap.put(vert, i)
@@ -314,8 +317,8 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
 
         // Pair the lonelier darts and set their orderings
         // A lonlier dart has a twin that is either on the outer edge or a hole
-        //val outsideDarts = mutableMapOf<DCELH<VertexData, EdgeData, FaceData>.Face, ArrayList<DCELH<VertexData, EdgeData, FaceData>.Dart>>()
-        val outsideDarts = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Dart>()
+        //val outsideDarts = mutableMapOf<DCELH<TVert, TEdge, TFace>.Face, ArrayList<DCELH<TVert, TEdge, TFace>.Dart>>()
+        val outsideDarts = ArrayList<DCELH<TVert, TEdge, TFace>.Dart>()
         for (dart in lonlierDarts) {
             outsideDarts.add(graph.Dart(origin = destination[dart], face = graph.holes[0]))
             destination.put(outsideDarts[outsideDarts.lastIndex], dart.origin!!)
@@ -361,10 +364,10 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
 
     }
 
-    private fun splitHoles (holeFace : DCELH<VertexData, EdgeData, FaceData>.Face) {
+    private fun splitHoles (holeFace : DCELH<TVert, TEdge, TFace>.Face) {
 
-        var splitVerts : ArrayList<DCELH<VertexData, EdgeData, FaceData>.Vertex>?
-        var currDart : DCELH<VertexData, EdgeData, FaceData>.Dart
+        var splitVerts : ArrayList<DCELH<TVert, TEdge, TFace>.Vertex>?
+        var currDart : DCELH<TVert, TEdge, TFace>.Dart
         var done = false
         for (dart in holeFace.darts()[0]) {
             splitVerts = splitMap[Pair(dart.origin, destination[dart])]
@@ -396,12 +399,12 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
         }
     }
 
-    private fun subdivideFace (face : DCELH<VertexData, EdgeData, FaceData>.Face) {
+    private fun subdivideFace (face : DCELH<TVert, TEdge, TFace>.Face) {
         val subdivision = program.subdivisions[face.data.tileType]
         val darts = face.darts()[0]
 
-        val newVerts = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Vertex>()
-        val childFaces = ArrayList<DCELH<VertexData, EdgeData, FaceData>.Face>()
+        val newVerts = ArrayList<DCELH<TVert, TEdge, TFace>.Vertex>()
+        val childFaces = ArrayList<DCELH<TVert, TEdge, TFace>.Face>()
 
 
         // Adding Vertices
@@ -411,13 +414,13 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
 
         for (k in subdivision.splitVerts..subdivision.vertices.size-1) {
             //println (k)
-            newVerts.add(graph.Vertex(data = VertexData()))
+            newVerts.add(graph.Vertex(data = TVert()))
             newVerts[newVerts.lastIndex].data.level = currentIteration
         }
 
         //Adding Faces
         for (child in subdivision.children) {
-            childFaces.add(graph.Face(data = FaceData()))
+            childFaces.add(graph.Face(data = TFace()))
             childFaces[childFaces.lastIndex].data.tileType = child.first
             childFaces[childFaces.lastIndex].data.node = TreeNode(childFaces[childFaces.lastIndex], face.data.node)
             face.data.node!!.children.add(childFaces[childFaces.lastIndex].data.node!!)
@@ -429,7 +432,7 @@ class Subdivider (program: EscherProgramNew, graph : DCELH<VertexData, EdgeData,
             splitHoles(dart.twin!!.face!!)
         }
 
-        val vertMap = mutableMapOf<DCELH<VertexData, EdgeData, FaceData>.Vertex, Int>()
+        val vertMap = mutableMapOf<DCELH<TVert, TEdge, TFace>.Vertex, Int>()
         var i = 0
         for (vert in graph.verts) {
             vertMap.put(vert, i)

@@ -8,9 +8,9 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import tilings.algorithms.DCELTransform
 import tilings.algorithms.Triangulation
-import tilings.ds.EdgeData
-import tilings.ds.FaceData
-import tilings.ds.VertexData
+import tilings.ds.TilingVertex
+import tilings.ds.TilingEdge
+import tilings.ds.TilingFace
 import tilings.language.ds.MyEscherListener
 import tilings.language.grammar.EscherLexer
 import tilings.language.grammar.EscherParser
@@ -40,7 +40,7 @@ class EscherDriver () {
 
         // Run Program
         val graph = listener.program.mainGraph
-        val tileFact = TileFactory<VertexData, EdgeData, FaceData>()
+        val tileFact = TileFactory<TilingVertex, TilingEdge, TilingFace>()
         val triangulation = Triangulation<Unit, Unit, String>()
         val dt = DCELTransform<Unit, Unit, String>()
         val cp = CirclePackH()
@@ -51,9 +51,11 @@ class EscherDriver () {
         //triangulation.triangulateDCEL(unitGraph)
 
         val combinatorics = dt.toSphericalRepresentation(graph)
+        println("Completed tiling. Packing...")
         cp.pack(combinatorics)
+        println("Packing completed. Projecting to plane...")
         planar = tileFact.copyDiskToPlane(combinatorics)
-
+        println("Done.")
 
         // Output Files
 
@@ -102,7 +104,7 @@ fun main(args: Array<String>) {
 
     // Run Program
     val graph = listener.program.mainGraph
-    val tileFact = TileFactory<VertexData, EdgeData, FaceData>()
+    val tileFact = TileFactory<TilingVertex, TilingEdge, TilingFace>()
     val triangulation = Triangulation<Unit, Unit, String>()
     val dt = DCELTransform<Unit, Unit, String>()
     val cp = CirclePackH()

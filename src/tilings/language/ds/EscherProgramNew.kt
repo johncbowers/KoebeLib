@@ -1,32 +1,20 @@
 package tilings.language.ds
 
-import geometry.ds.dcel.DCEL
 import geometry.ds.dcel.DCELH
-import tilings.ds.EdgeData
-import tilings.ds.FaceData
+import tilings.ds.TilingVertex
+import tilings.ds.TilingFace
+import tilings.ds.TilingEdge
 import tilings.ds.TreeNode
-import tilings.ds.VertexData
 import tilings.language.algorithms.Subdivider
 import tilings.language.algorithms.TileFactory
 
 class EscherProgramNew () {
 
-    val protoTiles : MutableMap<String, DCELH<VertexData, EdgeData, FaceData>>
-    val subdivisions : MutableMap<String, Subdivision>
-    val tileFactory : TileFactory<VertexData, EdgeData, FaceData>
-    val graphs : MutableMap<String, DCELH<VertexData, EdgeData, FaceData>>
-    var mainGraph : DCELH<VertexData, EdgeData, FaceData>
-
-
-    init {
-        protoTiles = mutableMapOf()
-        subdivisions = mutableMapOf()
-        tileFactory = TileFactory()
-        graphs = mutableMapOf()
-        mainGraph = DCELH()
-
-        //destinations = mutableMapOf()
-    }
+    val protoTiles = mutableMapOf<String, DCELH<TilingVertex, TilingEdge, TilingFace>>()
+    val subdivisions = mutableMapOf<String, Subdivision>()
+    val tileFactory = TileFactory<TilingVertex, TilingEdge, TilingFace>()
+    val graphs = mutableMapOf<String, DCELH<TilingVertex, TilingEdge, TilingFace>>()
+    var mainGraph = DCELH<TilingVertex, TilingEdge, TilingFace>()
 
     fun addChild (subName: String, childType : String, vertices : ArrayList<ArrayList<String>> ) {
         subdivisions[subName]?.addChild(childType, vertices)
