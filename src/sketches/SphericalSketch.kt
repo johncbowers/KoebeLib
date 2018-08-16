@@ -46,6 +46,8 @@ class Style(
         if (fill != null && fill != Color.noColor) p.fill(fill.x, fill.y, fill.z, fill.a)
         else if (fill == Color.noColor) p.noFill()
     }
+
+    var drawVertices = true
 }
 
 open class SphericalSketch : PApplet() {
