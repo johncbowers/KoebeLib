@@ -2,17 +2,17 @@ package tilings.ds
 
 import geometry.ds.dcel.DCELH
 
-class EscherTile (graph : DCELH<VertexData, EdgeData, FaceData>) {
+class EscherTile (graph : DCELH<TilingVertex, TilingEdge, TilingFace>) {
 
-    val graph : DCELH<VertexData, EdgeData, FaceData>
+    val graph : DCELH<TilingVertex, TilingEdge, TilingFace>
 
     init {
         this.graph = graph
     }
 
-    fun collar (face : DCELH<VertexData, EdgeData, FaceData>.Face)
-            : MutableList<DCELH<VertexData, EdgeData, FaceData>.Face> {
-        val returnList = mutableListOf<DCELH<VertexData, EdgeData, FaceData>.Face>()
+    fun collar (face : DCELH<TilingVertex, TilingEdge, TilingFace>.Face)
+            : MutableList<DCELH<TilingVertex, TilingEdge, TilingFace>.Face> {
+        val returnList = mutableListOf<DCELH<TilingVertex, TilingEdge, TilingFace>.Face>()
 
         for (dart in face.darts()[0]) {
             val vertex = dart.origin
@@ -29,8 +29,8 @@ class EscherTile (graph : DCELH<VertexData, EdgeData, FaceData>) {
 
     }
 
-    fun superTile (face : DCELH<VertexData, EdgeData, FaceData>.Face, steps : Int)
-            : DCELH<VertexData, EdgeData, FaceData>.Face {
+    fun superTile (face : DCELH<TilingVertex, TilingEdge, TilingFace>.Face, steps : Int)
+            : DCELH<TilingVertex, TilingEdge, TilingFace>.Face {
         var currFace = face
         var stepsTaken = 0
         while (currFace.data.node!!.parent != null && stepsTaken < steps) {
@@ -42,8 +42,8 @@ class EscherTile (graph : DCELH<VertexData, EdgeData, FaceData>) {
     }
 
     //TODO Determine if we actually want this function
-    /*private fun dcelFromFace (face : DCEL<VertexData, EdgeData, FaceData>.Face) : DCEL<VertexData, EdgeData, FaceData> {
-        val returnDCEL = DCEL<VertexData, EdgeData, FaceData>()
+    /*private fun dcelFromFace (face : DCEL<TilingVertex, TilingEdge, TilingFace>.Face) : DCEL<TilingVertex, TilingEdge, TilingFace> {
+        val returnDCEL = DCEL<TilingVertex, TilingEdge, TilingFace>()
 
 
 

@@ -1,24 +1,19 @@
 package tilings.language.ds
 
-import allMains.CirclePack
 import geometry.algorithms.CirclePackH
-import org.antlr.runtime.ANTLRInputStream
-import org.antlr.runtime.ANTLRStringStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
-import sun.security.provider.certpath.Vertex
 import tilings.algorithms.DCELTransform
 import tilings.algorithms.Triangulation
-import tilings.ds.EdgeData
-import tilings.ds.FaceData
-import tilings.ds.VertexData
+import tilings.ds.TilingVertex
+import tilings.ds.TilingEdge
+import tilings.ds.TilingFace
 import tilings.language.algorithms.TileFactory
 import tilings.language.grammar.EscherBaseListener
 import tilings.language.grammar.EscherLexer
 import tilings.language.grammar.EscherParser
 import java.io.BufferedWriter
 import java.io.FileWriter
-import java.io.InputStream
 
 class MyEscherListener () : EscherBaseListener() {
 
@@ -248,7 +243,7 @@ fun main(args: Array<String>) {
     walker.walk(listener, fileContext)
 
     val graph = listener.program.mainGraph
-    val tileFact = TileFactory<VertexData, EdgeData, FaceData>()
+    val tileFact = TileFactory<TilingVertex, TilingEdge, TilingFace>()
     val triangulation = Triangulation<Unit, Unit, String>()
     val dt = DCELTransform<Unit, Unit, String>()
     val cp = CirclePackH()

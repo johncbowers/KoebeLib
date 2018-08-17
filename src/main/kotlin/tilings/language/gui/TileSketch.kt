@@ -35,7 +35,7 @@ class TileSketch : SphericalSketch() {
 
     fun getData(points : MutableList<PointE2>, segments : MutableList<SegmentE2>) {
         objects.clear()
-        objects.addAll(points)
+        //objects.addAll(points)
         objects.addAll(segments)
     }
 }

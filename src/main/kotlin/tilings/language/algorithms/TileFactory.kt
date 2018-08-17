@@ -1,12 +1,11 @@
 package tilings.language.algorithms
 
-import geometry.ds.dcel.DCEL
 import geometry.ds.dcel.DCELH
 import geometry.primitives.Euclidean2.PointE2
 import geometry.primitives.Spherical2.DiskS2
-import tilings.ds.EdgeData
-import tilings.ds.FaceData
-import tilings.ds.VertexData
+import tilings.ds.TilingVertex
+import tilings.ds.TilingEdge
+import tilings.ds.TilingFace
 
 class TileFactory<VertexData, EdgeData, FaceData> () {
 
@@ -137,18 +136,18 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
         return copy
     }
 
-    fun copyProtoTile (proto : DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>)
-            : DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData> {
-        val copy = DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>()
+    fun copyProtoTile (proto : DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>)
+            : DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace> {
+        val copy = DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>()
 
         // Set Vertices
         for (k in 0..proto.verts.size-1) {
-            copy.Vertex( data = tilings.ds.VertexData() )
+            copy.Vertex( data = tilings.ds.TilingVertex() )
         }
 
         // Set Faces
         for (k in 0..proto.faces.size-1) {
-            copy.Face( data = FaceData() )
+            copy.Face( data = TilingFace() )
             copy.faces[k].data.tileType = proto.faces[k].data.tileType
             if (proto.holes.contains(proto.faces[k])) {
                 copy.holes.add(copy.faces[k])
@@ -199,18 +198,18 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
     }
 
     fun defineProtoTile (name : String, numVerts : MutableList<Int>)
-            : Pair<String, DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>> {
+            : Pair<String, DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>> {
 
-        val proto = DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>(FaceData())
-        val verts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Vertex>()
-        val darts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Dart>()
-        val face = proto.Face(data = FaceData())
+        val proto = DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>(TilingFace())
+        val verts = ArrayList<DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>.Vertex>()
+        val darts = ArrayList<DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>.Dart>()
+        val face = proto.Face(data = TilingFace())
         face.data.tileType = name
 
 
         //Inner Darts
         for (k in 0..numVerts[0]-1) {
-            verts.add(proto.Vertex(data = VertexData()))
+            verts.add(proto.Vertex(data = TilingVertex()))
             if (k > 0) {
                 darts.add(proto.Dart(origin = verts[verts.size-2], face = face))
                 //darts.add(proto.Dart(origin = verts[verts.size-1], face = proto.holes[0]))
@@ -233,15 +232,15 @@ class TileFactory<VertexData, EdgeData, FaceData> () {
         face.aDart = darts[0]*/
 
         //Add Holes -------------------------------------------------------
-        val holeVerts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Vertex>()
-        val holeDarts = ArrayList<DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Dart>()
-        var holeFace : DCELH<tilings.ds.VertexData, tilings.ds.EdgeData, tilings.ds.FaceData>.Face
+        val holeVerts = ArrayList<DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>.Vertex>()
+        val holeDarts = ArrayList<DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>.Dart>()
+        var holeFace : DCELH<tilings.ds.TilingVertex, tilings.ds.TilingEdge, tilings.ds.TilingFace>.Face
         for (k in 1..numVerts.lastIndex) {
-            holeFace = proto.Face( data = FaceData() )
+            holeFace = proto.Face( data = TilingFace() )
             proto.holes.add(holeFace)
             //Inner Darts
             for (j in 0..numVerts[k]-1) {
-                holeVerts.add(proto.Vertex( data = VertexData() ))
+                holeVerts.add(proto.Vertex( data = TilingVertex() ))
                 if (j > 0) {
                     holeDarts.add(proto.Dart(origin = holeVerts[holeVerts.size-2], face = face))
                 }
