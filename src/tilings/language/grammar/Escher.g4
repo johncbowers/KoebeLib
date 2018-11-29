@@ -5,52 +5,39 @@ grammar Escher ;
  */
 
 file            : mainline+ ;
-mainline        : phrase END ;
-subline         : expression END ;
-phrase          : definition | expression ;
+mainline        : tileDefinition | expression;
 
-definition            : tileDefinition | subdivisionDefinition ;
-tileDefinition        : TILETYPE ID '{' NUMBER (',' NUMBER)* '}' ;
-subdivisionDefinition : SUBDIVISION ID '{' subline+ '}' ;
+definition            : tileDefinition;
+tileDefinition        : TYPE ID '(' ID (',' (ID))* ')' ;
+vertexSetDefinition   : VERTEX '{' tileFunction+ (',' expression)* '}' ;
+subdivisionDefinition : SUBTILE '{' expression (',' expression)* '}' ;
 
 expression      : function | assignment ;
-function        : tileFunction | splitFunction | connectFunction ;
+function        : tileFunction | splitFunction;
 tileFunction    : TILE '(' ID ',' NUMBER ')' ;
-splitFunction   : SPLIT '(' node ',' node ',' NUMBER ')' ;
-connectFunction : CONNECT '(' node ',' node ')' ;
+splitFunction   : ID (',' ID)+ '=' SPLIT '(' ID ',' ID ')' ; //DISCUSS THIS
 
-assignment          : vertexAssignment | edgeAssignment | childAssignment ;
-vertexAssignment    : VERTEX ID (',' ID)* ('=' (splitFunction | node))? ;
-edgeAssignment      : EDGE ID (('=' connectFunction) | ( '(' node ',' node ')')) ;
-childAssignment     : CHILD ID '=' ID '(' childList+ ')' ;
-graphAssignment     : GRAPH ID '=' graphDeclaration ;
+assignment      : vertexAssignment ;
 
-graphDeclaration    : tileFunction ;
-
-childList           : '[' node (',' node)* ']' ;
-node                : ID ('.' 'vertex' '[' NUMBER ']')? ;
-face                : ID ('.' 'face' '[' NUMBER ']')? ;
+vertexAssignment    : ID (',' ID)* ('=' (splitFunction | ID))? ;
 
  /*
   * Lexer Rules
   */
   
-fragment LETTER : ('a'..'z' | 'A'..'Z')+ ;
+
 fragment DIGIT  : '0'..'9' ;
 
-GRAPH           : 'GRAPH' ;
-CHILD           : 'CHILD' ;
-SUBDIVISION     : 'SUBDIVISION' ;
-TILETYPE        : 'TILETYPE' ;
-VERTEX          : 'VERTEX' ;
-EDGE            : 'EDGE' ;
+SUBTILE         : 'subtiles' | 'subtile';
+TYPE            : 'Type' ;
+VERTEX          : 'vertex' | 'vertices';
 
 TILE            : 'tile' ;
 SPLIT           : 'split' ;
 CONNECT         : 'connect' ;
 
-END             : ';' ;
-WHITESPACE      : [ \n\t\r]+ -> skip ;
+LETTER          : ('a'..'z' | 'A'..'Z')+ ;
+END             : '\n' ; //I THINK THIS SHOULD WORK?
+WHITESPACE      : [\n\t\r]+ -> skip ;
 NUMBER          : DIGIT+ ;
-ID              : LETTER (LETTER | DIGIT)* ;
-
+ID              : (LETTER | DIGIT) (LETTER | DIGIT)* ;

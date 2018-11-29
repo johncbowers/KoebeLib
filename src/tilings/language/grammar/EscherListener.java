@@ -1,5 +1,3 @@
-package tilings.language.grammar;
-
 // Generated from Escher.g4 by ANTLR 4.7.1
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -28,16 +26,6 @@ public interface EscherListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitMainline(EscherParser.MainlineContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EscherParser#subline}.
-	 * @param ctx the parse tree
-	 */
-	void enterSubline(EscherParser.SublineContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#subline}.
-	 * @param ctx the parse tree
-	 */
-	void exitSubline(EscherParser.SublineContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link EscherParser#phrase}.
 	 * @param ctx the parse tree
@@ -68,6 +56,16 @@ public interface EscherListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTileDefinition(EscherParser.TileDefinitionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EscherParser#vertexSetDefinition}.
+	 * @param ctx the parse tree
+	 */
+	void enterVertexSetDefinition(EscherParser.VertexSetDefinitionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EscherParser#vertexSetDefinition}.
+	 * @param ctx the parse tree
+	 */
+	void exitVertexSetDefinition(EscherParser.VertexSetDefinitionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link EscherParser#subdivisionDefinition}.
 	 * @param ctx the parse tree
@@ -119,16 +117,6 @@ public interface EscherListener extends ParseTreeListener {
 	 */
 	void exitSplitFunction(EscherParser.SplitFunctionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EscherParser#connectFunction}.
-	 * @param ctx the parse tree
-	 */
-	void enterConnectFunction(EscherParser.ConnectFunctionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#connectFunction}.
-	 * @param ctx the parse tree
-	 */
-	void exitConnectFunction(EscherParser.ConnectFunctionContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link EscherParser#assignment}.
 	 * @param ctx the parse tree
 	 */
@@ -148,74 +136,4 @@ public interface EscherListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitVertexAssignment(EscherParser.VertexAssignmentContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EscherParser#edgeAssignment}.
-	 * @param ctx the parse tree
-	 */
-	void enterEdgeAssignment(EscherParser.EdgeAssignmentContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#edgeAssignment}.
-	 * @param ctx the parse tree
-	 */
-	void exitEdgeAssignment(EscherParser.EdgeAssignmentContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EscherParser#childAssignment}.
-	 * @param ctx the parse tree
-	 */
-	void enterChildAssignment(EscherParser.ChildAssignmentContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#childAssignment}.
-	 * @param ctx the parse tree
-	 */
-	void exitChildAssignment(EscherParser.ChildAssignmentContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EscherParser#graphAssignment}.
-	 * @param ctx the parse tree
-	 */
-	void enterGraphAssignment(EscherParser.GraphAssignmentContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#graphAssignment}.
-	 * @param ctx the parse tree
-	 */
-	void exitGraphAssignment(EscherParser.GraphAssignmentContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EscherParser#graphDeclaration}.
-	 * @param ctx the parse tree
-	 */
-	void enterGraphDeclaration(EscherParser.GraphDeclarationContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#graphDeclaration}.
-	 * @param ctx the parse tree
-	 */
-	void exitGraphDeclaration(EscherParser.GraphDeclarationContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EscherParser#childList}.
-	 * @param ctx the parse tree
-	 */
-	void enterChildList(EscherParser.ChildListContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#childList}.
-	 * @param ctx the parse tree
-	 */
-	void exitChildList(EscherParser.ChildListContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EscherParser#node}.
-	 * @param ctx the parse tree
-	 */
-	void enterNode(EscherParser.NodeContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#node}.
-	 * @param ctx the parse tree
-	 */
-	void exitNode(EscherParser.NodeContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EscherParser#face}.
-	 * @param ctx the parse tree
-	 */
-	void enterFace(EscherParser.FaceContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EscherParser#face}.
-	 * @param ctx the parse tree
-	 */
-	void exitFace(EscherParser.FaceContext ctx);
 }
