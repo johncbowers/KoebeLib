@@ -1,6 +1,6 @@
 plugins {
     id 'com.google.osdetector' version '1.4.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.2.50'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.21'
     id 'antlr'
 }
 
@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     // Kotlin standard library
-    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.50'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.3.21'
 
     // KoebeLib dependencies
     compile files('lib/jar/cpcore.jar')
@@ -29,7 +29,7 @@ dependencies {
     }
 
     // Antlr dependency
-    antlr 'org.antlr:antlr4:4.7.1'
+    antlr 'org.antlr:antlr4:4.7.2'
 }
 
 // Ensures that the lib/jar folder exists for downloading cpcore.jar
@@ -83,6 +83,7 @@ jar {
 
 // Dynamically build run configurations for configured classes
 gradle.ext.drivers.each { name, className ->
+    tasks.register("run$name")
     task "run$name" (type: JavaExec, dependsOn: jar, overwrite: true) {
         description "Runs the ${name}.kt main class"
         group "KoebeLib"
