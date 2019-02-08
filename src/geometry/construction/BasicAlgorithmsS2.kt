@@ -93,6 +93,16 @@ class TwoDisksPointCoaxialCircle() : IAlgorithm<DiskS2> {
     }
 }
 
+//class TwoDisksIntersectionLine() : IAlgorithm<LineOP3> {
+//    override fun run(node: ConstructionNode<DiskS2>): LineOP3 {
+//        if (node.incoming.size != 3) {
+//            throw InvalidConstructionParametersException("TwoDisksPointHyperbolicCircle expects two DiskS2s and one PointS2. ${node.incoming.size}  given.")
+//        }
+//
+//        return LineOP3(0.0, 0.0, 0.0, 0.0)
+//    }
+//}
+
 class TwoDisksIntersectionPoint() : IAlgorithm<List<PointS2>> {
     override fun run(node: ConstructionNode<List<PointS2>>): List<PointS2> {
         if (node.incoming.size < 2) {

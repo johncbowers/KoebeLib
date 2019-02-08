@@ -721,6 +721,147 @@ open class CoaxialPointTool(val sketch: ConstructionSketch) : MouseTool() {
     }
 }
 
+open class ThreeDiskCPlaneTool(val sketch: ConstructionSketch) : MouseTool() {
+    var selectedNode : INode<*>? = null;
+    var selectedNodes = mutableListOf<INode<*>>()
+
+    fun transform(mouseX: Int, mouseY: Int): PointE3 {
+        val gl = sketch.g
+        if (gl is PGraphicsOpenGL) {
+            var Minv = PMatrix3D(gl.projmodelview)
+            Minv.invert() //PVM inverted
+            var mousex = (2.0f * mouseX) / sketch.width - 1.0f
+            var mousey = 1.0f - (2.0f * mouseY) / sketch.height
+
+            var w1 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m33
+            var w2 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m32 + Minv.m33
+
+            var new1 = PointE3(
+                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m03) / w1).toDouble(),
+                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m13) / w1).toDouble(),
+                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m23) / w1).toDouble()
+            )
+
+            var new2 = PointE3(
+                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m02 + Minv.m03) / w2).toDouble(),
+                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m12 + Minv.m13) / w2).toDouble(),
+                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m22 + Minv.m23) / w2).toDouble()
+            )
+
+            var direction = (new2 - new1).normalize()
+
+            var l = PointE3.O - new1
+
+            var tca = l.dot(direction)
+            var d = (Math.sqrt(l.normSq() - tca * tca))//(200.0*zoom)
+            var thc = Math.sqrt(1 - d * d)
+            var t0 = tca - thc
+            var t1 = tca + thc
+            var inter = PointE3(0.0, 0.0, 0.0)
+            if (t0 > t1) {
+                inter = new1 + direction * t1
+                return inter
+            } else {
+                inter = new1 + direction * t0
+                return inter
+            }
+        }
+        return PointE3()
+    }
+
+    fun isIntersection(mouseX : Int, mouseY : Int, a : Double, b : Double, c : Double, d : Double) : Boolean {
+        val gl = sketch.g
+        if (gl is PGraphicsOpenGL) {
+            var Minv = PMatrix3D(gl.projmodelview)
+            Minv.invert() //PVM inverted
+            var mousex = (2.0f * mouseX) / sketch.width - 1.0f
+            var mousey = 1.0f - (2.0f * mouseY) / sketch.height
+
+            var w1 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m33
+            var w2 = Minv.m30 * mousex + Minv.m31 * mousey + Minv.m32 + Minv.m33
+
+            var new1 = PointE3(
+                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m03) / w1).toDouble(),
+                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m13) / w1).toDouble(),
+                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m23) / w1).toDouble()
+            )
+
+            var new2 = PointE3(
+                    ((Minv.m00 * mousex + Minv.m01 * mousey + Minv.m02 + Minv.m03) / w2).toDouble(),
+                    ((Minv.m10 * mousex + Minv.m11 * mousey + Minv.m12 + Minv.m13) / w2).toDouble(),
+                    ((Minv.m20 * mousex + Minv.m21 * mousey + Minv.m22 + Minv.m23) / w2).toDouble()
+            )
+
+            var direction = (new2 - new1).normalize()
+            var rayOrigin = VectorE3(new1.x, new1.y, new1.z)
+            var worldOrigin = VectorE3(0.0, 0.0, 0.0)
+            var normalVector = VectorE3(a, b, c)
+            var denom = direction.dot(normalVector)
+            var t = ((worldOrigin - rayOrigin).dot(normalVector)) / denom
+            return t >= 0
+        }
+
+        return false;
+    }
+
+    override fun mouseMoved(mouseX: Int, mouseY: Int) {
+        super.mouseMoved(mouseX, mouseY)
+    }
+
+    override fun mouseDragged(mouseX: Int, mouseY: Int) {
+
+    }
+
+    override fun mousePressed(mouseX: Int, mouseY: Int) {
+        super.mousePressed(mouseX, mouseY)
+        val cursor = transform(mouseX, mouseY)
+        if (cursor != null) {
+            var minDist = 100.0
+            for (node in sketch.construction.nodes) {
+                if (node != null) {
+                    val output = node.getOutput()
+                    if (output is DiskS2) {
+                        val a = output.a
+                        val b = output.b
+                        val c = output.c
+                        val d = output.d
+                        if(isIntersection(mouseX, mouseY, a, b, c, d)) {
+                            val center = output.centerE3
+                            val radius = output.radiusE3
+                            val diskDist = Math.sqrt(Math.pow(center.x - cursor.x, 2.0) + Math.pow(center.y - cursor.y, 2.0)
+                                    + Math.pow(center.z - cursor.z, 2.0)) - radius
+                            if (diskDist < minDist) {
+                                minDist = diskDist
+                                selectedNode = node
+                            }
+                        }
+                    }
+                }
+            }
+
+            selectedNode?.style = Style(Color(200.0.toFloat(), 0.0f, 0.0f), Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()))
+            if(!selectedNodes.contains(selectedNode)) {
+                selectedNodes.add(selectedNode as INode<*>)
+            }
+        }
+    }
+
+    override fun mouseReleased(mouseX: Int, mouseY: Int) {
+        super.mouseReleased(mouseX, mouseY)
+        if (selectedNodes.size >= 3) {
+            var obj1 = selectedNodes[0]
+            var obj2 = selectedNodes[1]
+            var obj3 = selectedNodes[2]
+
+            @Suppress("UNCHECKED_CAST")
+            var node = sketch.construction.makeCPlaneS2( obj1 as INode<DiskS2>,
+                    obj2 as INode<DiskS2>,
+                    obj3 as INode<DiskS2>)
+
+        }
+    }
+}
+
 open class ConstructionSketch : SphericalSketch() {
 
     var currentTool : MouseTool? = null;
