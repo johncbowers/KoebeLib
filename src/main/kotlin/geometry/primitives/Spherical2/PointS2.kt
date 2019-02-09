@@ -19,6 +19,7 @@ class PointS2(
         val x: Double,
         val y:Double,
         val z:Double
+
 ) {
 
     /* Constructors */

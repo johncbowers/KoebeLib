@@ -22,25 +22,33 @@ class Construction {
     /**
      * @return The actual geometric objects used in this construction. These are sorted topologically based on construction dependencies.
      */
-    fun getGeometricObjects() : MutableList<Any> {
+    fun getGeometricObjects(styles: HashMap<Any, Any>? = null) : MutableList<Any> {
         val objList = mutableListOf<Any>()
         nodes.forEach { it.visited = false }
-        getSourceNodes().forEach { it.visit(objList) }
+        getSourceNodes().forEach { it.visit(objList, styles) }
         return objList
     }
 
     // Base constructions
-    fun makePointS2(x: Double, y: Double, z:Double) = BaseNode<PointS2>(this, PointS2(x, y, z))
+    fun makePointS2(x: Double, y: Double, z:Double, style:Any? = null) = BaseNode<PointS2>(this, PointS2(x, y, z), style)
 
     // Other constructions
     fun makeDiskS2(p1: INode<PointS2>, p2: INode<PointS2>, p3: INode<PointS2>) =
-            ConstructionNode<DiskS2>(this, listOf(p1, p2, p3), ThreePointsToDiskS2())
+            ConstructionNode<DiskS2>(this, listOf(p1, p2, p3), ThreePointsToDiskS2(), null)
 
     fun makeCoaxialFamilyS2(disk1: INode<DiskS2>, disk2: INode<DiskS2>) =
-            ConstructionNode<CoaxialFamilyS2>(this, listOf(disk1, disk2), TwoPointsToCoaxialFamilyS2())
+            ConstructionNode<CoaxialFamilyS2>(this, listOf(disk1, disk2), TwoPointsToCoaxialFamilyS2(), null)
 
     fun makeCPlaneS2(disk1: INode<DiskS2>, disk2: INode<DiskS2>, disk3: INode<DiskS2>) =
-            ConstructionNode<CPlaneS2>(this, listOf(disk1, disk2, disk3), ThreeDisksToCPlaneS2())
+            ConstructionNode<CPlaneS2>(this, listOf(disk1, disk2, disk3), ThreeDisksToCPlaneS2(), null)
+
+    fun makeIntersectionPoint(disk1: INode<DiskS2>, disk2: INode<DiskS2>) {
+            ConstructionNode<List<PointS2>>(this, listOf(disk1, disk2), TwoDisksIntersectionPoint(), null)
+    }
+
+    fun makeCoaxialDisk(disk1 : INode<DiskS2>, disk2: INode<DiskS2>, point: INode<PointS2>) {
+            ConstructionNode<DiskS2>(this, listOf(disk1, disk2, point), TwoDisksPointCoaxialCircle(), null)
+    }
 }
 
 
@@ -50,14 +58,20 @@ interface INode<OutputType> {
     val outgoing : MutableList<INode<*>>
     var dirty : Boolean
     var visited : Boolean
+    var style : Any?
 
     fun getOutput() : OutputType
 
-    fun visit(objList: MutableList<Any>) {
+    fun visit(objList: MutableList<Any>, styles: HashMap<Any, Any>? = null) {
         try {
-            objList.add(getOutput() as Any)
+            val geomObj = getOutput()
+            val style = this.style
+            objList.add(geomObj as Any)
+            if (styles != null && style != null) {
+                styles[geomObj] = style
+            }
             visited = true
-            outgoing.forEach { if (!it.visited && it.readyToOutputQ()) it.visit(objList) }
+            outgoing.forEach { if (!it.visited && it.readyToOutputQ()) it.visit(objList, styles) }
         } catch (e: InvalidConstructionParametersException) {
             e.printStackTrace()
         }
@@ -70,11 +84,13 @@ interface INode<OutputType> {
         outgoing.forEach { it.dfsSetDirty() }
     }
 
+
 }
 
 class BaseNode<OutputType>(
         override val construction: Construction,
-        var theObject: OutputType
+        var theObject: OutputType,
+        override var style : Any? = null
 ): INode<OutputType> {
 
     override var visited = false
@@ -100,7 +116,8 @@ class BaseNode<OutputType>(
 class ConstructionNode<OutputType>(
         override val construction: Construction,
         val incoming: List<INode<*>>,
-        val algorithm: IAlgorithm<OutputType>
+        val algorithm: IAlgorithm<OutputType>,
+        override var style : Any? = null
 ): INode<OutputType> {
 
     override var visited = false
