@@ -49,6 +49,14 @@ class Construction {
     fun makeCoaxialDisk(disk1 : INode<DiskS2>, disk2: INode<DiskS2>, point: INode<PointS2>) {
             ConstructionNode<DiskS2>(this, listOf(disk1, disk2, point), TwoDisksPointCoaxialCircle(), null)
     }
+
+    fun makeHyperbolicDisk(disk1: INode<DiskS2>, disk2:INode<DiskS2>, point: INode<PointS2>) {
+            ConstructionNode<DiskS2>(this, listOf(disk1, disk2, point), TwoDisksPointHyperbolicCircle(), null)
+    }
+
+    fun makeDiskFromPlanes(plane1 : INode<CPlaneS2>, plane2: INode<CPlaneS2>, plane3: INode<CPlaneS2>) {
+            ConstructionNode<DiskS2>(this, listOf(plane1, plane2, plane3), ThreePlaneToDisk(), null)
+    }
 }
 
 
@@ -58,6 +66,7 @@ interface INode<OutputType> {
     val outgoing : MutableList<INode<*>>
     var dirty : Boolean
     var visited : Boolean
+    var delete: Boolean
     var style : Any?
 
     fun getOutput() : OutputType
@@ -95,6 +104,7 @@ class BaseNode<OutputType>(
 
     override var visited = false
     override var dirty = false
+    override var delete = false
     override val outgoing = mutableListOf<INode<*>>()
 
     init {
@@ -122,6 +132,7 @@ class ConstructionNode<OutputType>(
 
     override var visited = false
     override var dirty = false
+    override var delete = false
     override val outgoing = mutableListOf<INode<*>>()
 
     internal var _outObj: OutputType? = null

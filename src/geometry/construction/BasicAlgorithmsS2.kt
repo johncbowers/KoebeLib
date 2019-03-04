@@ -43,6 +43,23 @@ class ThreeDisksToCPlaneS2() : IAlgorithm<CPlaneS2> {
     }
 }
 
+class ThreePlaneToDisk() : IAlgorithm<DiskS2> {
+    override fun run(node: ConstructionNode<DiskS2>): DiskS2 {
+
+        if (node.incoming.size != 3)
+            throw InvalidConstructionParametersException("ThreePointsToDiskS2 expects three PointS2s. ${node.incoming.size} given.")
+
+        val plane1 = node.incoming[0].getOutput()
+        val plane2 = node.incoming[1].getOutput()
+        val plane3 = node.incoming[2].getOutput()
+        if (plane1 is CPlaneS2 && plane2 is CPlaneS2 && plane3 is CPlaneS2) {
+            return meet(plane1, plane2, plane3)
+        } else {
+            throw InvalidConstructionParametersException("ThreeDisksToCPlaneS2 expects three DiskS2s.")
+        }
+    }
+}
+
 class TwoPointsToCoaxialFamilyS2() : IAlgorithm<CoaxialFamilyS2> {
     override fun run(node: ConstructionNode<CoaxialFamilyS2>): CoaxialFamilyS2 {
 
@@ -79,6 +96,39 @@ class TwoDisksPointCoaxialCircle() : IAlgorithm<DiskS2> {
         val b2 = disk2.b
         val c2 = disk2.c
         val d2 = disk2.d
+        val x = pointVector.x
+        val y = pointVector.y
+        val z = pointVector.z
+        val w = 1
+
+        val a = a2 * (d1 * w + b1 * y + c1 * z) - a1 * (d2 * w + b2 * y + c2 * z)
+        val b = b2 * (d1 * w + a1 * x + c1 * z) - b1 * (d2 * w + a2 * x + c2 * z)
+        val c = c2 * (d1 * w + a1 * x + b1 * y) - c1 * (d2 * w + a2 * x + b2 * y)
+        val d = -a2 * d1 * x + d2 * (a1 * x + b1 * y + c1 * z) - d1 * (b2 * y + c2 * z)
+
+        return DiskS2(a, b, c, d)
+    }
+}
+
+class TwoDisksPointHyperbolicCircle(): IAlgorithm<DiskS2> {
+    override fun run(node: ConstructionNode<DiskS2>) : DiskS2 {
+        if (node.incoming.size != 3) {
+            throw InvalidConstructionParametersException("TwoDisksPointCoaxialCircle expects two DiskS2s and one PointS2. ${node.incoming.size}  given.")
+
+        }
+
+        val disk1 = node.incoming[0].getOutput() as DiskS2
+        val disk2 = node.incoming[1].getOutput() as DiskS2
+        val point = node.incoming[2].getOutput() as PointS2
+        val pointVector = point.directionE3.v.normalize()
+        val a1 = disk1.dualPointOP3.hx
+        val b1 = disk1.dualPointOP3.hy
+        val c1 = disk1.dualPointOP3.hz
+        val d1 = disk1.dualPointOP3.hw
+        val a2 = disk2.dualPointOP3.hx
+        val b2 = disk2.dualPointOP3.hy
+        val c2 = disk2.dualPointOP3.hz
+        val d2 = disk2.dualPointOP3.hw
         val x = pointVector.x
         val y = pointVector.y
         val z = pointVector.z
