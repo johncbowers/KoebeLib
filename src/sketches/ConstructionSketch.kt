@@ -260,7 +260,7 @@ class SelectionTool(override var sketch: ConstructionSketch) : MouseTool(sketch)
 
 open class PointEditorTool(override var sketch: ConstructionSketch) : MouseTool(sketch) {
 
-    var selectedNode : INode<*>? = null
+    var selectedNode: INode<*>? = null
 
     override fun mousePressed(mouseX: Int, mouseY: Int) {
         super.mousePressed(mouseX, mouseY)
@@ -275,8 +275,10 @@ open class PointEditorTool(override var sketch: ConstructionSketch) : MouseTool(
                     var output = node.getOutput()
 
                     if (output is PointS2) {
-                        val dist = Math.sqrt(Math.pow(output.x - cursor.x, 2.0) + Math.pow(output.y - cursor.y, 2.0)
-                                + Math.pow(output.z - cursor.z, 2.0))
+                        val dist = Math.sqrt(
+                            Math.pow(output.x - cursor.x, 2.0) + Math.pow(output.y - cursor.y, 2.0)
+                                    + Math.pow(output.z - cursor.z, 2.0)
+                        )
 
                         if (dist < minDist) {
                             //TODO: change the cursor so the point is visible when being dragged
@@ -302,6 +304,7 @@ open class PointEditorTool(override var sketch: ConstructionSketch) : MouseTool(
             }
         }
     }
+
     override fun mouseClicked(mouseX: Int, mouseY: Int) {
         var drawNode = true
         var cursor = super.transform(mouseX, mouseY)
@@ -310,12 +313,14 @@ open class PointEditorTool(override var sketch: ConstructionSketch) : MouseTool(
             for (node in sketch.construction.nodes) {
                 var minDist = .1
 
-                if(node != null) {
+                if (node != null) {
                     var output = node.getOutput()
                     if (output is PointS2) {
 
-                        val dist = Math.sqrt(Math.pow(output.x - cursor.x, 2.0) + Math.pow(output.y - cursor.y, 2.0)
-                                + Math.pow(output.z - cursor.z, 2.0))
+                        val dist = Math.sqrt(
+                            Math.pow(output.x - cursor.x, 2.0) + Math.pow(output.y - cursor.y, 2.0)
+                                    + Math.pow(output.z - cursor.z, 2.0)
+                        )
 
                         if (dist < minDist) {
                             minDist = dist
@@ -334,7 +339,7 @@ open class PointEditorTool(override var sketch: ConstructionSketch) : MouseTool(
     }
 
     class CircleTool(override var sketch: ConstructionSketch) : MouseTool(sketch) {
-        var selectedNode : INode<*>? = null
+        var selectedNode: INode<*>? = null
         var selectedNodes = mutableListOf<INode<*>>()
 
         override fun mousePressed(mouseX: Int, mouseY: Int) {
@@ -349,8 +354,10 @@ open class PointEditorTool(override var sketch: ConstructionSketch) : MouseTool(
                         var output = node.getOutput()
 
                         if (output is PointS2) {
-                            val dist = Math.sqrt(Math.pow(output.x - cursor.x, 2.0) + Math.pow(output.y - cursor.y, 2.0)
-                                    + Math.pow(output.z - cursor.z, 2.0))
+                            val dist = Math.sqrt(
+                                Math.pow(output.x - cursor.x, 2.0) + Math.pow(output.y - cursor.y, 2.0)
+                                        + Math.pow(output.z - cursor.z, 2.0)
+                            )
 
                             if (dist < minDist) {
                                 minDist = dist
@@ -377,14 +384,87 @@ open class PointEditorTool(override var sketch: ConstructionSketch) : MouseTool(
                 var obj3 = selectedNodes[2]
 
                 @Suppress("UNCHECKED_CAST")
-                var node = sketch.construction.makeDiskS2( obj1 as INode<PointS2>,
+                var node = sketch.construction.makeDiskS2(
+                    obj1 as INode<PointS2>,
                     obj2 as INode<PointS2>,
-                    obj3 as INode<PointS2>)
-                selectedNodes.removeAll{true}
+                    obj3 as INode<PointS2>
+                )
+                selectedNodes.removeAll { true }
 
             }
         }
 
+    }
+
+    class PlaneTool(override var sketch: ConstructionSketch) : MouseTool(sketch) {
+        var selectedNode: INode<*>? = null
+
+        override fun mousePressed(mouseX: Int, mouseY: Int) {
+            super.mousePressed(mouseX, mouseY)
+            var cursor = super.transform(mouseX, mouseY)
+
+            if (cursor != null) {
+
+                for (node in sketch.construction.nodes) {
+                    var minDist = .1
+
+                    if (node != null) {
+                        var output = node.getOutput()
+
+                        if (output is CPlaneS2) {
+                            val dist = Math.abs(cursor.x * output.a + cursor.y * output.b + cursor.z * output.c + output.d)/
+                                    Math.sqrt(Math.pow(output.a, 2.0) + Math.pow(output.b, 2.0)
+                                        + Math.pow(output.c, 2.0)
+                            )
+
+                            if (dist < minDist) {
+                                //TODO: change the cursor so the point is visible when being dragged
+                                minDist = dist
+                                selectedNode = node
+                                break
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        override fun mouseClicked(mouseX: Int, mouseY: Int) {
+            var drawNode = true
+            var cursor = super.transform(mouseX, mouseY)
+
+            if (cursor != null) {
+                for (node in sketch.construction.nodes) {
+                    var minDist = .1
+
+                    if (node != null) {
+                        var output = node.getOutput()
+                        if (output is CPlaneS2) {
+
+                            val dist = Math.abs(cursor.x * output.a + cursor.y * output.b + cursor.z * output.c + output.d)/
+                                    Math.sqrt(Math.pow(output.a, 2.0) + Math.pow(output.b, 2.0)
+                                            + Math.pow(output.c, 2.0)
+                                    )
+
+                            if (dist < minDist) {
+                                minDist = dist
+                                drawNode = false
+                                break
+                            }
+                        }
+                    }
+                }
+
+                if (drawNode) {
+                    /*TODO: need to draw a plane where the person clicks but thats not
+                            the constructor takes in
+                     */
+                    //sketch.construction.makeCPlaneS2(cursor.x, cursor.y, cursor.z)
+                }
+            }
+
+        }
     }
 }
 
@@ -534,13 +614,14 @@ open class ThreePlanesDiskTool(override var sketch: ConstructionSketch) : MouseT
                         val c = output.c
                         val d = output.d
                         if(isIntersection(mouseX, mouseY, a, b, c, d)) {
-                            //TODO: figure out how to check the distance between the cursor and a plane
-                            //val planeDist = Math.sqrt(Math.pow(center.x - cursor.x, 2.0) + Math.pow(center.y - cursor.y, 2.0)
-                                    //+ Math.pow(center.z - cursor.z, 2.0)) - radius
-                           // if (planeDist < minDist) {
-                             //   minDist = planeDist
-                               // selectedNode = node
-                            //}
+                            val dist = Math.abs(cursor.x * output.a + cursor.y * output.b + cursor.z * output.c + output.d)/
+                                    Math.sqrt(Math.pow(output.a, 2.0) + Math.pow(output.b, 2.0)
+                                            + Math.pow(output.c, 2.0)
+                                    )
+                            if (dist < minDist) {
+                                minDist = dist
+                                selectedNode = node
+                            }
                         }
                     }
                 }

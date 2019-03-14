@@ -13,9 +13,12 @@ import geometry.algorithms.*
 import org.fife.ui.rtextarea.*
 import org.fife.ui.rsyntaxtextarea.*
 import sketches.*
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
+import java.awt.event.ComponentListener
 import javax.swing.ImageIcon
 import javax.imageio.ImageIO
-
+import javax.swing.plaf.basic.BasicTreeUI
 
 
 /**
@@ -35,6 +38,7 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
     val disksPointHyperbolicDisk : JButton
     val planesToDisk: JButton
     val delete : JButton
+    val planeButton : JButton
 
     init {
         // Build the GUI:
@@ -58,6 +62,7 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
         disksPointHyperbolicDisk = JButton("HyperbolicDisk")
         planesToDisk = JButton("DiskFromPlanes")
         delete = JButton("Delete")
+        planeButton = JButton("CPlane")
 
         try {
             val pointImg = ImageIO.read(javaClass.getResource("point.png"))
@@ -91,9 +96,19 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
         buttonFlowPanel.add(disksPointHyperbolicDisk)
         buttonFlowPanel.add(planesToDisk)
         buttonFlowPanel.add(delete)
+        buttonFlowPanel.add(planeButton)
 
         buttonPanel.add(buttonFlowPanel, BorderLayout.WEST)
         this.contentPane.add(buttonPanel, BorderLayout.PAGE_START)
+
+        class MyAdapter :  ComponentAdapter() {
+            override fun componentResized(e : ComponentEvent) {
+                //TODO: add code here to make the shit redraw correctly
+            }
+        }
+
+        buttonPanel.addComponentListener(MyAdapter())
+
 
         arcballButton.addActionListener {
             sketch.currentTool = ArcballTool(sketch.arcball, sketch)
@@ -133,6 +148,10 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
 
         delete.addActionListener {
             sketch.currentTool = DeleteTool(sketch)
+        }
+
+        planeButton.addActionListener {
+            sketch.currentTool = PointEditorTool.PlaneTool(sketch)
         }
     }
 
