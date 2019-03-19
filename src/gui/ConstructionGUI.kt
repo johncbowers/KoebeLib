@@ -34,7 +34,6 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
     val selectionButton : JButton
     val intersectButton : JButton
     val disksPointCoaxialDisk: JButton
-    val threeDiskCPlane : JButton
     val disksPointHyperbolicDisk : JButton
     val planesToDisk: JButton
     val delete : JButton
@@ -58,7 +57,6 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
         selectionButton = JButton()
         intersectButton = JButton()
         disksPointCoaxialDisk = JButton("CoaxialFamilyDisk")
-        threeDiskCPlane = JButton("3DiskCPlane")
         disksPointHyperbolicDisk = JButton("HyperbolicDisk")
         planesToDisk = JButton("DiskFromPlanes")
         delete = JButton("Delete")
@@ -101,14 +99,6 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
         buttonPanel.add(buttonFlowPanel, BorderLayout.WEST)
         this.contentPane.add(buttonPanel, BorderLayout.PAGE_START)
 
-        class MyAdapter :  ComponentAdapter() {
-            override fun componentResized(e : ComponentEvent) {
-                //TODO: add code here to make the shit redraw correctly
-            }
-        }
-
-        buttonPanel.addComponentListener(MyAdapter())
-
 
         arcballButton.addActionListener {
             sketch.currentTool = ArcballTool(sketch.arcball, sketch)
@@ -132,10 +122,6 @@ class ConstructionGUI(val sketch : ConstructionSketch) : JFrame() {
 
         disksPointCoaxialDisk.addActionListener {
             sketch.currentTool = CoaxialPointTool(sketch)
-        }
-
-        threeDiskCPlane.addActionListener {
-            sketch.currentTool = ThreeDiskCPlaneTool(sketch);
         }
 
         disksPointHyperbolicDisk.addActionListener {

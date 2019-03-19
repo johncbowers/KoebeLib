@@ -398,72 +398,64 @@ open class PointEditorTool(override var sketch: ConstructionSketch) : MouseTool(
 
     class PlaneTool(override var sketch: ConstructionSketch) : MouseTool(sketch) {
         var selectedNode: INode<*>? = null
+        var selectedNodes = mutableListOf<INode<*>>()
 
         override fun mousePressed(mouseX: Int, mouseY: Int) {
             super.mousePressed(mouseX, mouseY)
             var cursor = super.transform(mouseX, mouseY)
 
             if (cursor != null) {
-
                 for (node in sketch.construction.nodes) {
                     var minDist = .1
 
                     if (node != null) {
                         var output = node.getOutput()
+                        if (output is DiskS2) {
 
-                        if (output is CPlaneS2) {
-                            val dist = Math.abs(cursor.x * output.a + cursor.y * output.b + cursor.z * output.c + output.d)/
-                                    Math.sqrt(Math.pow(output.a, 2.0) + Math.pow(output.b, 2.0)
-                                        + Math.pow(output.c, 2.0)
-                            )
+                            val a = output.a
+                            val b = output.b
+                            val c = output.c
+                            val d = output.d
 
-                            if (dist < minDist) {
-                                //TODO: change the cursor so the point is visible when being dragged
-                                minDist = dist
-                                selectedNode = node
-                                break
+                            if(isIntersection(mouseX, mouseY, a, b, c, d)) {
+                                val center = output.centerE3
+                                val radius = output.radiusE3
+                                val diskDist = Math.sqrt(Math.pow(center.x - cursor.x, 2.0) + Math.pow(center.y - cursor.y, 2.0)
+                                        + Math.pow(center.z - cursor.z, 2.0)) - radius
+                                if (diskDist < minDist) {
+                                    minDist = diskDist
+                                    selectedNode = node
+                                }
                             }
                         }
 
                     }
+
                 }
+
+                if(!selectedNodes.contains(selectedNode)) {
+                    selectedNodes.add(selectedNode as INode<*>)
+                }
+
             }
         }
+        override fun mouseReleased(mouseX: Int, mouseY: Int) {
+            super.mouseReleased(mouseX, mouseY)
 
-        override fun mouseClicked(mouseX: Int, mouseY: Int) {
-            var drawNode = true
-            var cursor = super.transform(mouseX, mouseY)
+            if (selectedNodes.size >= 3) {
+                var obj1 = selectedNodes[0]
+                var obj2 = selectedNodes[1]
+                var obj3 = selectedNodes[2]
 
-            if (cursor != null) {
-                for (node in sketch.construction.nodes) {
-                    var minDist = .1
+                @Suppress("UNCHECKED_CAST")
+                var node = sketch.construction.makeCPlaneS2(
+                    obj1 as INode<DiskS2>,
+                    obj2 as INode<DiskS2>,
+                    obj3 as INode<DiskS2>
+                )
+                selectedNodes.removeAll { true }
 
-                    if (node != null) {
-                        var output = node.getOutput()
-                        if (output is CPlaneS2) {
-
-                            val dist = Math.abs(cursor.x * output.a + cursor.y * output.b + cursor.z * output.c + output.d)/
-                                    Math.sqrt(Math.pow(output.a, 2.0) + Math.pow(output.b, 2.0)
-                                            + Math.pow(output.c, 2.0)
-                                    )
-
-                            if (dist < minDist) {
-                                minDist = dist
-                                drawNode = false
-                                break
-                            }
-                        }
-                    }
-                }
-
-                if (drawNode) {
-                    /*TODO: need to draw a plane where the person clicks but thats not
-                            the constructor takes in
-                     */
-                    //sketch.construction.makeCPlaneS2(cursor.x, cursor.y, cursor.z)
-                }
             }
-
         }
     }
 }
@@ -537,63 +529,6 @@ open class CoaxialPointTool(override var sketch: ConstructionSketch) : MouseTool
     }
 }
 
-open class ThreeDiskCPlaneTool(override var sketch: ConstructionSketch) : MouseTool(sketch) {
-    var selectedNode : INode<*>? = null
-    var selectedNodes = mutableListOf<INode<*>>()
-
-    override fun mousePressed(mouseX: Int, mouseY: Int) {
-        super.mousePressed(mouseX, mouseY)
-        val cursor = super.transform(mouseX, mouseY)
-
-        if (cursor != null) {
-            var minDist = .1
-            for (node in sketch.construction.nodes) {
-
-                if (node != null) {
-                    val output = node.getOutput()
-                    if (output is DiskS2) {
-                        val a = output.a
-                        val b = output.b
-                        val c = output.c
-                        val d = output.d
-
-                        if(super.isIntersection(mouseX, mouseY, a, b, c, d)) {
-                            val center = output.centerE3
-                            val radius = output.radiusE3
-                            val diskDist = Math.sqrt(Math.pow(center.x - cursor.x, 2.0) + Math.pow(center.y - cursor.y, 2.0)
-                                    + Math.pow(center.z - cursor.z, 2.0)) - radius
-                            if (diskDist < minDist) {
-                                minDist = diskDist
-                                selectedNode = node
-                            }
-                        }
-                    }
-                }
-            }
-
-            selectedNode?.style = Style(Color(200.0.toFloat(), 0.0f, 0.0f), Color(255.0.toFloat(), 0.0.toFloat(), 0.0.toFloat()))
-            if(!selectedNodes.contains(selectedNode)) {
-                selectedNodes.add(selectedNode as INode<*>)
-            }
-        }
-    }
-
-    override fun mouseReleased(mouseX: Int, mouseY: Int) {
-        super.mouseReleased(mouseX, mouseY)
-
-        if (selectedNodes.size >= 3) {
-            var obj1 = selectedNodes[0]
-            var obj2 = selectedNodes[1]
-            var obj3 = selectedNodes[2]
-
-            @Suppress("UNCHECKED_CAST")
-            sketch.construction.makeCPlaneS2( obj1 as INode<DiskS2>,
-                    obj2 as INode<DiskS2>,
-                    obj3 as INode<DiskS2>)
-
-        }
-    }
-}
 open class ThreePlanesDiskTool(override var sketch: ConstructionSketch) : MouseTool(sketch) {
     var selectedNode : INode<*>? = null
     var selectedNodes = mutableListOf<INode<*>>()
